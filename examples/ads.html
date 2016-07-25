@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset=utf-8 />
+  <title>Video.js Ads</title>
+  <link href="/dist/wjplayer.css" rel="stylesheet">
+  <link href="/dist/skins/nmd.css" rel="stylesheet">
+  <link rel="stylesheet" href="sample.css">
+  <script src="//imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+  <script src="/dist/wjplayer.js"></script>
+  <script src="sample.js"></script>
+  <style type="text/css">
+    body {
+      margin: 50px;
+    }
+    #player-container {
+      width: 100%;
+      height: 400px;
+    }
+    #input-container {
+      margin-bottom: 50px;
+    }
+    .sampleTagLink {
+      color: blue;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  </style>
+  </head>
+
+  <body>
+
+    <div><a href="https://developers.google.com/interactive-media-ads/docs/sdks/html5/tags">
+  IMA Sample Tags</a></div><br>
+    <div id="input-container">
+      <label for="tag">
+        Tag (
+          <span id="sampleTag" class="sampleTagLink">Sample</span>
+        ):&nbsp;
+      </label>      <input type="text" size="75" id="tagInput">
+      <button id="sampleTagApply">Apply</button>
+    </div>
+
+    <div id="player-container"></div>
+
+    <script>
+      var tags = {
+        sampleTag: 'https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpost&cmsid=496&vid=short_onecue&correlator=',
+      };
+
+      var tagInput = document.getElementById('tagInput');
+      var applyBtn = document.getElementById('sampleTagApply');
+      var sampleTagLinks = document.getElementsByClassName('sampleTagLink');
+
+      tagInput.value = tags.sampleTag;
+
+      applyBtn.addEventListener('click', function() {
+        window.ads.adTagUrl = tagInput.value;
+
+        window.player = wjplayer({
+          containerId: 'player-container',
+          sources: [
+            {
+              src: '//vjs.zencdn.net/v/oceans.mp4',
+              type: 'video/mp4'
+            }],
+          ads: window.ads,
+          debug: true
+        });
+
+        this.setAttribute('disabled', true);
+        this.innerText = 'Applied';
+      });
+
+      [].slice.call(sampleTagLinks).forEach(function(link) {
+        link.addEventListener('click', function(e) {
+          tagInput.value = tags[e.target.id];
+        });
+      });
+    </script>
+</body>
+
+</html>

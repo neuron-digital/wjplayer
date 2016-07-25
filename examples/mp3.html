@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset=utf-8 />
+  <title>Video.js MP3</title>
+  <link href="/dist/wjplayer.css" rel="stylesheet">
+  <link href="/dist/skins/nmd.css" rel="stylesheet">
+  <link rel="stylesheet" href="sample.css">
+  <script src="//imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+  <script src="/dist/wjplayer.js"></script>
+  <script src="sample.js"></script>
+</head>
+
+<body>
+
+  <div id="player-container"></div>
+
+  <script>
+    window.player = wjplayer({
+      containerId: 'player-container',
+      playerType: 'audio',
+      skin: 'nmd',
+      sources: [
+        {
+          src: 'https://static.life.ru/posts/2016/06/426069/audio/f953121839a7bddad0ad4817d8d1a710.mp3',
+          type: 'audio/mp3'
+        }],
+      downloadButton: {text: 'Скачать аудиозапись'},
+      volumeStyle: 'horizontal'
+    });
+  </script>
+</body>
+
+</html>

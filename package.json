@@ -1,0 +1,44 @@
+{
+  "dependencies": {},
+  "devDependencies": {
+    "babel-eslint": "^6.1.2",
+    "bower": "^1.7.9",
+    "browser-sync": "^2.13.0",
+    "del": "^2.2.1",
+    "eslint": "^3.1.1",
+    "eslint-config-airbnb-es5": "^1.0.9",
+    "eslint-plugin-react": "^5.2.2",
+    "gulp": "^3.9.1",
+    "gulp-add-src": "^0.2.0",
+    "gulp-coffee": "^2.3.2",
+    "gulp-coffeelint": "^0.6.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-eslint": "^3.0.1",
+    "gulp-sass": "^2.3.2",
+    "gulp-util": "^3.0.7",
+    "run-sequence": "^1.2.1",
+    "videojs-contrib-hls": "^3.2.0"
+  },
+  "name": "wjplayer",
+  "description": "Build of Video.js player with contrib plugins to support HLS, 360 video, VAST, and more.",
+  "version": "1.0.0",
+  "main": "gulpfile.js",
+  "scripts": {
+    "start": "gulp browse",
+    "build": "gulp",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Go-Promo/wjplayer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Go-Promo/wjplayer/issues"
+  },
+  "homepage": "https://github.com/Go-Promo/wjplayer",
+  "authors": [
+    "Mikhail Khazov <m.hazov@go-promo.ru>",
+    "Alexey Avdeev <aavdeev@go-promo.ru>"
+  ],
+  "license": "MIT"
+}

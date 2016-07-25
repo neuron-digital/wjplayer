@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset=utf-8 />
+  <title>Video.js panorama (360° video)</title>
+  <link href="/dist/wjplayer.css" rel="stylesheet">
+  <link href="/dist/skins/nmd.css" rel="stylesheet">
+  <link rel="stylesheet" href="sample.css">
+  <script src="//imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+  <script src="/dist/wjplayer.js"></script>
+  <script src="/dist/wjplayer-360.js"></script>
+  <script src="sample.js"></script>
+  </head>
+
+  <body>
+    <div id="player-container"></div>
+
+    <script>
+      window.player = wjplayer({
+        containerId: 'player-container',
+        pathToSwf: '/dist/video-js.swf',
+        skin: 'nmd',
+        controls: getQueryParam('controls') === 'false' ? false : true,
+        autoplay: getQueryParam('autoplay'),
+        loop: getQueryParam('loop'),
+        stretch: getQueryParam('stretch'),
+        sources: [
+          {
+            src: 'https://staging-static.life.ru/posts/2015/10/166385/daa951f9a38d085e129fa62993833cb8.mp4',
+            type: 'video/mp4'
+          }],
+        panorama: {
+          clickAndDrag: true,
+          clickToToggle: true,
+          autoMobileOrientation: true
+        },
+        crossorigin: 'anonymous',
+        ads: window.ads,
+        share: {
+          url: 'http://embed.life.ru/video/d1967b76d8f720dd5f0acb3a37b3f44d',
+          embedCode: "<iframe src='http://embed.life.ru/video/d1967b76d8f720dd5f0acb3a37b3f44d' width='560' height='315' frameborder='0' allowfullscreen>"
+        }
+    });
+    </script>
+</body>
+
+</html>
