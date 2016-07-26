@@ -1,6 +1,6 @@
 {
   "name": "wjplayer",
-  "private": true,
+  "private": false,
   "description": "A wrapper around Video.js with contrib plugins bundle that supports HLS, VAST/VMAP, 360-degree videos, and more",
   "authors": [
     "m.hazov@go-promo.ru",
