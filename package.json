@@ -17,7 +17,7 @@
     "gulp-sass": "^2.3.2",
     "gulp-util": "^3.0.7",
     "run-sequence": "^1.2.1",
-    "videojs-contrib-hls": "^3.2.0"
+    "videojs-contrib-hls": "^3.3.0"
   },
   "name": "wjplayer",
   "description": "Build of Video.js player with contrib plugins to support HLS, 360 video, VAST, and more.",

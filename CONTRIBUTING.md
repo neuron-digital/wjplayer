@@ -6,7 +6,7 @@ So if you want to contribute to one of these projects, please visit the correspo
 If you would like to contribute enhancements or fixes to wjplayer itself, please do the following:
 
 1. Fork the repository.
-1. Hack on a separate topic branch created from the latest `master`.
+1. Hack on a separate topic branch created from the latest `develop`.
 1. Commit and push the topic branch.
 1. Make a pull request.
 
