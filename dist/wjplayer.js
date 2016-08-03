@@ -24430,7 +24430,7 @@ module.exports = exports['default'];
 
 /**
  * videojs-contrib-hls
- * @version 3.3.0
+ * @version 3.4.0
  * @copyright 2016 Brightcove, Inc
  * @license Apache-2.0
  */
@@ -24690,6 +24690,50 @@ var GapSkipper = (function () {
       // only seek if we still have not played
       this.tech_.setCurrentTime(nextRange.start(0) + _ranges2['default'].TIME_FUDGE_FACTOR);
     }
+  }, {
+    key: 'gapFromVideoUnderflow_',
+    value: function gapFromVideoUnderflow_(buffered, currentTime) {
+      // At least in Chrome, if there is a gap in the video buffer, the audio will continue
+      // playing for ~3 seconds after the video gap starts. This is done to account for
+      // video buffer underflow/underrun (note that this is not done when there is audio
+      // buffer underflow/underrun -- in that case the video will stop as soon as it
+      // encounters the gap, as audio stalls are more noticeable/jarring to a user than
+      // video stalls). The player's time will reflect the playthrough of audio, so the
+      // time will appear as if we are in a buffered region, even if we are stuck in a
+      // "gap."
+      //
+      // Example:
+      // video buffer:   0 => 10.1, 10.2 => 20
+      // audio buffer:   0 => 20
+      // overall buffer: 0 => 10.1, 10.2 => 20
+      // current time: 13
+      //
+      // Chrome's video froze at 10 seconds, where the video buffer encountered the gap,
+      // however, the audio continued playing until it reached ~3 seconds past the gap
+      // (13 seconds), at which point it stops as well. Since current time is past the
+      // gap, findNextRange will return no ranges.
+      //
+      // To check for this issue, we see if there is a small gap that is somewhere within
+      // a 3 second range (3 seconds +/- 1 second) back from our current time.
+      var gaps = _ranges2['default'].findGaps(buffered);
+
+      for (var i = 0; i < gaps.length; i++) {
+        var start = gaps.start(i);
+        var end = gaps.end(i);
+
+        // gap is small
+        if (end - start < 1 &&
+        // gap is 3 seconds back +/- 1 second
+        currentTime - start < 4 && currentTime - end > 2) {
+          return {
+            start: start,
+            end: end
+          };
+        }
+      }
+
+      return null;
+    }
 
     /**
      * Set a timer to skip the unbuffered region.
@@ -24703,7 +24747,23 @@ var GapSkipper = (function () {
       var currentTime = this.tech_.currentTime();
       var nextRange = _ranges2['default'].findNextRange(buffered, currentTime);
 
-      if (nextRange.length === 0 || this.timer_ !== null) {
+      if (this.timer_ !== null) {
+        return;
+      }
+
+      if (nextRange.length === 0) {
+        // Even if there is no available next range, there is still a possibility we are
+        // stuck in a gap due to video underflow.
+        var gap = this.gapFromVideoUnderflow_(buffered, currentTime);
+
+        if (gap) {
+          this.logger_('setTimer_:', 'Encountered a gap in video', 'from: ', gap.start, 'to: ', gap.end, 'seeking to current time: ', currentTime);
+          // Even though the video underflowed and was stuck in a gap, the audio overplayed
+          // the gap, leading currentTime into a buffered range. Seeking to currentTime
+          // allows the video to catch up to the audio position without losing any audio
+          // (only suffering ~3 seconds of frozen video and a pause in audio playback).
+          this.tech_.setCurrentTime(currentTime);
+        }
         return;
       }
 
@@ -24914,6 +24974,10 @@ var _hlsAudioTrack = require('./hls-audio-track');
 
 var _hlsAudioTrack2 = _interopRequireDefault(_hlsAudioTrack);
 
+var _globalWindow = require('global/window');
+
+var _globalWindow2 = _interopRequireDefault(_globalWindow);
+
 // 5 minute blacklist
 var BLACKLIST_DURATION = 5 * 60 * 1000;
 var Hls = undefined;
@@ -24961,6 +25025,7 @@ var MasterPlaylistController = (function (_videojs$EventTarget) {
     var tech = _ref.tech;
     var bandwidth = _ref.bandwidth;
     var externHls = _ref.externHls;
+    var useCueTags = _ref.useCueTags;
 
     _classCallCheck(this, MasterPlaylistController);
 
@@ -24972,6 +25037,13 @@ var MasterPlaylistController = (function (_videojs$EventTarget) {
     this.tech_ = tech;
     this.hls_ = tech.hls;
     this.mode_ = mode;
+    this.useCueTags_ = useCueTags;
+    if (this.useCueTags_) {
+      this.cueTagsTrack_ = this.tech_.addTextTrack('metadata', 'hls-segment-metadata');
+      this.cueTagsTrack_.inBandMetadataTrackDispatchType = '';
+      this.tech_.textTracks().addTrack_(this.cueTagsTrack_);
+    }
+
     this.audioTracks_ = [];
     this.requestOptions_ = {
       withCredentials: this.withCredentials,
@@ -25047,6 +25119,8 @@ var MasterPlaylistController = (function (_videojs$EventTarget) {
         _this.trigger('selectedinitialmedia');
         return;
       }
+
+      _this.updateCues_(updatedPlaylist);
 
       // TODO: Create a new event on the PlaylistLoader that signals
       // that the segments have changed in some way and use that to
@@ -25773,6 +25847,45 @@ var MasterPlaylistController = (function (_videojs$EventTarget) {
         }
       });
     }
+  }, {
+    key: 'updateCues_',
+    value: function updateCues_(media) {
+      if (!this.useCueTags_ || !media.segments) {
+        return;
+      }
+
+      while (this.cueTagsTrack_.cues.length) {
+        this.cueTagsTrack_.removeCue(this.cueTagsTrack_.cues[0]);
+      }
+
+      var mediaTime = 0;
+
+      for (var i = 0; i < media.segments.length; i++) {
+        var segment = media.segments[i];
+
+        if ('cueOut' in segment || 'cueOutCont' in segment || 'cueIn' in segment) {
+          var cueJson = {};
+
+          if ('cueOut' in segment) {
+            cueJson.cueOut = segment.cueOut;
+          }
+          if ('cueOutCont' in segment) {
+            cueJson.cueOutCont = segment.cueOutCont;
+          }
+          if ('cueIn' in segment) {
+            cueJson.cueIn = segment.cueIn;
+          }
+
+          // Use a short duration for the cue point, as it should trigger for a segment
+          // transition (in this case, defined as the beginning of the segment that the tag
+          // precedes), but keep it for a minimum of 0.5 seconds to remain usable (won't
+          // lose it as an active cue by the time a user retrieves the active cues).
+          this.cueTagsTrack_.addCue(new _globalWindow2['default'].VTTCue(mediaTime, mediaTime + 0.5, JSON.stringify(cueJson)));
+        }
+
+        mediaTime += segment.duration;
+      }
+    }
   }]);
 
   return MasterPlaylistController;
@@ -25781,7 +25894,7 @@ var MasterPlaylistController = (function (_videojs$EventTarget) {
 exports['default'] = MasterPlaylistController;
 module.exports = exports['default'];
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./hls-audio-track":4,"./playlist-loader":6,"./ranges":8,"./segment-loader":11}],6:[function(require,module,exports){
+},{"./hls-audio-track":4,"./playlist-loader":6,"./ranges":8,"./segment-loader":11,"global/window":25}],6:[function(require,module,exports){
 (function (global){
 /**
  * @file playlist-loader.js
@@ -26840,8 +26953,7 @@ var findRange = function findRange(buffered, time) {
 };
 
 /**
- * Returns the TimeRanges that begin at or later than the specified
- * time.
+ * Returns the TimeRanges that begin later than the specified time.
  * @param {TimeRanges} timeRanges - the TimeRanges object to query
  * @param {number} time - the time to filter on.
  * @returns {TimeRanges} a new TimeRanges object.
@@ -26850,6 +26962,28 @@ var findNextRange = function findNextRange(timeRanges, time) {
   return filterRanges(timeRanges, function (start) {
     return start - TIME_FUDGE_FACTOR >= time;
   });
+};
+
+/**
+ * Returns gaps within a list of TimeRanges
+ * @param {TimeRanges} buffered - the TimeRanges object
+ * @return {TimeRanges} a TimeRanges object of gaps
+ */
+var findGaps = function findGaps(buffered) {
+  if (buffered.length < 2) {
+    return _videoJs2['default'].createTimeRanges();
+  }
+
+  var ranges = [];
+
+  for (var i = 1; i < buffered.length; i++) {
+    var start = buffered.end(i - 1);
+    var end = buffered.start(i);
+
+    ranges.push([start, end]);
+  }
+
+  return _videoJs2['default'].createTimeRanges(ranges);
 };
 
 /**
@@ -27072,6 +27206,7 @@ var getSegmentBufferedPercent = function getSegmentBufferedPercent(startOfSegmen
 exports['default'] = {
   findRange: findRange,
   findNextRange: findNextRange,
+  findGaps: findGaps,
   findSoleUncommonTimeRangesEnd: findSoleUncommonTimeRangesEnd,
   getSegmentBufferedPercent: getSegmentBufferedPercent,
   TIME_FUDGE_FACTOR: TIME_FUDGE_FACTOR
