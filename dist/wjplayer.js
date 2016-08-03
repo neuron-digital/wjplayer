@@ -40036,6 +40036,7 @@ module.exports = {
       controls: this.options.controls,
       preload: this.options.preload,
       loop: this.options.loop,
+      poster: this.options.poster,
       language: this.options.locale,
       plugins: {},
       controlBar: {}
