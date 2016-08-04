@@ -40018,7 +40018,6 @@ module.exports = {
       muted: false,
       preload: 'metadata',
       volumeStyle: 'vertical',
-      isMobile: navigator.userAgent.match(/Android|iPhone|iPod|iPad/),
       stretch: false,
       skin: 'default',
       classes: [],
@@ -40028,6 +40027,12 @@ module.exports = {
     if (!(typeof options === 'object' && options.containerId)) {
       throw new Error("options.containerId isn't specified");
     }
+
+    this.browser = {
+      IS_IOS: /iP(hone|ad|od)/i.test(navigator.userAgent),
+      IS_ANDROID: /Android/.test(navigator.userAgent)
+    };
+    this.browser.IS_MOBILE = this.browser.IS_IOS || this.browser.IS_ANDROID;
 
     this.options = merge(defaults, options);
 
@@ -40056,7 +40061,7 @@ module.exports = {
     }
 
     if (this.options.playerType === 'video'
-      && (!this.options.isMobile || this.options.sourcesWithRes.length)) {
+      && (!this.browser.IS_MOBILE || this.options.sourcesWithRes.length)) {
       this.options.enableResolutionSwitcher = true;
       // will be passed to videoJsResolutionSwitcher plugin
       this.options.videojs.plugins.videoJsResolutionSwitcher = {
@@ -40065,13 +40070,15 @@ module.exports = {
       };
     }
 
-    if (this.options.ads && this.options.ads.adTagUrl) {
+    if (this.options.ads && this.options.ads.adTagUrl && !this.browser.IS_IOS) {
       // will be passed to ima plugin
       this.options.ads = merge({
         id: this.options.playerId,
         locale: this.options.locale,
         showControlsForJSAds: false
       }, this.options.ads);
+    } else {
+      this.options.ads = {};
     }
 
     this.init();
@@ -40128,12 +40135,12 @@ module.exports = {
       }
 
       // Start playback
-      if (this.options.autoplay && !this.options.isMobile) {
+      if (this.options.autoplay && !this.browser.IS_MOBILE) {
         this.play();
       } else if (this.placeholder) {
         this.placeholder.addEventListener('click', this.play.bind(this));
         // not always works
-        // var startEvent = this.options.isMobile ? 'touchstart' : 'click';
+        // var startEvent = this.browser.IS_MOBILE ? 'touchstart' : 'click';
         // this.player.one(startEvent, this.play.bind(this));
       } else {
         this.initAds();
@@ -40155,7 +40162,7 @@ module.exports = {
       classes.push('vjs-stretch');
     }
 
-    if (this.options.ads && this.options.isMobile) {
+    if (this.options.ads && this.browser.IS_MOBILE) {
       this.placeholder = document.createElement('div');
       this.placeholder.id = 'player-placeholder';
       this.container.appendChild(this.placeholder);
