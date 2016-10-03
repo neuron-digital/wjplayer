@@ -12,10 +12,10 @@
   "devDependencies": {
     "video.js": "^5.11.0",
     "videojs-ima": "https://github.com/Go-Promo/videojs-ima.git#master",
-    "vjs-resolution-switcher": "https://github.com/Go-Promo/videojs-resolution-switcher.git#hls",
     "videojs-social": "https://github.com/Go-Promo/videojs-social.git#no-socials",
     "videojs-download-button": "https://github.com/Go-Promo/videojs-download-button.git#0.1.0",
-    "videojs-panorama": "https://github.com/yanwsh/videojs-panorama.git#0.0.7"
+    "videojs-panorama": "https://github.com/yanwsh/videojs-panorama.git#0.0.7",
+    "videojs5-hlsjs-source-handler": "https://github.com/Go-Promo/videojs5-hlsjs-source-handler.git#hls6"
   },
   "resolutions": {
     "video.js": "^5.11.0"

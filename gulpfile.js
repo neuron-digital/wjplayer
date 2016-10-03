@@ -35,7 +35,7 @@ const includes = {
   js: {
     core: [
       paths.BOWER + '/video.js/dist/video.js',
-      paths.NPM + '/videojs-contrib-hls/dist/videojs-contrib-hls.js',
+      paths.BOWER + '/videojs5-hlsjs-source-handler/dist/videojs5-hlsjs-source-handler.js',
       paths.SRC_JS
     ],
     ads: [

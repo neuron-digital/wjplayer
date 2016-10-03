@@ -205,7 +205,12 @@
       stretch: false,
       skin: 'default',
       classes: [],
-      enableResolutionSwitcher: false
+      enableResolutionSwitcher: false,
+      html5: {
+        hlsjsConfig: {
+          debug: true
+        }
+      }
     };
 
     if (!(typeof options === 'object' && options.containerId)) {
@@ -287,6 +292,7 @@
 
     // Init player
     this.player = videojs(this.options.playerId, this.options.videojs, function() {
+      this.player.qualityPickerPlugin({});
       if (!!this.options.panorama && (this.player.panorama)) {
         this.player.panorama(typeof this.options.panorama === 'object'
           ? this.options.panorama
