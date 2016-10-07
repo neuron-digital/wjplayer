@@ -1,6 +1,6 @@
 /**
  * @license
- * Video.js 5.13.0 <http://videojs.com/>
+ * Video.js 5.12.3 <http://videojs.com/>
  * Copyright Brightcove, Inc. <https://www.brightcove.com/>
  * Available under Apache License Version 2.0
  * <https://github.com/videojs/video.js/blob/master/LICENSE>
@@ -15,11 +15,11 @@
 
 exports.__esModule = true;
 
-var _button = _dereq_('./button.js');
+var _button = _dereq_(2);
 
 var _button2 = _interopRequireDefault(_button);
 
-var _component = _dereq_('./component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -83,24 +83,24 @@ BigPlayButton.prototype.controlText_ = 'Play Video';
 _component2['default'].registerComponent('BigPlayButton', BigPlayButton);
 exports['default'] = BigPlayButton;
 
-},{"./button.js":2,"./component.js":5}],2:[function(_dereq_,module,exports){
+},{"2":2,"5":5}],2:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _clickableComponent = _dereq_('./clickable-component.js');
+var _clickableComponent = _dereq_(3);
 
 var _clickableComponent2 = _interopRequireDefault(_clickableComponent);
 
-var _component = _dereq_('./component');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _log = _dereq_('./utils/log.js');
+var _log = _dereq_(85);
 
 var _log2 = _interopRequireDefault(_log);
 
-var _object = _dereq_('object.assign');
+var _object = _dereq_(136);
 
 var _object2 = _interopRequireDefault(_object);
 
@@ -144,9 +144,9 @@ var Button = function (_ClickableComponent) {
 
 
   Button.prototype.createEl = function createEl() {
-    var tag = arguments.length <= 0 || arguments[0] === undefined ? 'button' : arguments[0];
-    var props = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-    var attributes = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+    var tag = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'button';
+    var props = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var attributes = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
     props = (0, _object2['default'])({
       className: this.buildCSSClass()
@@ -195,7 +195,7 @@ var Button = function (_ClickableComponent) {
 
 
   Button.prototype.addChild = function addChild(child) {
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     var className = this.constructor.name;
 
@@ -229,36 +229,36 @@ var Button = function (_ClickableComponent) {
 _component2['default'].registerComponent('Button', Button);
 exports['default'] = Button;
 
-},{"./clickable-component.js":3,"./component":5,"./utils/log.js":85,"object.assign":136}],3:[function(_dereq_,module,exports){
+},{"136":136,"3":3,"5":5,"85":85}],3:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('./component');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _dom = _dereq_('./utils/dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
-var _events = _dereq_('./utils/events.js');
+var _events = _dereq_(81);
 
 var Events = _interopRequireWildcard(_events);
 
-var _fn = _dereq_('./utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _log = _dereq_('./utils/log.js');
+var _log = _dereq_(85);
 
 var _log2 = _interopRequireDefault(_log);
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _object = _dereq_('object.assign');
+var _object = _dereq_(136);
 
 var _object2 = _interopRequireDefault(_object);
 
@@ -312,9 +312,9 @@ var ClickableComponent = function (_Component) {
 
 
   ClickableComponent.prototype.createEl = function createEl() {
-    var tag = arguments.length <= 0 || arguments[0] === undefined ? 'div' : arguments[0];
-    var props = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-    var attributes = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+    var tag = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'div';
+    var props = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var attributes = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
     props = (0, _object2['default'])({
       className: this.buildCSSClass(),
@@ -374,7 +374,7 @@ var ClickableComponent = function (_Component) {
 
 
   ClickableComponent.prototype.controlText = function controlText(text) {
-    var el = arguments.length <= 1 || arguments[1] === undefined ? this.el() : arguments[1];
+    var el = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this.el();
 
     if (!text) {
       return this.controlText_ || 'Need Text';
@@ -412,7 +412,7 @@ var ClickableComponent = function (_Component) {
 
 
   ClickableComponent.prototype.addChild = function addChild(child) {
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     // TODO: Fix adding an actionable child to a ClickableComponent; currently
     // it will cause issues with assistive technology (e.g. screen readers)
@@ -510,16 +510,16 @@ var ClickableComponent = function (_Component) {
 _component2['default'].registerComponent('ClickableComponent', ClickableComponent);
 exports['default'] = ClickableComponent;
 
-},{"./component":5,"./utils/dom.js":80,"./utils/events.js":81,"./utils/fn.js":82,"./utils/log.js":85,"global/document":92,"object.assign":136}],4:[function(_dereq_,module,exports){
+},{"136":136,"5":5,"80":80,"81":81,"82":82,"85":85,"92":92}],4:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _button = _dereq_('./button');
+var _button = _dereq_(2);
 
 var _button2 = _interopRequireDefault(_button);
 
-var _component = _dereq_('./component');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -564,40 +564,40 @@ var CloseButton = function (_Button) {
 _component2['default'].registerComponent('CloseButton', CloseButton);
 exports['default'] = CloseButton;
 
-},{"./button":2,"./component":5}],5:[function(_dereq_,module,exports){
+},{"2":2,"5":5}],5:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _window = _dereq_('global/window');
+var _window = _dereq_(93);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _dom = _dereq_('./utils/dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
-var _fn = _dereq_('./utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _guid = _dereq_('./utils/guid.js');
+var _guid = _dereq_(84);
 
 var Guid = _interopRequireWildcard(_guid);
 
-var _events = _dereq_('./utils/events.js');
+var _events = _dereq_(81);
 
 var Events = _interopRequireWildcard(_events);
 
-var _log = _dereq_('./utils/log.js');
+var _log = _dereq_(85);
 
 var _log2 = _interopRequireDefault(_log);
 
-var _toTitleCase = _dereq_('./utils/to-title-case.js');
+var _toTitleCase = _dereq_(89);
 
 var _toTitleCase2 = _interopRequireDefault(_toTitleCase);
 
-var _mergeOptions = _dereq_('./utils/merge-options.js');
+var _mergeOptions = _dereq_(86);
 
 var _mergeOptions2 = _interopRequireDefault(_mergeOptions);
 
@@ -962,8 +962,8 @@ var Component = function () {
 
 
   Component.prototype.addChild = function addChild(child) {
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-    var index = arguments.length <= 2 || arguments[2] === undefined ? this.children_.length : arguments[2];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var index = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : this.children_.length;
 
     var component = void 0;
     var componentName = void 0;
@@ -1453,7 +1453,7 @@ var Component = function () {
 
 
   Component.prototype.ready = function ready(fn) {
-    var sync = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+    var sync = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
     if (fn) {
       if (this.isReady_) {
@@ -2182,20 +2182,20 @@ var Component = function () {
 Component.registerComponent('Component', Component);
 exports['default'] = Component;
 
-},{"./utils/dom.js":80,"./utils/events.js":81,"./utils/fn.js":82,"./utils/guid.js":84,"./utils/log.js":85,"./utils/merge-options.js":86,"./utils/to-title-case.js":89,"global/window":93}],6:[function(_dereq_,module,exports){
+},{"80":80,"81":81,"82":82,"84":84,"85":85,"86":86,"89":89,"93":93}],6:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _trackButton = _dereq_('../track-button.js');
+var _trackButton = _dereq_(36);
 
 var _trackButton2 = _interopRequireDefault(_trackButton);
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _audioTrackMenuItem = _dereq_('./audio-track-menu-item.js');
+var _audioTrackMenuItem = _dereq_(7);
 
 var _audioTrackMenuItem2 = _interopRequireDefault(_audioTrackMenuItem);
 
@@ -2222,7 +2222,7 @@ var AudioTrackButton = function (_TrackButton) {
   _inherits(AudioTrackButton, _TrackButton);
 
   function AudioTrackButton(player) {
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     _classCallCheck(this, AudioTrackButton);
 
@@ -2255,7 +2255,7 @@ var AudioTrackButton = function (_TrackButton) {
 
 
   AudioTrackButton.prototype.createItems = function createItems() {
-    var items = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+    var items = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 
     var tracks = this.player_.audioTracks && this.player_.audioTracks();
 
@@ -2283,20 +2283,20 @@ AudioTrackButton.prototype.controlText_ = 'Audio Track';
 _component2['default'].registerComponent('AudioTrackButton', AudioTrackButton);
 exports['default'] = AudioTrackButton;
 
-},{"../../component.js":5,"../track-button.js":36,"./audio-track-menu-item.js":7}],7:[function(_dereq_,module,exports){
+},{"36":36,"5":5,"7":7}],7:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _menuItem = _dereq_('../../menu/menu-item.js');
+var _menuItem = _dereq_(48);
 
 var _menuItem2 = _interopRequireDefault(_menuItem);
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _fn = _dereq_('../../utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
@@ -2391,50 +2391,50 @@ var AudioTrackMenuItem = function (_MenuItem) {
 _component2['default'].registerComponent('AudioTrackMenuItem', AudioTrackMenuItem);
 exports['default'] = AudioTrackMenuItem;
 
-},{"../../component.js":5,"../../menu/menu-item.js":48,"../../utils/fn.js":82}],8:[function(_dereq_,module,exports){
+},{"48":48,"5":5,"82":82}],8:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-_dereq_('./play-toggle.js');
+_dereq_(12);
 
-_dereq_('./time-controls/current-time-display.js');
+_dereq_(32);
 
-_dereq_('./time-controls/duration-display.js');
+_dereq_(33);
 
-_dereq_('./time-controls/time-divider.js');
+_dereq_(35);
 
-_dereq_('./time-controls/remaining-time-display.js');
+_dereq_(34);
 
-_dereq_('./live-display.js');
+_dereq_(10);
 
-_dereq_('./progress-control/progress-control.js');
+_dereq_(18);
 
-_dereq_('./fullscreen-toggle.js');
+_dereq_(9);
 
-_dereq_('./volume-control/volume-control.js');
+_dereq_(38);
 
-_dereq_('./volume-menu-button.js');
+_dereq_(40);
 
-_dereq_('./mute-toggle.js');
+_dereq_(11);
 
-_dereq_('./text-track-controls/chapters-button.js');
+_dereq_(25);
 
-_dereq_('./text-track-controls/descriptions-button.js');
+_dereq_(27);
 
-_dereq_('./text-track-controls/subtitles-button.js');
+_dereq_(29);
 
-_dereq_('./text-track-controls/captions-button.js');
+_dereq_(24);
 
-_dereq_('./audio-track-controls/audio-track-button.js');
+_dereq_(6);
 
-_dereq_('./playback-rate-menu/playback-rate-menu-button.js');
+_dereq_(13);
 
-_dereq_('./spacer-controls/custom-control-spacer.js');
+_dereq_(21);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -2491,16 +2491,16 @@ ControlBar.prototype.options_ = {
 _component2['default'].registerComponent('ControlBar', ControlBar);
 exports['default'] = ControlBar;
 
-},{"../component.js":5,"./audio-track-controls/audio-track-button.js":6,"./fullscreen-toggle.js":9,"./live-display.js":10,"./mute-toggle.js":11,"./play-toggle.js":12,"./playback-rate-menu/playback-rate-menu-button.js":13,"./progress-control/progress-control.js":18,"./spacer-controls/custom-control-spacer.js":21,"./text-track-controls/captions-button.js":24,"./text-track-controls/chapters-button.js":25,"./text-track-controls/descriptions-button.js":27,"./text-track-controls/subtitles-button.js":29,"./time-controls/current-time-display.js":32,"./time-controls/duration-display.js":33,"./time-controls/remaining-time-display.js":34,"./time-controls/time-divider.js":35,"./volume-control/volume-control.js":38,"./volume-menu-button.js":40}],9:[function(_dereq_,module,exports){
+},{"10":10,"11":11,"12":12,"13":13,"18":18,"21":21,"24":24,"25":25,"27":27,"29":29,"32":32,"33":33,"34":34,"35":35,"38":38,"40":40,"5":5,"6":6,"9":9}],9:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _button = _dereq_('../button.js');
+var _button = _dereq_(2);
 
 var _button2 = _interopRequireDefault(_button);
 
-var _component = _dereq_('../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -2581,16 +2581,16 @@ FullscreenToggle.prototype.controlText_ = 'Fullscreen';
 _component2['default'].registerComponent('FullscreenToggle', FullscreenToggle);
 exports['default'] = FullscreenToggle;
 
-},{"../button.js":2,"../component.js":5}],10:[function(_dereq_,module,exports){
+},{"2":2,"5":5}],10:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('../component');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _dom = _dereq_('../utils/dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
@@ -2665,20 +2665,20 @@ var LiveDisplay = function (_Component) {
 _component2['default'].registerComponent('LiveDisplay', LiveDisplay);
 exports['default'] = LiveDisplay;
 
-},{"../component":5,"../utils/dom.js":80}],11:[function(_dereq_,module,exports){
+},{"5":5,"80":80}],11:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _button = _dereq_('../button');
+var _button = _dereq_(2);
 
 var _button2 = _interopRequireDefault(_button);
 
-var _component = _dereq_('../component');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _dom = _dereq_('../utils/dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
@@ -2797,16 +2797,16 @@ MuteToggle.prototype.controlText_ = 'Mute';
 _component2['default'].registerComponent('MuteToggle', MuteToggle);
 exports['default'] = MuteToggle;
 
-},{"../button":2,"../component":5,"../utils/dom.js":80}],12:[function(_dereq_,module,exports){
+},{"2":2,"5":5,"80":80}],12:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _button = _dereq_('../button.js');
+var _button = _dereq_(2);
 
 var _button2 = _interopRequireDefault(_button);
 
-var _component = _dereq_('../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -2905,28 +2905,28 @@ PlayToggle.prototype.controlText_ = 'Play';
 _component2['default'].registerComponent('PlayToggle', PlayToggle);
 exports['default'] = PlayToggle;
 
-},{"../button.js":2,"../component.js":5}],13:[function(_dereq_,module,exports){
+},{"2":2,"5":5}],13:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _menuButton = _dereq_('../../menu/menu-button.js');
+var _menuButton = _dereq_(47);
 
 var _menuButton2 = _interopRequireDefault(_menuButton);
 
-var _menu = _dereq_('../../menu/menu.js');
+var _menu = _dereq_(49);
 
 var _menu2 = _interopRequireDefault(_menu);
 
-var _playbackRateMenuItem = _dereq_('./playback-rate-menu-item.js');
+var _playbackRateMenuItem = _dereq_(14);
 
 var _playbackRateMenuItem2 = _interopRequireDefault(_playbackRateMenuItem);
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _dom = _dereq_('../../utils/dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
@@ -3118,16 +3118,16 @@ PlaybackRateMenuButton.prototype.controlText_ = 'Playback Rate';
 _component2['default'].registerComponent('PlaybackRateMenuButton', PlaybackRateMenuButton);
 exports['default'] = PlaybackRateMenuButton;
 
-},{"../../component.js":5,"../../menu/menu-button.js":47,"../../menu/menu.js":49,"../../utils/dom.js":80,"./playback-rate-menu-item.js":14}],14:[function(_dereq_,module,exports){
+},{"14":14,"47":47,"49":49,"5":5,"80":80}],14:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _menuItem = _dereq_('../../menu/menu-item.js');
+var _menuItem = _dereq_(48);
 
 var _menuItem2 = _interopRequireDefault(_menuItem);
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -3203,16 +3203,16 @@ PlaybackRateMenuItem.prototype.contentElType = 'button';
 _component2['default'].registerComponent('PlaybackRateMenuItem', PlaybackRateMenuItem);
 exports['default'] = PlaybackRateMenuItem;
 
-},{"../../component.js":5,"../../menu/menu-item.js":48}],15:[function(_dereq_,module,exports){
+},{"48":48,"5":5}],15:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _dom = _dereq_('../../utils/dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
@@ -3245,6 +3245,7 @@ var LoadProgressBar = function (_Component) {
 
     var _this = _possibleConstructorReturn(this, _Component.call(this, player, options));
 
+    _this.partEls_ = [];
     _this.on(player, 'progress', _this.update);
     return _this;
   }
@@ -3275,7 +3276,7 @@ var LoadProgressBar = function (_Component) {
     var buffered = this.player_.buffered();
     var duration = this.player_.duration();
     var bufferedEnd = this.player_.bufferedEnd();
-    var children = this.el_.children;
+    var children = this.partEls_;
 
     // get the percent width of a time compared to the total end
     var percentify = function percentify(time, end) {
@@ -3296,6 +3297,7 @@ var LoadProgressBar = function (_Component) {
 
       if (!part) {
         part = this.el_.appendChild(Dom.createEl());
+        children[i] = part;
       }
 
       // set the percent based on the width of the progress bar (bufferedEnd)
@@ -3307,6 +3309,7 @@ var LoadProgressBar = function (_Component) {
     for (var _i = children.length; _i > buffered.length; _i--) {
       this.el_.removeChild(children[_i - 1]);
     }
+    children.length = buffered.length;
   };
 
   return LoadProgressBar;
@@ -3315,32 +3318,32 @@ var LoadProgressBar = function (_Component) {
 _component2['default'].registerComponent('LoadProgressBar', LoadProgressBar);
 exports['default'] = LoadProgressBar;
 
-},{"../../component.js":5,"../../utils/dom.js":80}],16:[function(_dereq_,module,exports){
+},{"5":5,"80":80}],16:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _window = _dereq_('global/window');
+var _window = _dereq_(93);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _dom = _dereq_('../../utils/dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
-var _fn = _dereq_('../../utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _formatTime = _dereq_('../../utils/format-time.js');
+var _formatTime = _dereq_(83);
 
 var _formatTime2 = _interopRequireDefault(_formatTime);
 
-var _throttle = _dereq_('lodash-compat/function/throttle');
+var _throttle = _dereq_(98);
 
 var _throttle2 = _interopRequireDefault(_throttle);
 
@@ -3472,20 +3475,20 @@ var MouseTimeDisplay = function (_Component) {
 _component2['default'].registerComponent('MouseTimeDisplay', MouseTimeDisplay);
 exports['default'] = MouseTimeDisplay;
 
-},{"../../component.js":5,"../../utils/dom.js":80,"../../utils/fn.js":82,"../../utils/format-time.js":83,"global/window":93,"lodash-compat/function/throttle":98}],17:[function(_dereq_,module,exports){
+},{"5":5,"80":80,"82":82,"83":83,"93":93,"98":98}],17:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _fn = _dereq_('../../utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _formatTime = _dereq_('../../utils/format-time.js');
+var _formatTime = _dereq_(83);
 
 var _formatTime2 = _interopRequireDefault(_formatTime);
 
@@ -3559,18 +3562,18 @@ var PlayProgressBar = function (_Component) {
 _component2['default'].registerComponent('PlayProgressBar', PlayProgressBar);
 exports['default'] = PlayProgressBar;
 
-},{"../../component.js":5,"../../utils/fn.js":82,"../../utils/format-time.js":83}],18:[function(_dereq_,module,exports){
+},{"5":5,"82":82,"83":83}],18:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-_dereq_('./seek-bar.js');
+_dereq_(19);
 
-_dereq_('./mouse-time-display.js');
+_dereq_(16);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -3623,36 +3626,36 @@ ProgressControl.prototype.options_ = {
 _component2['default'].registerComponent('ProgressControl', ProgressControl);
 exports['default'] = ProgressControl;
 
-},{"../../component.js":5,"./mouse-time-display.js":16,"./seek-bar.js":19}],19:[function(_dereq_,module,exports){
+},{"16":16,"19":19,"5":5}],19:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _window = _dereq_('global/window');
+var _window = _dereq_(93);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _slider = _dereq_('../../slider/slider.js');
+var _slider = _dereq_(57);
 
 var _slider2 = _interopRequireDefault(_slider);
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _fn = _dereq_('../../utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _formatTime = _dereq_('../../utils/format-time.js');
+var _formatTime = _dereq_(83);
 
 var _formatTime2 = _interopRequireDefault(_formatTime);
 
-_dereq_('./load-progress-bar.js');
+_dereq_(15);
 
-_dereq_('./play-progress-bar.js');
+_dereq_(17);
 
-_dereq_('./tooltip-progress-bar.js');
+_dereq_(20);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -3849,20 +3852,20 @@ SeekBar.prototype.playerEvent = 'timeupdate';
 _component2['default'].registerComponent('SeekBar', SeekBar);
 exports['default'] = SeekBar;
 
-},{"../../component.js":5,"../../slider/slider.js":57,"../../utils/fn.js":82,"../../utils/format-time.js":83,"./load-progress-bar.js":15,"./play-progress-bar.js":17,"./tooltip-progress-bar.js":20,"global/window":93}],20:[function(_dereq_,module,exports){
+},{"15":15,"17":17,"20":20,"5":5,"57":57,"82":82,"83":83,"93":93}],20:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _fn = _dereq_('../../utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _formatTime = _dereq_('../../utils/format-time.js');
+var _formatTime = _dereq_(83);
 
 var _formatTime2 = _interopRequireDefault(_formatTime);
 
@@ -3934,16 +3937,16 @@ var TooltipProgressBar = function (_Component) {
 _component2['default'].registerComponent('TooltipProgressBar', TooltipProgressBar);
 exports['default'] = TooltipProgressBar;
 
-},{"../../component.js":5,"../../utils/fn.js":82,"../../utils/format-time.js":83}],21:[function(_dereq_,module,exports){
+},{"5":5,"82":82,"83":83}],21:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _spacer = _dereq_('./spacer.js');
+var _spacer = _dereq_(22);
 
 var _spacer2 = _interopRequireDefault(_spacer);
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -4008,12 +4011,12 @@ var CustomControlSpacer = function (_Spacer) {
 _component2['default'].registerComponent('CustomControlSpacer', CustomControlSpacer);
 exports['default'] = CustomControlSpacer;
 
-},{"../../component.js":5,"./spacer.js":22}],22:[function(_dereq_,module,exports){
+},{"22":22,"5":5}],22:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -4075,16 +4078,16 @@ _component2['default'].registerComponent('Spacer', Spacer);
 
 exports['default'] = Spacer;
 
-},{"../../component.js":5}],23:[function(_dereq_,module,exports){
+},{"5":5}],23:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _textTrackMenuItem = _dereq_('./text-track-menu-item.js');
+var _textTrackMenuItem = _dereq_(31);
 
 var _textTrackMenuItem2 = _interopRequireDefault(_textTrackMenuItem);
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -4150,20 +4153,20 @@ var CaptionSettingsMenuItem = function (_TextTrackMenuItem) {
 _component2['default'].registerComponent('CaptionSettingsMenuItem', CaptionSettingsMenuItem);
 exports['default'] = CaptionSettingsMenuItem;
 
-},{"../../component.js":5,"./text-track-menu-item.js":31}],24:[function(_dereq_,module,exports){
+},{"31":31,"5":5}],24:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _textTrackButton = _dereq_('./text-track-button.js');
+var _textTrackButton = _dereq_(30);
 
 var _textTrackButton2 = _interopRequireDefault(_textTrackButton);
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _captionSettingsMenuItem = _dereq_('./caption-settings-menu-item.js');
+var _captionSettingsMenuItem = _dereq_(23);
 
 var _captionSettingsMenuItem2 = _interopRequireDefault(_captionSettingsMenuItem);
 
@@ -4262,36 +4265,36 @@ CaptionsButton.prototype.controlText_ = 'Captions';
 _component2['default'].registerComponent('CaptionsButton', CaptionsButton);
 exports['default'] = CaptionsButton;
 
-},{"../../component.js":5,"./caption-settings-menu-item.js":23,"./text-track-button.js":30}],25:[function(_dereq_,module,exports){
+},{"23":23,"30":30,"5":5}],25:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _textTrackButton = _dereq_('./text-track-button.js');
+var _textTrackButton = _dereq_(30);
 
 var _textTrackButton2 = _interopRequireDefault(_textTrackButton);
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _textTrackMenuItem = _dereq_('./text-track-menu-item.js');
+var _textTrackMenuItem = _dereq_(31);
 
 var _textTrackMenuItem2 = _interopRequireDefault(_textTrackMenuItem);
 
-var _chaptersTrackMenuItem = _dereq_('./chapters-track-menu-item.js');
+var _chaptersTrackMenuItem = _dereq_(26);
 
 var _chaptersTrackMenuItem2 = _interopRequireDefault(_chaptersTrackMenuItem);
 
-var _menu = _dereq_('../../menu/menu.js');
+var _menu = _dereq_(49);
 
 var _menu2 = _interopRequireDefault(_menu);
 
-var _dom = _dereq_('../../utils/dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
-var _toTitleCase = _dereq_('../../utils/to-title-case.js');
+var _toTitleCase = _dereq_(89);
 
 var _toTitleCase2 = _interopRequireDefault(_toTitleCase);
 
@@ -4466,20 +4469,20 @@ ChaptersButton.prototype.controlText_ = 'Chapters';
 _component2['default'].registerComponent('ChaptersButton', ChaptersButton);
 exports['default'] = ChaptersButton;
 
-},{"../../component.js":5,"../../menu/menu.js":49,"../../utils/dom.js":80,"../../utils/to-title-case.js":89,"./chapters-track-menu-item.js":26,"./text-track-button.js":30,"./text-track-menu-item.js":31}],26:[function(_dereq_,module,exports){
+},{"26":26,"30":30,"31":31,"49":49,"5":5,"80":80,"89":89}],26:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _menuItem = _dereq_('../../menu/menu-item.js');
+var _menuItem = _dereq_(48);
 
 var _menuItem2 = _interopRequireDefault(_menuItem);
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _fn = _dereq_('../../utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
@@ -4560,20 +4563,20 @@ var ChaptersTrackMenuItem = function (_MenuItem) {
 _component2['default'].registerComponent('ChaptersTrackMenuItem', ChaptersTrackMenuItem);
 exports['default'] = ChaptersTrackMenuItem;
 
-},{"../../component.js":5,"../../menu/menu-item.js":48,"../../utils/fn.js":82}],27:[function(_dereq_,module,exports){
+},{"48":48,"5":5,"82":82}],27:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _textTrackButton = _dereq_('./text-track-button.js');
+var _textTrackButton = _dereq_(30);
 
 var _textTrackButton2 = _interopRequireDefault(_textTrackButton);
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _fn = _dereq_('../../utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
@@ -4674,16 +4677,16 @@ DescriptionsButton.prototype.controlText_ = 'Descriptions';
 _component2['default'].registerComponent('DescriptionsButton', DescriptionsButton);
 exports['default'] = DescriptionsButton;
 
-},{"../../component.js":5,"../../utils/fn.js":82,"./text-track-button.js":30}],28:[function(_dereq_,module,exports){
+},{"30":30,"5":5,"82":82}],28:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _textTrackMenuItem = _dereq_('./text-track-menu-item.js');
+var _textTrackMenuItem = _dereq_(31);
 
 var _textTrackMenuItem2 = _interopRequireDefault(_textTrackMenuItem);
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -4761,16 +4764,16 @@ var OffTextTrackMenuItem = function (_TextTrackMenuItem) {
 _component2['default'].registerComponent('OffTextTrackMenuItem', OffTextTrackMenuItem);
 exports['default'] = OffTextTrackMenuItem;
 
-},{"../../component.js":5,"./text-track-menu-item.js":31}],29:[function(_dereq_,module,exports){
+},{"31":31,"5":5}],29:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _textTrackButton = _dereq_('./text-track-button.js');
+var _textTrackButton = _dereq_(30);
 
 var _textTrackButton2 = _interopRequireDefault(_textTrackButton);
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -4827,24 +4830,24 @@ SubtitlesButton.prototype.controlText_ = 'Subtitles';
 _component2['default'].registerComponent('SubtitlesButton', SubtitlesButton);
 exports['default'] = SubtitlesButton;
 
-},{"../../component.js":5,"./text-track-button.js":30}],30:[function(_dereq_,module,exports){
+},{"30":30,"5":5}],30:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _trackButton = _dereq_('../track-button.js');
+var _trackButton = _dereq_(36);
 
 var _trackButton2 = _interopRequireDefault(_trackButton);
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _textTrackMenuItem = _dereq_('./text-track-menu-item.js');
+var _textTrackMenuItem = _dereq_(31);
 
 var _textTrackMenuItem2 = _interopRequireDefault(_textTrackMenuItem);
 
-var _offTextTrackMenuItem = _dereq_('./off-text-track-menu-item.js');
+var _offTextTrackMenuItem = _dereq_(28);
 
 var _offTextTrackMenuItem2 = _interopRequireDefault(_offTextTrackMenuItem);
 
@@ -4871,7 +4874,7 @@ var TextTrackButton = function (_TrackButton) {
   _inherits(TextTrackButton, _TrackButton);
 
   function TextTrackButton(player) {
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     _classCallCheck(this, TextTrackButton);
 
@@ -4889,7 +4892,7 @@ var TextTrackButton = function (_TrackButton) {
 
 
   TextTrackButton.prototype.createItems = function createItems() {
-    var items = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+    var items = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 
     // Add an OFF menu item to turn all tracks off
     items.push(new _offTextTrackMenuItem2['default'](this.player_, { kind: this.kind_ }));
@@ -4922,30 +4925,30 @@ var TextTrackButton = function (_TrackButton) {
 _component2['default'].registerComponent('TextTrackButton', TextTrackButton);
 exports['default'] = TextTrackButton;
 
-},{"../../component.js":5,"../track-button.js":36,"./off-text-track-menu-item.js":28,"./text-track-menu-item.js":31}],31:[function(_dereq_,module,exports){
+},{"28":28,"31":31,"36":36,"5":5}],31:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _menuItem = _dereq_('../../menu/menu-item.js');
+var _menuItem = _dereq_(48);
 
 var _menuItem2 = _interopRequireDefault(_menuItem);
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _fn = _dereq_('../../utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _window = _dereq_('global/window');
+var _window = _dereq_(93);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -5079,20 +5082,20 @@ var TextTrackMenuItem = function (_MenuItem) {
 _component2['default'].registerComponent('TextTrackMenuItem', TextTrackMenuItem);
 exports['default'] = TextTrackMenuItem;
 
-},{"../../component.js":5,"../../menu/menu-item.js":48,"../../utils/fn.js":82,"global/document":92,"global/window":93}],32:[function(_dereq_,module,exports){
+},{"48":48,"5":5,"82":82,"92":92,"93":93}],32:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _dom = _dereq_('../../utils/dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
-var _formatTime = _dereq_('../../utils/format-time.js');
+var _formatTime = _dereq_(83);
 
 var _formatTime2 = _interopRequireDefault(_formatTime);
 
@@ -5180,20 +5183,20 @@ var CurrentTimeDisplay = function (_Component) {
 _component2['default'].registerComponent('CurrentTimeDisplay', CurrentTimeDisplay);
 exports['default'] = CurrentTimeDisplay;
 
-},{"../../component.js":5,"../../utils/dom.js":80,"../../utils/format-time.js":83}],33:[function(_dereq_,module,exports){
+},{"5":5,"80":80,"83":83}],33:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _dom = _dereq_('../../utils/dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
-var _formatTime = _dereq_('../../utils/format-time.js');
+var _formatTime = _dereq_(83);
 
 var _formatTime2 = _interopRequireDefault(_formatTime);
 
@@ -5282,20 +5285,20 @@ var DurationDisplay = function (_Component) {
 _component2['default'].registerComponent('DurationDisplay', DurationDisplay);
 exports['default'] = DurationDisplay;
 
-},{"../../component.js":5,"../../utils/dom.js":80,"../../utils/format-time.js":83}],34:[function(_dereq_,module,exports){
+},{"5":5,"80":80,"83":83}],34:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _dom = _dereq_('../../utils/dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
-var _formatTime = _dereq_('../../utils/format-time.js');
+var _formatTime = _dereq_(83);
 
 var _formatTime2 = _interopRequireDefault(_formatTime);
 
@@ -5388,12 +5391,12 @@ var RemainingTimeDisplay = function (_Component) {
 _component2['default'].registerComponent('RemainingTimeDisplay', RemainingTimeDisplay);
 exports['default'] = RemainingTimeDisplay;
 
-},{"../../component.js":5,"../../utils/dom.js":80,"../../utils/format-time.js":83}],35:[function(_dereq_,module,exports){
+},{"5":5,"80":80,"83":83}],35:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -5445,20 +5448,20 @@ var TimeDivider = function (_Component) {
 _component2['default'].registerComponent('TimeDivider', TimeDivider);
 exports['default'] = TimeDivider;
 
-},{"../../component.js":5}],36:[function(_dereq_,module,exports){
+},{"5":5}],36:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _menuButton = _dereq_('../menu/menu-button.js');
+var _menuButton = _dereq_(47);
 
 var _menuButton2 = _interopRequireDefault(_menuButton);
 
-var _component = _dereq_('../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _fn = _dereq_('../utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
@@ -5519,24 +5522,24 @@ var TrackButton = function (_MenuButton) {
 _component2['default'].registerComponent('TrackButton', TrackButton);
 exports['default'] = TrackButton;
 
-},{"../component.js":5,"../menu/menu-button.js":47,"../utils/fn.js":82}],37:[function(_dereq_,module,exports){
+},{"47":47,"5":5,"82":82}],37:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _slider = _dereq_('../../slider/slider.js');
+var _slider = _dereq_(57);
 
 var _slider2 = _interopRequireDefault(_slider);
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _fn = _dereq_('../../utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-_dereq_('./volume-level.js');
+_dereq_(39);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -5676,16 +5679,16 @@ VolumeBar.prototype.playerEvent = 'volumechange';
 _component2['default'].registerComponent('VolumeBar', VolumeBar);
 exports['default'] = VolumeBar;
 
-},{"../../component.js":5,"../../slider/slider.js":57,"../../utils/fn.js":82,"./volume-level.js":39}],38:[function(_dereq_,module,exports){
+},{"39":39,"5":5,"57":57,"82":82}],38:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-_dereq_('./volume-bar.js');
+_dereq_(37);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -5755,12 +5758,12 @@ VolumeControl.prototype.options_ = {
 _component2['default'].registerComponent('VolumeControl', VolumeControl);
 exports['default'] = VolumeControl;
 
-},{"../../component.js":5,"./volume-bar.js":37}],39:[function(_dereq_,module,exports){
+},{"37":37,"5":5}],39:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('../../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -5811,32 +5814,32 @@ var VolumeLevel = function (_Component) {
 _component2['default'].registerComponent('VolumeLevel', VolumeLevel);
 exports['default'] = VolumeLevel;
 
-},{"../../component.js":5}],40:[function(_dereq_,module,exports){
+},{"5":5}],40:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _fn = _dereq_('../utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _component = _dereq_('../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _popup = _dereq_('../popup/popup.js');
+var _popup = _dereq_(54);
 
 var _popup2 = _interopRequireDefault(_popup);
 
-var _popupButton = _dereq_('../popup/popup-button.js');
+var _popupButton = _dereq_(53);
 
 var _popupButton2 = _interopRequireDefault(_popupButton);
 
-var _muteToggle = _dereq_('./mute-toggle.js');
+var _muteToggle = _dereq_(11);
 
 var _muteToggle2 = _interopRequireDefault(_muteToggle);
 
-var _volumeBar = _dereq_('./volume-control/volume-bar.js');
+var _volumeBar = _dereq_(37);
 
 var _volumeBar2 = _interopRequireDefault(_volumeBar);
 
@@ -5865,7 +5868,7 @@ var VolumeMenuButton = function (_PopupButton) {
   _inherits(VolumeMenuButton, _PopupButton);
 
   function VolumeMenuButton(player) {
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     _classCallCheck(this, VolumeMenuButton);
 
@@ -6005,20 +6008,20 @@ VolumeMenuButton.prototype.controlText_ = 'Mute';
 _component2['default'].registerComponent('VolumeMenuButton', VolumeMenuButton);
 exports['default'] = VolumeMenuButton;
 
-},{"../component.js":5,"../popup/popup-button.js":53,"../popup/popup.js":54,"../utils/fn.js":82,"./mute-toggle.js":11,"./volume-control/volume-bar.js":37}],41:[function(_dereq_,module,exports){
+},{"11":11,"37":37,"5":5,"53":53,"54":54,"82":82}],41:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('./component');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _modalDialog = _dereq_('./modal-dialog');
+var _modalDialog = _dereq_(50);
 
 var _modalDialog2 = _interopRequireDefault(_modalDialog);
 
-var _mergeOptions = _dereq_('./utils/merge-options');
+var _mergeOptions = _dereq_(86);
 
 var _mergeOptions2 = _interopRequireDefault(_mergeOptions);
 
@@ -6097,12 +6100,12 @@ ErrorDisplay.prototype.options_ = (0, _mergeOptions2['default'])(_modalDialog2['
 _component2['default'].registerComponent('ErrorDisplay', ErrorDisplay);
 exports['default'] = ErrorDisplay;
 
-},{"./component":5,"./modal-dialog":50,"./utils/merge-options":86}],42:[function(_dereq_,module,exports){
+},{"5":5,"50":50,"86":86}],42:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _events = _dereq_('./utils/events.js');
+var _events = _dereq_(81);
 
 var Events = _interopRequireWildcard(_events);
 
@@ -6163,14 +6166,14 @@ EventTarget.prototype.dispatchEvent = EventTarget.prototype.trigger;
 
 exports['default'] = EventTarget;
 
-},{"./utils/events.js":81}],43:[function(_dereq_,module,exports){
+},{"81":81}],43:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _log = _dereq_('./utils/log');
+var _log = _dereq_(85);
 
 var _log2 = _interopRequireDefault(_log);
 
@@ -6221,7 +6224,7 @@ var _inherits = function _inherits(subClass, superClass) {
  * ```
  */
 var extendFn = function extendFn(superClass) {
-  var subClassMethods = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+  var subClassMethods = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
   var subClass = function subClass() {
     superClass.apply(this, arguments);
@@ -6256,12 +6259,12 @@ var extendFn = function extendFn(superClass) {
 
 exports['default'] = extendFn;
 
-},{"./utils/log":85}],44:[function(_dereq_,module,exports){
+},{"85":85}],44:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -6312,12 +6315,12 @@ if (browserApi) {
 
 exports['default'] = FullscreenApi;
 
-},{"global/document":92}],45:[function(_dereq_,module,exports){
+},{"92":92}],45:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('./component');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -6367,17 +6370,17 @@ var LoadingSpinner = function (_Component) {
 _component2['default'].registerComponent('LoadingSpinner', LoadingSpinner);
 exports['default'] = LoadingSpinner;
 
-},{"./component":5}],46:[function(_dereq_,module,exports){
+},{"5":5}],46:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; }; /**
-                                                                                                                                                                                                                                                   * @file media-error.js
-                                                                                                                                                                                                                                                   */
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; /**
+                                                                                                                                                                                                                                                                               * @file media-error.js
+                                                                                                                                                                                                                                                                               */
 
 
-var _object = _dereq_('object.assign');
+var _object = _dereq_(136);
 
 var _object2 = _interopRequireDefault(_object);
 
@@ -6475,32 +6478,32 @@ for (var errNum = 0; errNum < MediaError.errorTypes.length; errNum++) {
 
 exports['default'] = MediaError;
 
-},{"object.assign":136}],47:[function(_dereq_,module,exports){
+},{"136":136}],47:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _clickableComponent = _dereq_('../clickable-component.js');
+var _clickableComponent = _dereq_(3);
 
 var _clickableComponent2 = _interopRequireDefault(_clickableComponent);
 
-var _component = _dereq_('../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _menu = _dereq_('./menu.js');
+var _menu = _dereq_(49);
 
 var _menu2 = _interopRequireDefault(_menu);
 
-var _dom = _dereq_('../utils/dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
-var _fn = _dereq_('../utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _toTitleCase = _dereq_('../utils/to-title-case.js');
+var _toTitleCase = _dereq_(89);
 
 var _toTitleCase2 = _interopRequireDefault(_toTitleCase);
 
@@ -6529,7 +6532,7 @@ var MenuButton = function (_ClickableComponent) {
   _inherits(MenuButton, _ClickableComponent);
 
   function MenuButton(player) {
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     _classCallCheck(this, MenuButton);
 
@@ -6805,20 +6808,20 @@ var MenuButton = function (_ClickableComponent) {
 _component2['default'].registerComponent('MenuButton', MenuButton);
 exports['default'] = MenuButton;
 
-},{"../clickable-component.js":3,"../component.js":5,"../utils/dom.js":80,"../utils/fn.js":82,"../utils/to-title-case.js":89,"./menu.js":49}],48:[function(_dereq_,module,exports){
+},{"3":3,"49":49,"5":5,"80":80,"82":82,"89":89}],48:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _clickableComponent = _dereq_('../clickable-component.js');
+var _clickableComponent = _dereq_(3);
 
 var _clickableComponent2 = _interopRequireDefault(_clickableComponent);
 
-var _component = _dereq_('../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _object = _dereq_('object.assign');
+var _object = _dereq_(136);
 
 var _object2 = _interopRequireDefault(_object);
 
@@ -6924,24 +6927,24 @@ var MenuItem = function (_ClickableComponent) {
 _component2['default'].registerComponent('MenuItem', MenuItem);
 exports['default'] = MenuItem;
 
-},{"../clickable-component.js":3,"../component.js":5,"object.assign":136}],49:[function(_dereq_,module,exports){
+},{"136":136,"3":3,"5":5}],49:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _dom = _dereq_('../utils/dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
-var _fn = _dereq_('../utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _events = _dereq_('../utils/events.js');
+var _events = _dereq_(81);
 
 var Events = _interopRequireWildcard(_events);
 
@@ -7092,7 +7095,7 @@ var Menu = function (_Component) {
 
 
   Menu.prototype.focus = function focus() {
-    var item = arguments.length <= 0 || arguments[0] === undefined ? 0 : arguments[0];
+    var item = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
 
     var children = this.children().slice();
     var haveTitle = children.length && children[0].className && /vjs-menu-title/.test(children[0].className);
@@ -7120,20 +7123,20 @@ var Menu = function (_Component) {
 _component2['default'].registerComponent('Menu', Menu);
 exports['default'] = Menu;
 
-},{"../component.js":5,"../utils/dom.js":80,"../utils/events.js":81,"../utils/fn.js":82}],50:[function(_dereq_,module,exports){
+},{"5":5,"80":80,"81":81,"82":82}],50:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _dom = _dereq_('./utils/dom');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
-var _fn = _dereq_('./utils/fn');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _component = _dereq_('./component');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -7548,120 +7551,120 @@ ModalDialog.prototype.options_ = {
 _component2['default'].registerComponent('ModalDialog', ModalDialog);
 exports['default'] = ModalDialog;
 
-},{"./component":5,"./utils/dom":80,"./utils/fn":82}],51:[function(_dereq_,module,exports){
+},{"5":5,"80":80,"82":82}],51:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('./component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _window = _dereq_('global/window');
+var _window = _dereq_(93);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _events = _dereq_('./utils/events.js');
+var _events = _dereq_(81);
 
 var Events = _interopRequireWildcard(_events);
 
-var _dom = _dereq_('./utils/dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
-var _fn = _dereq_('./utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _guid = _dereq_('./utils/guid.js');
+var _guid = _dereq_(84);
 
 var Guid = _interopRequireWildcard(_guid);
 
-var _browser = _dereq_('./utils/browser.js');
+var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
-var _log = _dereq_('./utils/log.js');
+var _log = _dereq_(85);
 
 var _log2 = _interopRequireDefault(_log);
 
-var _toTitleCase = _dereq_('./utils/to-title-case.js');
+var _toTitleCase = _dereq_(89);
 
 var _toTitleCase2 = _interopRequireDefault(_toTitleCase);
 
-var _timeRanges = _dereq_('./utils/time-ranges.js');
+var _timeRanges = _dereq_(88);
 
-var _buffer = _dereq_('./utils/buffer.js');
+var _buffer = _dereq_(79);
 
-var _stylesheet = _dereq_('./utils/stylesheet.js');
+var _stylesheet = _dereq_(87);
 
 var stylesheet = _interopRequireWildcard(_stylesheet);
 
-var _fullscreenApi = _dereq_('./fullscreen-api.js');
+var _fullscreenApi = _dereq_(44);
 
 var _fullscreenApi2 = _interopRequireDefault(_fullscreenApi);
 
-var _mediaError = _dereq_('./media-error.js');
+var _mediaError = _dereq_(46);
 
 var _mediaError2 = _interopRequireDefault(_mediaError);
 
-var _tuple = _dereq_('safe-json-parse/tuple');
+var _tuple = _dereq_(145);
 
 var _tuple2 = _interopRequireDefault(_tuple);
 
-var _object = _dereq_('object.assign');
+var _object = _dereq_(136);
 
 var _object2 = _interopRequireDefault(_object);
 
-var _mergeOptions = _dereq_('./utils/merge-options.js');
+var _mergeOptions = _dereq_(86);
 
 var _mergeOptions2 = _interopRequireDefault(_mergeOptions);
 
-var _textTrackListConverter = _dereq_('./tracks/text-track-list-converter.js');
+var _textTrackListConverter = _dereq_(69);
 
 var _textTrackListConverter2 = _interopRequireDefault(_textTrackListConverter);
 
-var _modalDialog = _dereq_('./modal-dialog');
+var _modalDialog = _dereq_(50);
 
 var _modalDialog2 = _interopRequireDefault(_modalDialog);
 
-var _tech = _dereq_('./tech/tech.js');
+var _tech = _dereq_(62);
 
 var _tech2 = _interopRequireDefault(_tech);
 
-var _audioTrackList = _dereq_('./tracks/audio-track-list.js');
+var _audioTrackList = _dereq_(63);
 
 var _audioTrackList2 = _interopRequireDefault(_audioTrackList);
 
-var _videoTrackList = _dereq_('./tracks/video-track-list.js');
+var _videoTrackList = _dereq_(76);
 
 var _videoTrackList2 = _interopRequireDefault(_videoTrackList);
 
-_dereq_('./tech/loader.js');
+_dereq_(61);
 
-_dereq_('./tech/flash.js');
+_dereq_(59);
 
-_dereq_('./poster-image.js');
+_dereq_(55);
 
-_dereq_('./tracks/text-track-display.js');
+_dereq_(68);
 
-_dereq_('./loading-spinner.js');
+_dereq_(45);
 
-_dereq_('./big-play-button.js');
+_dereq_(1);
 
-_dereq_('./close-button.js');
+_dereq_(4);
 
-_dereq_('./control-bar/control-bar.js');
+_dereq_(8);
 
-_dereq_('./error-display.js');
+_dereq_(41);
 
-_dereq_('./tracks/text-track-settings.js');
+_dereq_(71);
 
-_dereq_('./tech/html5.js');
+_dereq_(60);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -7685,6 +7688,85 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 // Import Html5 tech, at least for disposing the original video tag.
 
 
+var TECH_EVENTS_RETRIGGER = [
+/**
+ * Fired while the user agent is downloading media data
+ *
+ * @private
+ * @method Player.prototype.handleTechProgress_
+ */
+'progress',
+/**
+ * Fires when the loading of an audio/video is aborted
+ *
+ * @private
+ * @method Player.prototype.handleTechAbort_
+ */
+'abort',
+/**
+ * Fires when the browser is intentionally not getting media data
+ *
+ * @private
+ * @method Player.prototype.handleTechSuspend_
+ */
+'suspend',
+/**
+ * Fires when the current playlist is empty
+ *
+ * @private
+ * @method Player.prototype.handleTechEmptied_
+ */
+'emptied',
+/**
+ * Fires when the browser is trying to get media data, but data is not available
+ *
+ * @private
+ * @method Player.prototype.handleTechStalled_
+ */
+'stalled',
+/**
+ * Fires when the browser has loaded meta data for the audio/video
+ *
+ * @private
+ * @method Player.prototype.handleTechLoadedmetadata_
+ */
+'loadedmetadata',
+/**
+ * Fires when the browser has loaded the current frame of the audio/video
+ *
+ * @private
+ * @method Player.prototype.handleTechLoaddeddata_
+ */
+'loadeddata',
+/**
+ * Fires when the current playback position has changed
+ *
+ * @private
+ * @method Player.prototype.handleTechTimeUpdate_
+ */
+'timeupdate',
+/**
+ * Fires when the playing speed of the audio/video is changed
+ *
+ * @private
+ * @method Player.prototype.handleTechRatechange_
+ */
+'ratechange',
+/**
+ * Fires when the volume has been changed
+ *
+ * @private
+ * @method Player.prototype.handleTechVolumechange_
+ */
+'volumechange',
+/**
+ * Fires when the text track has been changed
+ *
+ * @private
+ * @method Player.prototype.handleTechTexttrackchange_
+ */
+'texttrackchange'];
+
 /**
  * An instance of the `Player` class is created when any of the Video.js setup methods are used to initialize a video.
  * ```js
@@ -7701,21 +7783,12 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
  * @param {Element} tag        The original video tag used for configuring options
  * @param {Object=} options    Object of option names and values
  * @param {Function=} ready    Ready callback function
- * @extends Component
  * @class Player
  */
+
 var Player = function (_Component) {
   _inherits(Player, _Component);
 
-  /**
-   * player's constructor function
-   *
-   * @constructs
-   * @method init
-   * @param {Element} tag        The original video tag used for configuring options
-   * @param {Object=} options    Player options
-   * @param {Function=} ready    Ready callback function
-   */
   function Player(tag, options, ready) {
     _classCallCheck(this, Player);
 
@@ -7903,8 +7976,6 @@ var Player = function (_Component) {
    * ```
    * This is especially helpful if you are dynamically adding and removing videos
    * to/from the DOM.
-   *
-   * @method dispose
    */
 
 
@@ -7939,7 +8010,6 @@ var Player = function (_Component) {
    * Create the component's DOM element
    *
    * @return {Element}
-   * @method createEl
    */
 
 
@@ -8031,7 +8101,6 @@ var Player = function (_Component) {
    *
    * @param {Number=} value Value for width
    * @return {Number} Width when getting
-   * @method width
    */
 
 
@@ -8044,7 +8113,6 @@ var Player = function (_Component) {
    *
    * @param {Number=} value Value for height
    * @return {Number} Height when getting
-   * @method height
    */
 
 
@@ -8058,7 +8126,6 @@ var Player = function (_Component) {
    * @param {String} dimension Either width or height
    * @param {Number=} value Value for dimension
    * @return {Component}
-   * @method dimension
    */
 
 
@@ -8091,7 +8158,6 @@ var Player = function (_Component) {
    * Add/remove the vjs-fluid class
    *
    * @param {Boolean} bool Value of true adds the class, value of false removes the class
-   * @method fluid
    */
 
 
@@ -8114,7 +8180,6 @@ var Player = function (_Component) {
    *
    * @param {String=} ratio Aspect ratio for player
    * @return aspectRatio
-   * @method aspectRatio
    */
 
 
@@ -8138,8 +8203,6 @@ var Player = function (_Component) {
 
   /**
    * Update styles of the player element (height, width and aspect ratio)
-   *
-   * @method updateStyleEl_
    */
 
 
@@ -8221,12 +8284,12 @@ var Player = function (_Component) {
    *
    * @param {String} techName Name of the playback technology
    * @param {String} source Video source
-   * @method loadTech_
    * @private
    */
 
 
   Player.prototype.loadTech_ = function loadTech_(techName, source) {
+    var _this2 = this;
 
     // Pause and remove current playback technology
     if (this.tech_) {
@@ -8292,6 +8355,9 @@ var Player = function (_Component) {
     _textTrackListConverter2['default'].jsonToTextTracks(this.textTracksJson_ || [], this.tech_);
 
     // Listen to all HTML5-defined events and trigger them on the player
+    TECH_EVENTS_RETRIGGER.forEach(function (event) {
+      _this2.on(_this2.tech_, event, _this2['handleTech' + (0, _toTitleCase2['default'])(event) + '_']);
+    });
     this.on(this.tech_, 'loadstart', this.handleTechLoadStart_);
     this.on(this.tech_, 'waiting', this.handleTechWaiting_);
     this.on(this.tech_, 'canplay', this.handleTechCanPlay_);
@@ -8303,20 +8369,9 @@ var Player = function (_Component) {
     this.on(this.tech_, 'play', this.handleTechPlay_);
     this.on(this.tech_, 'firstplay', this.handleTechFirstPlay_);
     this.on(this.tech_, 'pause', this.handleTechPause_);
-    this.on(this.tech_, 'progress', this.handleTechProgress_);
     this.on(this.tech_, 'durationchange', this.handleTechDurationChange_);
     this.on(this.tech_, 'fullscreenchange', this.handleTechFullscreenChange_);
     this.on(this.tech_, 'error', this.handleTechError_);
-    this.on(this.tech_, 'suspend', this.handleTechSuspend_);
-    this.on(this.tech_, 'abort', this.handleTechAbort_);
-    this.on(this.tech_, 'emptied', this.handleTechEmptied_);
-    this.on(this.tech_, 'stalled', this.handleTechStalled_);
-    this.on(this.tech_, 'loadedmetadata', this.handleTechLoadedMetaData_);
-    this.on(this.tech_, 'loadeddata', this.handleTechLoadedData_);
-    this.on(this.tech_, 'timeupdate', this.handleTechTimeUpdate_);
-    this.on(this.tech_, 'ratechange', this.handleTechRateChange_);
-    this.on(this.tech_, 'volumechange', this.handleTechVolumeChange_);
-    this.on(this.tech_, 'texttrackchange', this.handleTechTextTrackChange_);
     this.on(this.tech_, 'loadedmetadata', this.updateStyleEl_);
     this.on(this.tech_, 'posterchange', this.handleTechPosterChange_);
     this.on(this.tech_, 'textdata', this.handleTechTextData_);
@@ -8343,7 +8398,6 @@ var Player = function (_Component) {
   /**
    * Unload playback technology
    *
-   * @method unloadTech_
    * @private
    */
 
@@ -8370,7 +8424,6 @@ var Player = function (_Component) {
    *
    * @param {Object}
    * @return {Object} The Tech
-   * @method tech
    */
 
 
@@ -8403,7 +8456,6 @@ var Player = function (_Component) {
    * on any controls will still keep the user active
    *
    * @private
-   * @method addTechControlsListeners_
    */
 
 
@@ -8433,7 +8485,6 @@ var Player = function (_Component) {
    * Remove the listeners used for click and tap controls. This is needed for
    * toggling to controls disabled, where a tap/touch should do nothing.
    *
-   * @method removeTechControlsListeners_
    * @private
    */
 
@@ -8451,7 +8502,6 @@ var Player = function (_Component) {
   /**
    * Player waits for the tech to be ready
    *
-   * @method handleTechReady_
    * @private
    */
 
@@ -8488,8 +8538,8 @@ var Player = function (_Component) {
   /**
    * Fired when the user agent begins looking for media data
    *
+   * @event loadstart
    * @private
-   * @method handleTechLoadStart_
    */
 
 
@@ -8520,7 +8570,6 @@ var Player = function (_Component) {
    * @param {Boolean} hasStarted The value of true adds the class the value of false remove the class
    * @return {Boolean} Boolean value if has started
    * @private
-   * @method hasStarted
    */
 
 
@@ -8546,7 +8595,6 @@ var Player = function (_Component) {
    * Fired whenever the media begins or resumes playback
    *
    * @private
-   * @method handleTechPlay_
    */
 
 
@@ -8566,17 +8614,16 @@ var Player = function (_Component) {
    * Fired whenever the media begins waiting
    *
    * @private
-   * @method handleTechWaiting_
    */
 
 
   Player.prototype.handleTechWaiting_ = function handleTechWaiting_() {
-    var _this2 = this;
+    var _this3 = this;
 
     this.addClass('vjs-waiting');
     this.trigger('waiting');
     this.one('timeupdate', function () {
-      return _this2.removeClass('vjs-waiting');
+      return _this3.removeClass('vjs-waiting');
     });
   };
 
@@ -8585,7 +8632,6 @@ var Player = function (_Component) {
    * which is not consistent between browsers. See #1351
    *
    * @private
-   * @method handleTechCanPlay_
    */
 
 
@@ -8599,7 +8645,6 @@ var Player = function (_Component) {
    * which is not consistent between browsers. See #1351
    *
    * @private
-   * @method handleTechCanPlayThrough_
    */
 
 
@@ -8613,7 +8658,6 @@ var Player = function (_Component) {
    * which is not consistent between browsers. See #1351
    *
    * @private
-   * @method handleTechPlaying_
    */
 
 
@@ -8626,7 +8670,6 @@ var Player = function (_Component) {
    * Fired whenever the player is jumping to a new time
    *
    * @private
-   * @method handleTechSeeking_
    */
 
 
@@ -8639,7 +8682,6 @@ var Player = function (_Component) {
    * Fired when the player has finished jumping to a new time
    *
    * @private
-   * @method handleTechSeeked_
    */
 
 
@@ -8655,7 +8697,6 @@ var Player = function (_Component) {
    * prevent playback, use `myPlayer.one('play');` instead.
    *
    * @private
-   * @method handleTechFirstPlay_
    */
 
 
@@ -8674,7 +8715,6 @@ var Player = function (_Component) {
    * Fired whenever the media has been paused
    *
    * @private
-   * @method handleTechPause_
    */
 
 
@@ -8685,22 +8725,10 @@ var Player = function (_Component) {
   };
 
   /**
-   * Fired while the user agent is downloading media data
-   *
-   * @private
-   * @method handleTechProgress_
-   */
-
-
-  Player.prototype.handleTechProgress_ = function handleTechProgress_() {
-    this.trigger('progress');
-  };
-
-  /**
    * Fired when the end of the media resource is reached (currentTime == duration)
    *
+   * @event ended
    * @private
-   * @method handleTechEnded_
    */
 
 
@@ -8720,7 +8748,6 @@ var Player = function (_Component) {
    * Fired when the duration of the media resource is first known or changed
    *
    * @private
-   * @method handleTechDurationChange_
    */
 
 
@@ -8733,7 +8760,6 @@ var Player = function (_Component) {
    *
    * @param {Object=} event Event object
    * @private
-   * @method handleTechClick_
    */
 
 
@@ -8760,7 +8786,6 @@ var Player = function (_Component) {
    * activity state, which hides and shows the controls.
    *
    * @private
-   * @method handleTechTap_
    */
 
 
@@ -8772,7 +8797,6 @@ var Player = function (_Component) {
    * Handle touch to start
    *
    * @private
-   * @method handleTechTouchStart_
    */
 
 
@@ -8784,7 +8808,6 @@ var Player = function (_Component) {
    * Handle touch to move
    *
    * @private
-   * @method handleTechTouchMove_
    */
 
 
@@ -8798,7 +8821,6 @@ var Player = function (_Component) {
    * Handle touch to end
    *
    * @private
-   * @method handleTechTouchEnd_
    */
 
 
@@ -8811,7 +8833,6 @@ var Player = function (_Component) {
    * Fired when the player switches in or out of fullscreen mode
    *
    * @private
-   * @method handleFullscreenChange_
    */
 
 
@@ -8828,7 +8849,6 @@ var Player = function (_Component) {
    * use stageclick events triggered from inside the SWF instead
    *
    * @private
-   * @method handleStageClick_
    */
 
 
@@ -8840,7 +8860,6 @@ var Player = function (_Component) {
    * Handle Tech Fullscreen Change
    *
    * @private
-   * @method handleTechFullscreenChange_
    */
 
 
@@ -8855,7 +8874,6 @@ var Player = function (_Component) {
    * Fires when an error occurred during the loading of an audio/video
    *
    * @private
-   * @method handleTechError_
    */
 
 
@@ -8863,66 +8881,6 @@ var Player = function (_Component) {
     var error = this.tech_.error();
 
     this.error(error);
-  };
-
-  /**
-   * Fires when the browser is intentionally not getting media data
-   *
-   * @private
-   * @method handleTechSuspend_
-   */
-
-
-  Player.prototype.handleTechSuspend_ = function handleTechSuspend_() {
-    this.trigger('suspend');
-  };
-
-  /**
-   * Fires when the loading of an audio/video is aborted
-   *
-   * @private
-   * @method handleTechAbort_
-   */
-
-
-  Player.prototype.handleTechAbort_ = function handleTechAbort_() {
-    this.trigger('abort');
-  };
-
-  /**
-   * Fires when the current playlist is empty
-   *
-   * @private
-   * @method handleTechEmptied_
-   */
-
-
-  Player.prototype.handleTechEmptied_ = function handleTechEmptied_() {
-    this.trigger('emptied');
-  };
-
-  /**
-   * Fires when the browser is trying to get media data, but data is not available
-   *
-   * @private
-   * @method handleTechStalled_
-   */
-
-
-  Player.prototype.handleTechStalled_ = function handleTechStalled_() {
-    this.trigger('stalled');
-  };
-
-  /**
-   * Fires when the browser has loaded meta data for the audio/video
-   *
-   * @private
-   * @method handleTechLoadedMetaData_
-   */
-
-
-  Player.prototype.handleTechLoadedMetaData_ = function handleTechLoadedMetaData_() {
-    this.trigger('loadedmetadata');
   };
 
   Player.prototype.handleTechTextData_ = function handleTechTextData_() {
@@ -8935,70 +8893,9 @@ var Player = function (_Component) {
   };
 
   /**
-   * Fires when the browser has loaded the current frame of the audio/video
-   *
-   * @private
-   * @method handleTechLoadedData_
-   */
-
-
-  Player.prototype.handleTechLoadedData_ = function handleTechLoadedData_() {
-    this.trigger('loadeddata');
-  };
-
-  /**
-   * Fires when the current playback position has changed
-   *
-   * @private
-   * @method handleTechTimeUpdate_
-   */
-
-
-  Player.prototype.handleTechTimeUpdate_ = function handleTechTimeUpdate_() {
-    this.trigger('timeupdate');
-  };
-
-  /**
-   * Fires when the playing speed of the audio/video is changed
-   *
-   * @private
-   * @method handleTechRateChange_
-   */
-
-
-  Player.prototype.handleTechRateChange_ = function handleTechRateChange_() {
-    this.trigger('ratechange');
-  };
-
-  /**
-   * Fires when the volume has been changed
-   *
-   * @private
-   * @method handleTechVolumeChange_
-   */
-
-
-  Player.prototype.handleTechVolumeChange_ = function handleTechVolumeChange_() {
-    this.trigger('volumechange');
-  };
-
-  /**
-   * Fires when the text track has been changed
-   *
-   * @private
-   * @method handleTechTextTrackChange_
-   */
-
-
-  Player.prototype.handleTechTextTrackChange_ = function handleTechTextTrackChange_() {
-    this.trigger('texttrackchange');
-  };
-
-  /**
    * Get object for cached values.
    *
    * @return {Object}
-   * @method getCache
    */
 
 
@@ -9012,7 +8909,6 @@ var Player = function (_Component) {
    * @param {String=} method Method
    * @param {Object=} arg Argument
    * @private
-   * @method techCall_
    */
 
 
@@ -9042,7 +8938,6 @@ var Player = function (_Component) {
    * @param {String} method Tech method
    * @return {Method}
    * @private
-   * @method techGet_
    */
 
 
@@ -9080,7 +8975,6 @@ var Player = function (_Component) {
    * ```
    *
    * @return {Player} self
-   * @method play
    */
 
 
@@ -9104,7 +8998,6 @@ var Player = function (_Component) {
    * ```
    *
    * @return {Player} self
-   * @method pause
    */
 
 
@@ -9121,7 +9014,6 @@ var Player = function (_Component) {
    * ```
    *
    * @return {Boolean} false if the media is currently playing, or true otherwise
-   * @method paused
    */
 
 
@@ -9137,7 +9029,6 @@ var Player = function (_Component) {
    * @param  {Boolean} isScrubbing   True/false the user is scrubbing
    * @return {Boolean}               The scrubbing status when getting
    * @return {Object}                The player when setting
-   * @method scrubbing
    */
 
 
@@ -9169,7 +9060,6 @@ var Player = function (_Component) {
    * @param  {Number|String=} seconds The time to seek to
    * @return {Number}        The time in seconds, when not setting
    * @return {Player}    self, when the current time is set
-   * @method currentTime
    */
 
 
@@ -9203,7 +9093,6 @@ var Player = function (_Component) {
    *
    * @param {Number} seconds Duration when setting
    * @return {Number} The duration of the video in seconds when getting
-   * @method duration
    */
 
 
@@ -9243,7 +9132,6 @@ var Player = function (_Component) {
    * Not a native video element function, but useful
    *
    * @return {Number} The time remaining in seconds
-   * @method remainingTime
    */
 
 
@@ -9271,7 +9159,6 @@ var Player = function (_Component) {
    * ```
    *
    * @return {Object} A mock TimeRange object (following HTML spec)
-   * @method buffered
    */
 
 
@@ -9294,7 +9181,6 @@ var Player = function (_Component) {
    * (This method isn't in the HTML5 spec, but it's very convenient)
    *
    * @return {Number} A decimal between 0 and 1 representing the percent
-   * @method bufferedPercent
    */
 
 
@@ -9307,7 +9193,6 @@ var Player = function (_Component) {
    * This is used in the progress bar to encapsulate all time ranges.
    *
    * @return {Number} The end of the last buffered time range
-   * @method bufferedEnd
    */
 
 
@@ -9336,7 +9221,6 @@ var Player = function (_Component) {
    * @param  {Number} percentAsDecimal The new volume as a decimal percent
    * @return {Number}              The current volume when getting
    * @return {Player}              self when setting
-   * @method volume
    */
 
 
@@ -9369,7 +9253,6 @@ var Player = function (_Component) {
    * @param  {Boolean=} muted True to mute, false to unmute
    * @return {Boolean} True if mute is on, false if not when getting
    * @return {Player} self when setting mute
-   * @method muted
    */
 
 
@@ -9387,7 +9270,6 @@ var Player = function (_Component) {
    * Check to see if fullscreen is supported
    *
    * @return {Boolean}
-   * @method supportsFullScreen
    */
 
 
@@ -9410,7 +9292,6 @@ var Player = function (_Component) {
    * @param  {Boolean=} isFS Update the player's fullscreen state
    * @return {Boolean} true if fullscreen false if not when getting
    * @return {Player} self when setting
-   * @method isFullscreen
    */
 
 
@@ -9435,7 +9316,6 @@ var Player = function (_Component) {
    * Safari.
    *
    * @return {Player} self
-   * @method requestFullscreen
    */
 
 
@@ -9486,7 +9366,6 @@ var Player = function (_Component) {
    * ```
    *
    * @return {Player} self
-   * @method exitFullscreen
    */
 
 
@@ -9510,8 +9389,6 @@ var Player = function (_Component) {
 
   /**
    * When fullscreen isn't supported we can stretch the video container to as wide as the browser will let us.
-   *
-   * @method enterFullWindow
    */
 
 
@@ -9537,7 +9414,6 @@ var Player = function (_Component) {
    * Check for call to either exit full window or full screen on ESC key
    *
    * @param {String} event Event to check for key press
-   * @method fullWindowOnEscKey
    */
 
 
@@ -9553,8 +9429,6 @@ var Player = function (_Component) {
 
   /**
    * Exit full window
-   *
-   * @method exitFullWindow
    */
 
 
@@ -9578,7 +9452,6 @@ var Player = function (_Component) {
    *
    * @param {String} type The mimetype to check
    * @return {String} 'probably', 'maybe', or '' (empty string)
-   * @method canPlayType
    */
 
 
@@ -9622,12 +9495,11 @@ var Player = function (_Component) {
    *
    * @param {Array} sources The sources for a media asset
    * @return {Object|Boolean} Object of source and tech order, otherwise false
-   * @method selectSource
    */
 
 
   Player.prototype.selectSource = function selectSource(sources) {
-    var _this3 = this;
+    var _this4 = this;
 
     // Get only the techs specified in `techOrder` that exist and are supported by the
     // current platform
@@ -9679,7 +9551,7 @@ var Player = function (_Component) {
       var techName = _ref2[0];
       var tech = _ref2[1];
 
-      if (tech.canPlaySource(source, _this3.options_[techName.toLowerCase()])) {
+      if (tech.canPlaySource(source, _this4.options_[techName.toLowerCase()])) {
         return { source: source, tech: techName };
       }
     };
@@ -9727,7 +9599,6 @@ var Player = function (_Component) {
    * @param  {String|Object|Array=} source The source URL, object, or array of sources
    * @return {String} The current video source when getting
    * @return {String} The player when setting
-   * @method src
    */
 
 
@@ -9799,7 +9670,6 @@ var Player = function (_Component) {
    *
    * @param  {Array} sources Array of source objects
    * @private
-   * @method sourceList_
    */
 
 
@@ -9830,7 +9700,6 @@ var Player = function (_Component) {
    * Begin loading the src data.
    *
    * @return {Player} Returns the player
-   * @method load
    */
 
 
@@ -9844,7 +9713,6 @@ var Player = function (_Component) {
    * and calls `reset` on the tech`.
    *
    * @return {Player} Returns the player
-   * @method reset
    */
 
 
@@ -9859,7 +9727,6 @@ var Player = function (_Component) {
    * Can be used in conjuction with `currentType` to assist in rebuilding the current source object.
    *
    * @return {String} The current source
-   * @method currentSrc
    */
 
 
@@ -9873,7 +9740,6 @@ var Player = function (_Component) {
    * source and tech later
    *
    * @return {String} The source MIME type
-   * @method currentType
    */
 
 
@@ -9887,7 +9753,6 @@ var Player = function (_Component) {
    * @param {Boolean} value Boolean to determine if preload should be used
    * @return {String} The preload attribute value when getting
    * @return {Player} Returns the player when setting
-   * @method preload
    */
 
 
@@ -9906,7 +9771,6 @@ var Player = function (_Component) {
    * @param {Boolean} value Boolean to determine if video should autoplay
    * @return {String} The autoplay attribute value when getting
    * @return {Player} Returns the player when setting
-   * @method autoplay
    */
 
 
@@ -9925,7 +9789,6 @@ var Player = function (_Component) {
    * @param {Boolean} value Boolean to determine if video should loop
    * @return {String} The loop attribute value when getting
    * @return {Player} Returns the player when setting
-   * @method loop
    */
 
 
@@ -9952,7 +9815,6 @@ var Player = function (_Component) {
    * @param  {String=} src Poster image source URL
    * @return {String} poster URL when getting
    * @return {Player} self when setting
-   * @method poster
    */
 
 
@@ -9988,7 +9850,6 @@ var Player = function (_Component) {
    * the normal APIs.
    *
    * @private
-   * @method handleTechPosterChange_
    */
 
 
@@ -10006,7 +9867,6 @@ var Player = function (_Component) {
    *
    * @param  {Boolean} bool Set controls to showing or not
    * @return {Boolean}    Controls are showing
-   * @method controls
    */
 
 
@@ -10055,7 +9915,6 @@ var Player = function (_Component) {
    * @param  {Boolean} bool    True signals that native controls are on
    * @return {Player}      Returns the player
    * @private
-   * @method usingNativeControls
    */
 
 
@@ -10103,7 +9962,6 @@ var Player = function (_Component) {
    * @param  {*} err A MediaError or a String/Number to be turned into a MediaError
    * @return {MediaError|null}     when getting
    * @return {Player}              when setting
-   * @method error
    */
 
 
@@ -10138,47 +9996,9 @@ var Player = function (_Component) {
   };
 
   /**
-   * Returns whether or not the player is in the "ended" state.
-   *
-   * @return {Boolean} True if the player is in the ended state, false if not.
-   * @method ended
-   */
-
-
-  Player.prototype.ended = function ended() {
-    return this.techGet_('ended');
-  };
-
-  /**
-   * Returns whether or not the player is in the "seeking" state.
-   *
-   * @return {Boolean} True if the player is in the seeking state, false if not.
-   * @method seeking
-   */
-
-
-  Player.prototype.seeking = function seeking() {
-    return this.techGet_('seeking');
-  };
-
-  /**
-   * Returns the TimeRanges of the media that are currently available
-   * for seeking to.
-   *
-   * @return {TimeRanges} the seekable intervals of the media timeline
-   * @method seekable
-   */
-
-
-  Player.prototype.seekable = function seekable() {
-    return this.techGet_('seekable');
-  };
-
-  /**
    * Report user activity
    *
    * @param {Object} event Event object
-   * @method reportUserActivity
    */
 
 
@@ -10191,7 +10011,6 @@ var Player = function (_Component) {
    *
    * @param {Boolean} bool Value when setting
    * @return {Boolean} Value if user is active user when getting
-   * @method userActive
    */
 
 
@@ -10241,7 +10060,6 @@ var Player = function (_Component) {
    * Listen for user activity based on timeout value
    *
    * @private
-   * @method listenForUserActivity_
    */
 
 
@@ -10335,7 +10153,6 @@ var Player = function (_Component) {
    * @param  {Number} rate    New playback rate to set.
    * @return {Number}         Returns the new playback rate when setting
    * @return {Number}         Returns the current playback rate when getting
-   * @method playbackRate
    */
 
 
@@ -10358,7 +10175,6 @@ var Player = function (_Component) {
    * @return {Boolean}         Returns true if player is audio, false if not when getting
    * @return {Player}      Returns the player if setting
    * @private
-   * @method isAudio
    */
 
 
@@ -10372,66 +10188,10 @@ var Player = function (_Component) {
   };
 
   /**
-   * Returns the current state of network activity for the element, from
-   * the codes in the list below.
-   * - NETWORK_EMPTY (numeric value 0)
-   *   The element has not yet been initialised. All attributes are in
-   *   their initial states.
-   * - NETWORK_IDLE (numeric value 1)
-   *   The element's resource selection algorithm is active and has
-   *   selected a resource, but it is not actually using the network at
-   *   this time.
-   * - NETWORK_LOADING (numeric value 2)
-   *   The user agent is actively trying to download data.
-   * - NETWORK_NO_SOURCE (numeric value 3)
-   *   The element's resource selection algorithm is active, but it has
-   *   not yet found a resource to use.
-   *
-   * @see https://html.spec.whatwg.org/multipage/embedded-content.html#network-states
-   * @return {Number} the current network activity state
-   * @method networkState
-   */
-
-
-  Player.prototype.networkState = function networkState() {
-    return this.techGet_('networkState');
-  };
-
-  /**
-   * Returns a value that expresses the current state of the element
-   * with respect to rendering the current playback position, from the
-   * codes in the list below.
-   * - HAVE_NOTHING (numeric value 0)
-   *   No information regarding the media resource is available.
-   * - HAVE_METADATA (numeric value 1)
-   *   Enough of the resource has been obtained that the duration of the
-   *   resource is available.
-   * - HAVE_CURRENT_DATA (numeric value 2)
-   *   Data for the immediate current playback position is available.
-   * - HAVE_FUTURE_DATA (numeric value 3)
-   *   Data for the immediate current playback position is available, as
-   *   well as enough data for the user agent to advance the current
-   *   playback position in the direction of playback.
-   * - HAVE_ENOUGH_DATA (numeric value 4)
-   *   The user agent estimates that enough data is available for
-   *   playback to proceed uninterrupted.
-   *
-   * @see https://html.spec.whatwg.org/multipage/embedded-content.html#dom-media-readystate
-   * @return {Number} the current playback rendering state
-   * @method readyState
-   */
-
-
-  Player.prototype.readyState = function readyState() {
-    return this.techGet_('readyState');
-  };
-
-  /**
    * Get a video track list
    * @link https://html.spec.whatwg.org/multipage/embedded-content.html#videotracklist
    *
    * @return {VideoTrackList} thes current video track list
-   * @method videoTracks
    */
 
 
@@ -10451,7 +10211,6 @@ var Player = function (_Component) {
    * @link https://html.spec.whatwg.org/multipage/embedded-content.html#audiotracklist
    *
    * @return {AudioTrackList} thes current audio track list
-   * @method audioTracks
    */
 
 
@@ -10466,20 +10225,19 @@ var Player = function (_Component) {
     return this.tech_.audioTracks();
   };
 
-  /*
-    * Text tracks are tracks of timed text events.
-    * Captions - text displayed over the video for the hearing impaired
-    * Subtitles - text displayed over the video for those who don't understand language in the video
-    * Chapters - text displayed in a menu allowing the user to jump to particular points (chapters) in the video
-    * Descriptions (not supported yet) - audio descriptions that are read back to the user by a screen reading device
-    */
+  /**
+   * Text tracks are tracks of timed text events.
+   * Captions - text displayed over the video for the hearing impaired
+   * Subtitles - text displayed over the video for those who don't understand language in the video
+   * Chapters - text displayed in a menu allowing the user to jump to particular points (chapters) in the video
+   * Descriptions (not supported yet) - audio descriptions that are read back to the user by a screen reading device
+   */
 
   /**
    * Get an array of associated text tracks. captions, subtitles, chapters, descriptions
    * http://www.w3.org/html/wg/drafts/html/master/embedded-content-0.html#dom-media-texttracks
    *
    * @return {Array}           Array of track objects
-   * @method textTracks
    */
 
 
@@ -10495,7 +10253,6 @@ var Player = function (_Component) {
    * Get an array of remote text tracks
    *
    * @return {Array}
-   * @method remoteTextTracks
    */
 
 
@@ -10509,7 +10266,6 @@ var Player = function (_Component) {
    * Get an array of remote html track elements
    *
    * @return {HTMLTrackElement[]}
-   * @method remoteTextTrackEls
    */
 
 
@@ -10527,7 +10283,6 @@ var Player = function (_Component) {
    * @param {String}  kind        Captions, subtitles, chapters, descriptions, or metadata
    * @param {String=} label       Optional label
    * @param {String=} language    Optional language
-   * @method addTextTrack
    */
 
 
@@ -10541,7 +10296,6 @@ var Player = function (_Component) {
    * Add a remote text track
    *
    * @param {Object} options    Options for remote text track
-   * @method addRemoteTextTrack
    */
 
 
@@ -10555,14 +10309,13 @@ var Player = function (_Component) {
    * Remove a remote text track
    *
    * @param {Object} track    Remote text track to remove
-   * @method removeRemoteTextTrack
    */
   // destructure the input into an object with a track argument, defaulting to arguments[0]
   // default the whole argument to an empty object if nothing was passed in
 
 
   Player.prototype.removeRemoteTextTrack = function removeRemoteTextTrack() {
-    var _ref3 = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var _ref3 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     var _ref3$track = _ref3.track;
     var track = _ref3$track === undefined ? arguments[0] : _ref3$track;
@@ -10576,7 +10329,6 @@ var Player = function (_Component) {
    * Get video width
    *
    * @return {Number} Video width
-   * @method videoWidth
    */
 
 
@@ -10588,7 +10340,6 @@ var Player = function (_Component) {
    * Get video height
    *
    * @return {Number} Video height
-   * @method videoHeight
    */
 
 
@@ -10612,7 +10363,6 @@ var Player = function (_Component) {
    * @param {String} code  The locale string
    * @return {String}      The locale string when getting
    * @return {Player}      self when setting
-   * @method language
    */
 
 
@@ -10631,7 +10381,6 @@ var Player = function (_Component) {
    * Languages specified directly in the player options have precedence
    *
    * @return {Array} Array of languages
-   * @method languages
    */
 
 
@@ -10643,7 +10392,6 @@ var Player = function (_Component) {
    * Converts track info to JSON
    *
    * @return {Object} JSON object of options
-   * @method toJSON
    */
 
 
@@ -10684,7 +10432,7 @@ var Player = function (_Component) {
 
 
   Player.prototype.createModal = function createModal(content, options) {
-    var _this4 = this;
+    var _this5 = this;
 
     options = options || {};
     options.content = content || '';
@@ -10693,7 +10441,7 @@ var Player = function (_Component) {
 
     this.addChild(modal);
     modal.on('dispose', function () {
-      _this4.removeChild(modal);
+      _this5.removeChild(modal);
     });
 
     return modal.open();
@@ -10705,7 +10453,6 @@ var Player = function (_Component) {
    * @param {Element} tag The player tag
    * @return {Array} An array of sources and track objects
    * @static
-   * @method getTagSettings
    */
 
 
@@ -10754,6 +10501,23 @@ var Player = function (_Component) {
     }
 
     return baseOptions;
+  };
+
+  /**
+   * Determine wether or not flexbox is supported
+   *
+   * @return {Boolean} wether or not flexbox is supported
+   */
+
+
+  Player.prototype.flexNotSupported_ = function flexNotSupported_() {
+    var elem = _document2['default'].createElement('i');
+
+    // Note: We don't actually use flexBasis (or flexOrder), but it's one of the more
+    // common flex features that we can rely on when checking for flex support.
+    return !('flexBasis' in elem.style || 'webkitFlexBasis' in elem.style || 'mozFlexBasis' in elem.style || 'msFlexBasis' in elem.style ||
+    // IE10-specific (2012 flex spec)
+    'msFlexOrder' in elem.style);
   };
 
   return Player;
@@ -10809,49 +10573,125 @@ Player.prototype.options_ = {
   notSupportedMessage: 'No compatible source was found for this media.'
 };
 
-// The following no-op expressions are here only for purposes of documentation.
-
+[
 /**
- * Fired when the user agent begins looking for media data
+ * Returns whether or not the player is in the "ended" state.
  *
- * @event loadstart
+ * @return {Boolean} True if the player is in the ended state, false if not.
+ * @method Player.prototype.ended
  */
-Player.prototype.handleTechLoadStart_; // eslint-disable-line
+'ended',
+/**
+ * Returns whether or not the player is in the "seeking" state.
+ *
+ * @return {Boolean} True if the player is in the seeking state, false if not.
+ * @method Player.prototype.seeking
+ */
+'seeking',
+/**
+ * Returns the TimeRanges of the media that are currently available
+ * for seeking to.
+ *
+ * @return {TimeRanges} the seekable intervals of the media timeline
+ * @method Player.prototype.seekable
+ */
+'seekable',
+/**
+ * Returns the current state of network activity for the element, from
+ * the codes in the list below.
+ * - NETWORK_EMPTY (numeric value 0)
+ *   The element has not yet been initialised. All attributes are in
+ *   their initial states.
+ * - NETWORK_IDLE (numeric value 1)
+ *   The element's resource selection algorithm is active and has
+ *   selected a resource, but it is not actually using the network at
+ *   this time.
+ * - NETWORK_LOADING (numeric value 2)
+ *   The user agent is actively trying to download data.
+ * - NETWORK_NO_SOURCE (numeric value 3)
+ *   The element's resource selection algorithm is active, but it has
+ *   not yet found a resource to use.
+ *
+ * @see https://html.spec.whatwg.org/multipage/embedded-content.html#network-states
+ * @return {Number} the current network activity state
+ * @method Player.prototype.networkState
+ */
+'networkState',
+/**
+ * Returns a value that expresses the current state of the element
+ * with respect to rendering the current playback position, from the
+ * codes in the list below.
+ * - HAVE_NOTHING (numeric value 0)
+ *   No information regarding the media resource is available.
+ * - HAVE_METADATA (numeric value 1)
+ *   Enough of the resource has been obtained that the duration of the
+ *   resource is available.
+ * - HAVE_CURRENT_DATA (numeric value 2)
+ *   Data for the immediate current playback position is available.
+ * - HAVE_FUTURE_DATA (numeric value 3)
+ *   Data for the immediate current playback position is available, as
+ *   well as enough data for the user agent to advance the current
+ *   playback position in the direction of playback.
+ * - HAVE_ENOUGH_DATA (numeric value 4)
+ *   The user agent estimates that enough data is available for
+ *   playback to proceed uninterrupted.
+ *
+ * @see https://html.spec.whatwg.org/multipage/embedded-content.html#dom-media-readystate
+ * @return {Number} the current playback rendering state
+ * @method Player.prototype.readyState
+ */
+'readyState'].forEach(function (fn) {
+  Player.prototype[fn] = function () {
+    return this.techGet_(fn);
+  };
+});
 
+TECH_EVENTS_RETRIGGER.forEach(function (event) {
+  Player.prototype['handleTech' + (0, _toTitleCase2['default'])(event) + '_'] = function () {
+    return this.trigger(event);
+  };
+});
+
+/* document methods */
 /**
  * Fired when the player has initial duration and dimension information
  *
  * @event loadedmetadata
+ * @private
+ * @method Player.prototype.handleLoadedMetaData_
  */
-Player.prototype.handleLoadedMetaData_; // eslint-disable-line
 
 /**
  * Fired when the player receives text data
  *
  * @event textdata
+ * @private
+ * @method Player.prototype.handleTextData_
  */
-Player.prototype.handleTextData_; // eslint-disable-line
 
 /**
  * Fired when the player has downloaded data at the current playback position
  *
  * @event loadeddata
+ * @private
+ * @method Player.prototype.handleLoadedData_
  */
-Player.prototype.handleLoadedData_; // eslint-disable-line
 
 /**
  * Fired when the user is active, e.g. moves the mouse over the player
  *
  * @event useractive
+ * @private
+ * @method Player.prototype.handleUserActive_
  */
-Player.prototype.handleUserActive_; // eslint-disable-line
 
 /**
  * Fired when the user is inactive, e.g. a short delay after the last mouse move or control interaction
  *
  * @event userinactive
+ * @private
+ * @method Player.prototype.handleUserInactive_
  */
-Player.prototype.handleUserInactive_; // eslint-disable-line
 
 /**
  * Fired when the current playback position has changed *
@@ -10859,49 +10699,35 @@ Player.prototype.handleUserInactive_; // eslint-disable-line
  * playback technology in use.
  *
  * @event timeupdate
+ * @private
+ * @method Player.prototype.handleTimeUpdate_
  */
-Player.prototype.handleTimeUpdate_; // eslint-disable-line
-
-/**
- * Fired when video playback ends
- *
- * @event ended
- */
-Player.prototype.handleTechEnded_; // eslint-disable-line
 
 /**
  * Fired when the volume changes
  *
  * @event volumechange
+ * @private
+ * @method Player.prototype.handleVolumeChange_
  */
-Player.prototype.handleVolumeChange_; // eslint-disable-line
 
 /**
  * Fired when an error occurs
  *
  * @event error
+ * @private
+ * @method Player.prototype.handleError_
  */
-Player.prototype.handleError_; // eslint-disable-line
-
-Player.prototype.flexNotSupported_ = function () {
-  var elem = _document2['default'].createElement('i');
-
-  // Note: We don't actually use flexBasis (or flexOrder), but it's one of the more
-  // common flex features that we can rely on when checking for flex support.
-  return !('flexBasis' in elem.style || 'webkitFlexBasis' in elem.style || 'mozFlexBasis' in elem.style || 'msFlexBasis' in elem.style ||
-  // IE10-specific (2012 flex spec)
-  'msFlexOrder' in elem.style);
-};
 
 _component2['default'].registerComponent('Player', Player);
 exports['default'] = Player;
 
-},{"./big-play-button.js":1,"./close-button.js":4,"./component.js":5,"./control-bar/control-bar.js":8,"./error-display.js":41,"./fullscreen-api.js":44,"./loading-spinner.js":45,"./media-error.js":46,"./modal-dialog":50,"./poster-image.js":55,"./tech/flash.js":59,"./tech/html5.js":60,"./tech/loader.js":61,"./tech/tech.js":62,"./tracks/audio-track-list.js":63,"./tracks/text-track-display.js":68,"./tracks/text-track-list-converter.js":69,"./tracks/text-track-settings.js":71,"./tracks/video-track-list.js":76,"./utils/browser.js":78,"./utils/buffer.js":79,"./utils/dom.js":80,"./utils/events.js":81,"./utils/fn.js":82,"./utils/guid.js":84,"./utils/log.js":85,"./utils/merge-options.js":86,"./utils/stylesheet.js":87,"./utils/time-ranges.js":88,"./utils/to-title-case.js":89,"global/document":92,"global/window":93,"object.assign":136,"safe-json-parse/tuple":145}],52:[function(_dereq_,module,exports){
+},{"1":1,"136":136,"145":145,"4":4,"41":41,"44":44,"45":45,"46":46,"5":5,"50":50,"55":55,"59":59,"60":60,"61":61,"62":62,"63":63,"68":68,"69":69,"71":71,"76":76,"78":78,"79":79,"8":8,"80":80,"81":81,"82":82,"84":84,"85":85,"86":86,"87":87,"88":88,"89":89,"92":92,"93":93}],52:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _player = _dereq_('./player.js');
+var _player = _dereq_(51);
 
 var _player2 = _interopRequireDefault(_player);
 
@@ -10921,16 +10747,16 @@ var plugin = function plugin(name, init) {
     */
 exports['default'] = plugin;
 
-},{"./player.js":51}],53:[function(_dereq_,module,exports){
+},{"51":51}],53:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _clickableComponent = _dereq_('../clickable-component.js');
+var _clickableComponent = _dereq_(3);
 
 var _clickableComponent2 = _interopRequireDefault(_clickableComponent);
 
-var _component = _dereq_('../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
@@ -10957,7 +10783,7 @@ var PopupButton = function (_ClickableComponent) {
   _inherits(PopupButton, _ClickableComponent);
 
   function PopupButton(player) {
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     _classCallCheck(this, PopupButton);
 
@@ -11042,24 +10868,24 @@ var PopupButton = function (_ClickableComponent) {
 _component2['default'].registerComponent('PopupButton', PopupButton);
 exports['default'] = PopupButton;
 
-},{"../clickable-component.js":3,"../component.js":5}],54:[function(_dereq_,module,exports){
+},{"3":3,"5":5}],54:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _dom = _dereq_('../utils/dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
-var _fn = _dereq_('../utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _events = _dereq_('../utils/events.js');
+var _events = _dereq_(81);
 
 var Events = _interopRequireWildcard(_events);
 
@@ -11142,28 +10968,28 @@ var Popup = function (_Component) {
 _component2['default'].registerComponent('Popup', Popup);
 exports['default'] = Popup;
 
-},{"../component.js":5,"../utils/dom.js":80,"../utils/events.js":81,"../utils/fn.js":82}],55:[function(_dereq_,module,exports){
+},{"5":5,"80":80,"81":81,"82":82}],55:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _clickableComponent = _dereq_('./clickable-component.js');
+var _clickableComponent = _dereq_(3);
 
 var _clickableComponent2 = _interopRequireDefault(_clickableComponent);
 
-var _component = _dereq_('./component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _fn = _dereq_('./utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _dom = _dereq_('./utils/dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
-var _browser = _dereq_('./utils/browser.js');
+var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
@@ -11309,21 +11135,21 @@ var PosterImage = function (_ClickableComponent) {
 _component2['default'].registerComponent('PosterImage', PosterImage);
 exports['default'] = PosterImage;
 
-},{"./clickable-component.js":3,"./component.js":5,"./utils/browser.js":78,"./utils/dom.js":80,"./utils/fn.js":82}],56:[function(_dereq_,module,exports){
+},{"3":3,"5":5,"78":78,"80":80,"82":82}],56:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 exports.hasLoaded = exports.autoSetupTimeout = exports.autoSetup = undefined;
 
-var _events = _dereq_('./utils/events.js');
+var _events = _dereq_(81);
 
 var Events = _interopRequireWildcard(_events);
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _window = _dereq_('global/window');
+var _window = _dereq_(93);
 
 var _window2 = _interopRequireDefault(_window);
 
@@ -11426,20 +11252,20 @@ exports.autoSetup = autoSetup;
 exports.autoSetupTimeout = autoSetupTimeout;
 exports.hasLoaded = hasLoaded;
 
-},{"./utils/events.js":81,"global/document":92,"global/window":93}],57:[function(_dereq_,module,exports){
+},{"81":81,"92":92,"93":93}],57:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _dom = _dereq_('../utils/dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
-var _object = _dereq_('object.assign');
+var _object = _dereq_(136);
 
 var _object2 = _interopRequireDefault(_object);
 
@@ -11500,8 +11326,8 @@ var Slider = function (_Component) {
 
 
   Slider.prototype.createEl = function createEl(type) {
-    var props = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-    var attributes = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+    var props = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var attributes = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
     // Add the slider element class to all sub classes
     props.className = props.className + ' vjs-slider';
@@ -11723,7 +11549,7 @@ var Slider = function (_Component) {
 _component2['default'].registerComponent('Slider', Slider);
 exports['default'] = Slider;
 
-},{"../component.js":5,"../utils/dom.js":80,"object.assign":136}],58:[function(_dereq_,module,exports){
+},{"136":136,"5":5,"80":80}],58:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -11852,33 +11678,33 @@ exports['default'] = FlashRtmpDecorator;
 
 exports.__esModule = true;
 
-var _tech = _dereq_('./tech');
+var _tech = _dereq_(62);
 
 var _tech2 = _interopRequireDefault(_tech);
 
-var _dom = _dereq_('../utils/dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
-var _url = _dereq_('../utils/url.js');
+var _url = _dereq_(90);
 
 var Url = _interopRequireWildcard(_url);
 
-var _timeRanges = _dereq_('../utils/time-ranges.js');
+var _timeRanges = _dereq_(88);
 
-var _flashRtmp = _dereq_('./flash-rtmp');
+var _flashRtmp = _dereq_(58);
 
 var _flashRtmp2 = _interopRequireDefault(_flashRtmp);
 
-var _component = _dereq_('../component');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _window = _dereq_('global/window');
+var _window = _dereq_(93);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _object = _dereq_('object.assign');
+var _object = _dereq_(136);
 
 var _object2 = _interopRequireDefault(_object);
 
@@ -12515,64 +12341,64 @@ _component2['default'].registerComponent('Flash', Flash);
 _tech2['default'].registerTech('Flash', Flash);
 exports['default'] = Flash;
 
-},{"../component":5,"../utils/dom.js":80,"../utils/time-ranges.js":88,"../utils/url.js":90,"./flash-rtmp":58,"./tech":62,"global/window":93,"object.assign":136}],60:[function(_dereq_,module,exports){
+},{"136":136,"5":5,"58":58,"62":62,"80":80,"88":88,"90":90,"93":93}],60:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _templateObject = _taggedTemplateLiteralLoose(['Text Tracks are being loaded from another origin but the crossorigin attribute isn\'t used.\n            This may prevent text tracks from loading.'], ['Text Tracks are being loaded from another origin but the crossorigin attribute isn\'t used.\n            This may prevent text tracks from loading.']);
 
-var _tech = _dereq_('./tech.js');
+var _tech = _dereq_(62);
 
 var _tech2 = _interopRequireDefault(_tech);
 
-var _component = _dereq_('../component');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _dom = _dereq_('../utils/dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
-var _url = _dereq_('../utils/url.js');
+var _url = _dereq_(90);
 
 var Url = _interopRequireWildcard(_url);
 
-var _fn = _dereq_('../utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _log = _dereq_('../utils/log.js');
+var _log = _dereq_(85);
 
 var _log2 = _interopRequireDefault(_log);
 
-var _tsml = _dereq_('tsml');
+var _tsml = _dereq_(146);
 
 var _tsml2 = _interopRequireDefault(_tsml);
 
-var _browser = _dereq_('../utils/browser.js');
+var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _window = _dereq_('global/window');
+var _window = _dereq_(93);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _object = _dereq_('object.assign');
+var _object = _dereq_(136);
 
 var _object2 = _interopRequireDefault(_object);
 
-var _mergeOptions = _dereq_('../utils/merge-options.js');
+var _mergeOptions = _dereq_(86);
 
 var _mergeOptions2 = _interopRequireDefault(_mergeOptions);
 
-var _toTitleCase = _dereq_('../utils/to-title-case.js');
+var _toTitleCase = _dereq_(89);
 
 var _toTitleCase2 = _interopRequireDefault(_toTitleCase);
 
@@ -12596,7 +12422,6 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
  *
  * @param {Object=} options Object of option names and values
  * @param {Function=} ready Ready callback function
- * @extends Tech
  * @class Html5
  */
 var Html5 = function (_Tech) {
@@ -12653,25 +12478,43 @@ var Html5 = function (_Tech) {
       }
     }
 
+    // TODO: add text tracks into this list
     var trackTypes = ['audio', 'video'];
 
-    // ProxyNativeTextTracks
+    // ProxyNative Video/Audio Track
     trackTypes.forEach(function (type) {
+      var elTracks = _this.el()[type + 'Tracks'];
+      var techTracks = _this[type + 'Tracks']();
       var capitalType = (0, _toTitleCase2['default'])(type);
 
-      if (!_this['featuresNative' + capitalType + 'Tracks']) {
+      if (!_this['featuresNative' + capitalType + 'Tracks'] || !elTracks || !elTracks.addEventListener) {
         return;
       }
-      var tl = _this.el()[type + 'Tracks'];
 
-      if (tl && tl.addEventListener) {
-        tl.addEventListener('change', Fn.bind(_this, _this['handle' + capitalType + 'TrackChange_']));
-        tl.addEventListener('addtrack', Fn.bind(_this, _this['handle' + capitalType + 'TrackAdd_']));
-        tl.addEventListener('removetrack', Fn.bind(_this, _this['handle' + capitalType + 'TrackRemove_']));
+      _this['handle' + capitalType + 'TrackChange_'] = function (e) {
+        techTracks.trigger({
+          type: 'change',
+          target: techTracks,
+          currentTarget: techTracks,
+          srcElement: techTracks
+        });
+      };
+      _this['handle' + capitalType + 'TrackAdd_'] = function (e) {
+        return techTracks.addTrack(e.track);
+      };
+      _this['handle' + capitalType + 'TrackRemove_'] = function (e) {
+        return techTracks.removeTrack(e.track);
+      };
 
-        // Remove (native) trackts that are not used anymore
-        _this.on('loadstart', _this['removeOld' + capitalType + 'Tracks_']);
-      }
+      elTracks.addEventListener('change', _this['handle' + capitalType + 'TrackChange_']);
+      elTracks.addEventListener('addtrack', _this['handle' + capitalType + 'TrackAdd_']);
+      elTracks.addEventListener('removetrack', _this['handle' + capitalType + 'TrackRemove_']);
+      _this['removeOld' + capitalType + 'Tracks_'] = function (e) {
+        return _this.removeOldTracks_(techTracks, elTracks);
+      };
+
+      // Remove (native) tracks that are not used anymore
+      _this.on('loadstart', _this['removeOld' + capitalType + 'Tracks_']);
     });
 
     if (_this.featuresNativeTextTracks) {
@@ -12693,14 +12536,16 @@ var Html5 = function (_Tech) {
       _this.setControls(true);
     }
 
+    // on iOS, we want to proxy `webkitbeginfullscreen` and `webkitendfullscreen`
+    // into a `fullscreenchange` event
+    _this.proxyWebkitFullscreen_();
+
     _this.triggerReady();
     return _this;
   }
 
   /**
    * Dispose of html5 media element
-   *
-   * @method dispose
    */
 
 
@@ -12733,7 +12578,6 @@ var Html5 = function (_Tech) {
    * Create the component's DOM element
    *
    * @return {Element}
-   * @method createEl
    */
 
 
@@ -12768,6 +12612,8 @@ var Html5 = function (_Tech) {
           'class': 'vjs-tech'
         }));
       }
+
+      el.playerId = this.options_.playerId;
     }
 
     // Update specific tag settings, in case they were overridden
@@ -12921,44 +12767,6 @@ var Html5 = function (_Tech) {
     this.textTracks().removeTrack_(e.track);
   };
 
-  Html5.prototype.handleVideoTrackChange_ = function handleVideoTrackChange_(e) {
-    var vt = this.videoTracks();
-
-    this.videoTracks().trigger({
-      type: 'change',
-      target: vt,
-      currentTarget: vt,
-      srcElement: vt
-    });
-  };
-
-  Html5.prototype.handleVideoTrackAdd_ = function handleVideoTrackAdd_(e) {
-    this.videoTracks().addTrack_(e.track);
-  };
-
-  Html5.prototype.handleVideoTrackRemove_ = function handleVideoTrackRemove_(e) {
-    this.videoTracks().removeTrack_(e.track);
-  };
-
-  Html5.prototype.handleAudioTrackChange_ = function handleAudioTrackChange_(e) {
-    var audioTrackList = this.audioTracks();
-
-    this.audioTracks().trigger({
-      type: 'change',
-      target: audioTrackList,
-      currentTarget: audioTrackList,
-      srcElement: audioTrackList
-    });
-  };
-
-  Html5.prototype.handleAudioTrackAdd_ = function handleAudioTrackAdd_(e) {
-    this.audioTracks().addTrack_(e.track);
-  };
-
-  Html5.prototype.handleAudioTrackRemove_ = function handleAudioTrackRemove_(e) {
-    this.audioTracks().removeTrack_(e.track);
-  };
-
   /**
    * This is a helper function that is used in removeOldTextTracks_, removeOldAudioTracks_ and
    * removeOldVideoTracks_
@@ -13007,24 +12815,8 @@ var Html5 = function (_Tech) {
     this.removeOldTracks_(techTracks, elTracks);
   };
 
-  Html5.prototype.removeOldAudioTracks_ = function removeOldAudioTracks_() {
-    var techTracks = this.audioTracks();
-    var elTracks = this.el().audioTracks;
-
-    this.removeOldTracks_(techTracks, elTracks);
-  };
-
-  Html5.prototype.removeOldVideoTracks_ = function removeOldVideoTracks_() {
-    var techTracks = this.videoTracks();
-    var elTracks = this.el().videoTracks;
-
-    this.removeOldTracks_(techTracks, elTracks);
-  };
-
   /**
    * Play for html5 tech
-   *
-   * @method play
    */
 
 
@@ -13039,45 +12831,9 @@ var Html5 = function (_Tech) {
   };
 
   /**
-   * Pause for html5 tech
-   *
-   * @method pause
-   */
-
-
-  Html5.prototype.pause = function pause() {
-    this.el_.pause();
-  };
-
-  /**
-   * Paused for html5 tech
-   *
-   * @return {Boolean}
-   * @method paused
-   */
-
-
-  Html5.prototype.paused = function paused() {
-    return this.el_.paused;
-  };
-
-  /**
-   * Get current time
-   *
-   * @return {Number}
-   * @method currentTime
-   */
-
-
-  Html5.prototype.currentTime = function currentTime() {
-    return this.el_.currentTime;
-  };
-
-  /**
    * Set current time
    *
    * @param {Number} seconds Current time of video
-   * @method setCurrentTime
    */
 
 
@@ -13094,7 +12850,6 @@ var Html5 = function (_Tech) {
    * Get duration
    *
    * @return {Number}
-   * @method duration
    */
 
 
@@ -13103,72 +12858,9 @@ var Html5 = function (_Tech) {
   };
 
   /**
-   * Get a TimeRange object that represents the intersection
-   * of the time ranges for which the user agent has all
-   * relevant media
-   *
-   * @return {TimeRangeObject}
-   * @method buffered
-   */
-
-
-  Html5.prototype.buffered = function buffered() {
-    return this.el_.buffered;
-  };
-
-  /**
-   * Get volume level
-   *
-   * @return {Number}
-   * @method volume
-   */
-
-
-  Html5.prototype.volume = function volume() {
-    return this.el_.volume;
-  };
-
-  /**
-   * Set volume level
-   *
-   * @param {Number} percentAsDecimal Volume percent as a decimal
-   * @method setVolume
-   */
-
-
-  Html5.prototype.setVolume = function setVolume(percentAsDecimal) {
-    this.el_.volume = percentAsDecimal;
-  };
-
-  /**
-   * Get if muted
-   *
-   * @return {Boolean}
-   * @method muted
-   */
-
-
-  Html5.prototype.muted = function muted() {
-    return this.el_.muted;
-  };
-
-  /**
-   * Set muted
-   *
-   * @param {Boolean} If player is to be muted or note
-   * @method setMuted
-   */
-
-
-  Html5.prototype.setMuted = function setMuted(muted) {
-    this.el_.muted = muted;
-  };
-
-  /**
    * Get player width
    *
    * @return {Number}
-   * @method width
    */
 
 
@@ -13180,7 +12872,6 @@ var Html5 = function (_Tech) {
    * Get player height
    *
    * @return {Number}
-   * @method height
    */
 
 
@@ -13189,10 +12880,42 @@ var Html5 = function (_Tech) {
   };
 
   /**
+   * Proxy iOS `webkitbeginfullscreen` and `webkitendfullscreen` into
+   * `fullscreenchange` event
+   *
+   * @private
+   * @method proxyWebkitFullscreen_
+   */
+
+
+  Html5.prototype.proxyWebkitFullscreen_ = function proxyWebkitFullscreen_() {
+    var _this4 = this;
+
+    if (!('webkitDisplayingFullscreen' in this.el_)) {
+      return;
+    }
+
+    var endFn = function endFn() {
+      this.trigger('fullscreenchange', { isFullscreen: false });
+    };
+
+    var beginFn = function beginFn() {
+      this.one('webkitendfullscreen', endFn);
+
+      this.trigger('fullscreenchange', { isFullscreen: true });
+    };
+
+    this.on('webkitbeginfullscreen', beginFn);
+    this.on('dispose', function () {
+      _this4.off('webkitbeginfullscreen', beginFn);
+      _this4.off('webkitendfullscreen', endFn);
+    });
+  };
+
+  /**
    * Get if there is fullscreen support
    *
    * @return {Boolean}
-   * @method supportsFullScreen
    */
 
 
@@ -13210,23 +12933,11 @@ var Html5 = function (_Tech) {
 
   /**
    * Request to enter fullscreen
-   *
-   * @method enterFullScreen
    */
 
 
   Html5.prototype.enterFullScreen = function enterFullScreen() {
     var video = this.el_;
-
-    if ('webkitDisplayingFullscreen' in video) {
-      this.one('webkitbeginfullscreen', function () {
-        this.one('webkitendfullscreen', function () {
-          this.trigger('fullscreenchange', { isFullscreen: false });
-        });
-
-        this.trigger('fullscreenchange', { isFullscreen: true });
-      });
-    }
 
     if (video.paused && video.networkState <= video.HAVE_METADATA) {
       // attempt to prime the video element for programmatic access
@@ -13246,8 +12957,6 @@ var Html5 = function (_Tech) {
 
   /**
    * Request to exit fullscreen
-   *
-   * @method exitFullScreen
    */
 
 
@@ -13260,7 +12969,6 @@ var Html5 = function (_Tech) {
    *
    * @param {Object=} src Source object
    * @return {Object}
-   * @method src
    */
 
 
@@ -13274,33 +12982,7 @@ var Html5 = function (_Tech) {
   };
 
   /**
-   * Set video
-   *
-   * @param {Object} src Source object
-   * @deprecated
-   * @method setSrc
-   */
-
-
-  Html5.prototype.setSrc = function setSrc(src) {
-    this.el_.src = src;
-  };
-
-  /**
-   * Load media into player
-   *
-   * @method load
-   */
-
-
-  Html5.prototype.load = function load() {
-    this.el_.load();
-  };
-
-  /**
    * Reset the tech. Removes all sources and calls `load`.
-   *
-   * @method reset
    */
 
 
@@ -13312,7 +12994,6 @@ var Html5 = function (_Tech) {
    * Get current source
    *
    * @return {Object}
-   * @method currentSrc
    */
 
 
@@ -13324,296 +13005,14 @@ var Html5 = function (_Tech) {
   };
 
   /**
-   * Get poster
-   *
-   * @return {String}
-   * @method poster
-   */
-
-
-  Html5.prototype.poster = function poster() {
-    return this.el_.poster;
-  };
-
-  /**
-   * Set poster
-   *
-   * @param {String} val URL to poster image
-   * @method
-   */
-
-
-  Html5.prototype.setPoster = function setPoster(val) {
-    this.el_.poster = val;
-  };
-
-  /**
-   * Get preload attribute
-   *
-   * @return {String}
-   * @method preload
-   */
-
-
-  Html5.prototype.preload = function preload() {
-    return this.el_.preload;
-  };
-
-  /**
-   * Set preload attribute
-   *
-   * @param {String} val Value for preload attribute
-   * @method setPreload
-   */
-
-
-  Html5.prototype.setPreload = function setPreload(val) {
-    this.el_.preload = val;
-  };
-
-  /**
-   * Get autoplay attribute
-   *
-   * @return {String}
-   * @method autoplay
-   */
-
-
-  Html5.prototype.autoplay = function autoplay() {
-    return this.el_.autoplay;
-  };
-
-  /**
-   * Set autoplay attribute
-   *
-   * @param {String} val Value for preload attribute
-   * @method setAutoplay
-   */
-
-
-  Html5.prototype.setAutoplay = function setAutoplay(val) {
-    this.el_.autoplay = val;
-  };
-
-  /**
-   * Get controls attribute
-   *
-   * @return {String}
-   * @method controls
-   */
-
-
-  Html5.prototype.controls = function controls() {
-    return this.el_.controls;
-  };
-
-  /**
    * Set controls attribute
    *
    * @param {String} val Value for controls attribute
-   * @method setControls
    */
 
 
   Html5.prototype.setControls = function setControls(val) {
     this.el_.controls = !!val;
-  };
-
-  /**
-   * Get loop attribute
-   *
-   * @return {String}
-   * @method loop
-   */
-
-
-  Html5.prototype.loop = function loop() {
-    return this.el_.loop;
-  };
-
-  /**
-   * Set loop attribute
-   *
-   * @param {String} val Value for loop attribute
-   * @method setLoop
-   */
-
-
-  Html5.prototype.setLoop = function setLoop(val) {
-    this.el_.loop = val;
-  };
-
-  /**
-   * Get error value
-   *
-   * @return {String}
-   * @method error
-   */
-
-
-  Html5.prototype.error = function error() {
-    return this.el_.error;
-  };
-
-  /**
-   * Get whether or not the player is in the "seeking" state
-   *
-   * @return {Boolean}
-   * @method seeking
-   */
-
-
-  Html5.prototype.seeking = function seeking() {
-    return this.el_.seeking;
-  };
-
-  /**
-   * Get a TimeRanges object that represents the
-   * ranges of the media resource to which it is possible
-   * for the user agent to seek.
-   *
-   * @return {TimeRangeObject}
-   * @method seekable
-   */
-
-
-  Html5.prototype.seekable = function seekable() {
-    return this.el_.seekable;
-  };
-
-  /**
-   * Get if video ended
-   *
-   * @return {Boolean}
-   * @method ended
-   */
-
-
-  Html5.prototype.ended = function ended() {
-    return this.el_.ended;
-  };
-
-  /**
-   * Get the value of the muted content attribute
-   * This attribute has no dynamic effect, it only
-   * controls the default state of the element
-   *
-   * @return {Boolean}
-   * @method defaultMuted
-   */
-
-
-  Html5.prototype.defaultMuted = function defaultMuted() {
-    return this.el_.defaultMuted;
-  };
-
-  /**
-   * Get desired speed at which the media resource is to play
-   *
-   * @return {Number}
-   * @method playbackRate
-   */
-
-
-  Html5.prototype.playbackRate = function playbackRate() {
-    return this.el_.playbackRate;
-  };
-
-  /**
-   * Returns a TimeRanges object that represents the ranges of the
-   * media resource that the user agent has played.
-   * @return {TimeRangeObject} the range of points on the media
-   * timeline that has been reached through normal playback
-   * @see https://html.spec.whatwg.org/multipage/embedded-content.html#dom-media-played
-   */
-
-
-  Html5.prototype.played = function played() {
-    return this.el_.played;
-  };
-
-  /**
-   * Set desired speed at which the media resource is to play
-   *
-   * @param {Number} val Speed at which the media resource is to play
-   * @method setPlaybackRate
-   */
-
-
-  Html5.prototype.setPlaybackRate = function setPlaybackRate(val) {
-    this.el_.playbackRate = val;
-  };
-
-  /**
-   * Get the current state of network activity for the element, from
-   * the list below
-   * NETWORK_EMPTY (numeric value 0)
-   * NETWORK_IDLE (numeric value 1)
-   * NETWORK_LOADING (numeric value 2)
-   * NETWORK_NO_SOURCE (numeric value 3)
-   *
-   * @return {Number}
-   * @method networkState
-   */
-
-
-  Html5.prototype.networkState = function networkState() {
-    return this.el_.networkState;
-  };
-
-  /**
-   * Get a value that expresses the current state of the element
-   * with respect to rendering the current playback position, from
-   * the codes in the list below
-   * HAVE_NOTHING (numeric value 0)
-   * HAVE_METADATA (numeric value 1)
-   * HAVE_CURRENT_DATA (numeric value 2)
-   * HAVE_FUTURE_DATA (numeric value 3)
-   * HAVE_ENOUGH_DATA (numeric value 4)
-   *
-   * @return {Number}
-   * @method readyState
-   */
-
-
-  Html5.prototype.readyState = function readyState() {
-    return this.el_.readyState;
-  };
-
-  /**
-   * Get width of video
-   *
-   * @return {Number}
-   * @method videoWidth
-   */
-
-
-  Html5.prototype.videoWidth = function videoWidth() {
-    return this.el_.videoWidth;
-  };
-
-  /**
-   * Get height of video
-   *
-   * @return {Number}
-   * @method videoHeight
-   */
-
-
-  Html5.prototype.videoHeight = function videoHeight() {
-    return this.el_.videoHeight;
-  };
-
-  /**
-   * Get text tracks
-   *
-   * @return {TextTrackList}
-   * @method textTracks
-   */
-
-
-  Html5.prototype.textTracks = function textTracks() {
-    return _Tech.prototype.textTracks.call(this);
   };
 
   /**
@@ -13624,7 +13023,6 @@ var Html5 = function (_Tech) {
    * @param {String=} label Label to identify the text track
    * @param {String=} language Two letter language abbreviation
    * @return {TextTrackObject}
-   * @method addTextTrack
    */
 
 
@@ -13642,12 +13040,11 @@ var Html5 = function (_Tech) {
    * @param {Object} options The object should contain values for
    * kind, language, label and src (location of the WebVTT file)
    * @return {HTMLTrackElement}
-   * @method addRemoteTextTrack
    */
 
 
   Html5.prototype.addRemoteTextTrack = function addRemoteTextTrack() {
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     if (!this.featuresNativeTextTracks) {
       return _Tech.prototype.addRemoteTextTrack.call(this, options);
@@ -13687,7 +13084,6 @@ var Html5 = function (_Tech) {
    * Remove remote text track from TextTrackList object
    *
    * @param {TextTrackObject} track Texttrack object to remove
-   * @method removeRemoteTextTrack
    */
 
 
@@ -13718,13 +13114,13 @@ var Html5 = function (_Tech) {
 
 /* HTML5 Support Testing ---------------------------------------------------- */
 
-/*
-* Element for testing browser HTML5 video capabilities
-*
-* @type {Element}
-* @constant
-* @private
-*/
+/**
+ * Element for testing browser HTML5 video capabilities
+ *
+ * @type {Element}
+ * @constant
+ * @private
+ */
 
 
 Html5.TEST_VID = _document2['default'].createElement('video');
@@ -13735,7 +13131,7 @@ track.srclang = 'en';
 track.label = 'English';
 Html5.TEST_VID.appendChild(track);
 
-/*
+/**
  * Check if HTML5 video is supported by this browser/device
  *
  * @return {Boolean}
@@ -13754,7 +13150,7 @@ Html5.isSupported = function () {
 // Add Source Handler pattern functions to this tech
 _tech2['default'].withSourceHandlers(Html5);
 
-/*
+/**
  * The default native source handler.
  * This simply passes the source to the video element. Nothing fancy.
  *
@@ -13763,7 +13159,7 @@ _tech2['default'].withSourceHandlers(Html5);
  */
 Html5.nativeSourceHandler = {};
 
-/*
+/**
  * Check if the video element can play the given videotype
  *
  * @param  {String} type    The mimetype to check
@@ -13779,7 +13175,7 @@ Html5.nativeSourceHandler.canPlayType = function (type) {
   }
 };
 
-/*
+/**
  * Check if the video element can handle the source natively
  *
  * @param  {Object} source  The source object
@@ -13802,7 +13198,7 @@ Html5.nativeSourceHandler.canHandleSource = function (source, options) {
   return '';
 };
 
-/*
+/**
  * Pass the source to the video element
  * Adaptive source handlers will have more complicated workflows before passing
  * video data to the video element
@@ -13816,15 +13212,15 @@ Html5.nativeSourceHandler.handleSource = function (source, tech, options) {
 };
 
 /*
-* Clean up the source handler when disposing the player or switching sources..
-* (no cleanup is needed when supporting the format natively)
-*/
+ * Clean up the source handler when disposing the player or switching sources..
+ * (no cleanup is needed when supporting the format natively)
+ */
 Html5.nativeSourceHandler.dispose = function () {};
 
 // Register the native source handler
 Html5.registerSourceHandler(Html5.nativeSourceHandler);
 
-/*
+/**
  * Check if the volume can be changed in this browser/device.
  * Volume cannot be changed in a lot of mobile devices.
  * Specifically, it can't be changed from 1 on iOS.
@@ -13843,7 +13239,7 @@ Html5.canControlVolume = function () {
   }
 };
 
-/*
+/**
  * Check if playbackRate is supported in this browser/device.
  *
  * @return {Boolean}
@@ -13865,7 +13261,7 @@ Html5.canControlPlaybackRate = function () {
   }
 };
 
-/*
+/**
  * Check to see if native text tracks are supported by this browser/device
  *
  * @return {Boolean}
@@ -13892,7 +13288,7 @@ Html5.supportsNativeTextTracks = function () {
   return supportsTextTracks;
 };
 
-/*
+/**
  * Check to see if native video tracks are supported by this browser/device
  *
  * @return {Boolean}
@@ -13903,7 +13299,7 @@ Html5.supportsNativeVideoTracks = function () {
   return supportsVideoTracks;
 };
 
-/*
+/**
  * Check to see if native audio tracks are supported by this browser/device
  *
  * @return {Boolean}
@@ -13922,21 +13318,21 @@ Html5.supportsNativeAudioTracks = function () {
  */
 Html5.Events = ['loadstart', 'suspend', 'abort', 'error', 'emptied', 'stalled', 'loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough', 'playing', 'waiting', 'seeking', 'seeked', 'ended', 'durationchange', 'timeupdate', 'progress', 'play', 'pause', 'ratechange', 'volumechange'];
 
-/*
+/**
  * Set the tech's volume control support status
  *
  * @type {Boolean}
  */
 Html5.prototype.featuresVolumeControl = Html5.canControlVolume();
 
-/*
+/**
  * Set the tech's playbackRate support status
  *
  * @type {Boolean}
  */
 Html5.prototype.featuresPlaybackRate = Html5.canControlPlaybackRate();
 
-/*
+/**
  * Set the tech's status on moving the video element.
  * In iOS, if you move a video element in the DOM, it breaks video playback.
  *
@@ -13944,20 +13340,26 @@ Html5.prototype.featuresPlaybackRate = Html5.canControlPlaybackRate();
  */
 Html5.prototype.movingMediaElementInDOM = !browser.IS_IOS;
 
-/*
+/**
  * Set the the tech's fullscreen resize support status.
  * HTML video is able to automatically resize when going to fullscreen.
  * (No longer appears to be used. Can probably be removed.)
  */
 Html5.prototype.featuresFullscreenResize = true;
 
-/*
+/**
  * Set the tech's progress event support status
  * (this disables the manual progress events of the Tech)
  */
 Html5.prototype.featuresProgressEvents = true;
 
-/*
+/**
+ * Set the tech's timeupdate event support status
+ * (this disables the manual timeupdate events of the Tech)
+ */
+Html5.prototype.featuresTimeupdateEvents = true;
+
+/**
  * Sets the tech's status on native text track support
  *
  * @type {Boolean}
@@ -13985,7 +13387,7 @@ var mp4RE = /^video\/mp4/i;
 
 Html5.patchCanPlayType = function () {
   // Android 4.0 and above can play HLS to some extent but it reports being unable to do so
-  if (browser.ANDROID_VERSION >= 4.0) {
+  if (browser.ANDROID_VERSION >= 4.0 && !browser.IS_FIREFOX) {
     if (!canPlayType) {
       canPlayType = Html5.TEST_VID.constructor.prototype.canPlayType;
     }
@@ -14084,24 +13486,285 @@ Html5.resetMediaElement = function (el) {
   }
 };
 
+/* Native HTML5 element property wrapping ----------------------------------- */
+// Wrap native properties with a getter
+[
+/**
+ * Paused for html5 tech
+ *
+ * @method Html5.prototype.paused
+ * @return {Boolean}
+ */
+'paused',
+/**
+ * Get current time
+ *
+ * @method Html5.prototype.currentTime
+ * @return {Number}
+ */
+'currentTime',
+/**
+ * Get a TimeRange object that represents the intersection
+ * of the time ranges for which the user agent has all
+ * relevant media
+ *
+ * @return {TimeRangeObject}
+ * @method Html5.prototype.buffered
+ */
+'buffered',
+/**
+ * Get volume level
+ *
+ * @return {Number}
+ * @method Html5.prototype.volume
+ */
+'volume',
+/**
+ * Get if muted
+ *
+ * @return {Boolean}
+ * @method Html5.prototype.muted
+ */
+'muted',
+/**
+ * Get poster
+ *
+ * @return {String}
+ * @method Html5.prototype.poster
+ */
+'poster',
+/**
+ * Get preload attribute
+ *
+ * @return {String}
+ * @method Html5.prototype.preload
+ */
+'preload',
+/**
+ * Get autoplay attribute
+ *
+ * @return {String}
+ * @method Html5.prototype.autoplay
+ */
+'autoplay',
+/**
+ * Get controls attribute
+ *
+ * @return {String}
+ * @method Html5.prototype.controls
+ */
+'controls',
+/**
+ * Get loop attribute
+ *
+ * @return {String}
+ * @method Html5.prototype.loop
+ */
+'loop',
+/**
+ * Get error value
+ *
+ * @return {String}
+ * @method Html5.prototype.error
+ */
+'error',
+/**
+ * Get whether or not the player is in the "seeking" state
+ *
+ * @return {Boolean}
+ * @method Html5.prototype.seeking
+ */
+'seeking',
+/**
+ * Get a TimeRanges object that represents the
+ * ranges of the media resource to which it is possible
+ * for the user agent to seek.
+ *
+ * @return {TimeRangeObject}
+ * @method Html5.prototype.seekable
+ */
+'seekable',
+/**
+ * Get if video ended
+ *
+ * @return {Boolean}
+ * @method Html5.prototype.ended
+ */
+'ended',
+/**
+ * Get the value of the muted content attribute
+ * This attribute has no dynamic effect, it only
+ * controls the default state of the element
+ *
+ * @return {Boolean}
+ * @method Html5.prototype.defaultMuted
+ */
+'defaultMuted',
+/**
+ * Get desired speed at which the media resource is to play
+ *
+ * @return {Number}
+ * @method Html5.prototype.playbackRate
+ */
+'playbackRate',
+/**
+ * Returns a TimeRanges object that represents the ranges of the
+ * media resource that the user agent has played.
+ * @see https://html.spec.whatwg.org/multipage/embedded-content.html#dom-media-played
+ *
+ * @return {TimeRangeObject} the range of points on the media
+ *                           timeline that has been reached through
+ *                           normal playback
+ * @method Html5.prototype.played
+ */
+'played',
+/**
+ * Get the current state of network activity for the element, from
+ * the list below
+ * - NETWORK_EMPTY (numeric value 0)
+ * - NETWORK_IDLE (numeric value 1)
+ * - NETWORK_LOADING (numeric value 2)
+ * - NETWORK_NO_SOURCE (numeric value 3)
+ *
+ * @return {Number}
+ * @method Html5.prototype.networkState
+ */
+'networkState',
+/**
+ * Get a value that expresses the current state of the element
+ * with respect to rendering the current playback position, from
+ * the codes in the list below
+ * - HAVE_NOTHING (numeric value 0)
+ * - HAVE_METADATA (numeric value 1)
+ * - HAVE_CURRENT_DATA (numeric value 2)
+ * - HAVE_FUTURE_DATA (numeric value 3)
+ * - HAVE_ENOUGH_DATA (numeric value 4)
+ *
+ * @return {Number}
+ * @method Html5.prototype.readyState
+ */
+'readyState',
+/**
+ * Get width of video
+ *
+ * @return {Number}
+ * @method Html5.prototype.videoWidth
+ */
+'videoWidth',
+/**
+ * Get height of video
+ *
+ * @return {Number}
+ * @method Html5.prototype.videoHeight
+ */
+'videoHeight'].forEach(function (prop) {
+  Html5.prototype[prop] = function () {
+    return this.el_[prop];
+  };
+});
+
+// Wrap native properties with a setter in this format:
+// set + toTitleCase(name)
+[
+/**
+ * Set volume level
+ *
+ * @param {Number} percentAsDecimal Volume percent as a decimal
+ * @method Html5.prototype.setVolume
+ */
+'volume',
+/**
+ * Set muted
+ *
+ * @param {Boolean} muted If player is to be muted or note
+ * @method Html5.prototype.setMuted
+ */
+'muted',
+/**
+ * Set video source
+ *
+ * @param {Object} src Source object
+ * @deprecated since version 5
+ * @method Html5.prototype.setSrc
+ */
+'src',
+/**
+ * Set poster
+ *
+ * @param {String} val URL to poster image
+ * @method Html5.prototype.setPoster
+ */
+'poster',
+/**
+ * Set preload attribute
+ *
+ * @param {String} val Value for the preload attribute
+ * @method Htm5.prototype.setPreload
+ */
+'preload',
+/**
+ * Set autoplay attribute
+ *
+ * @param {Boolean} autoplay Value for the autoplay attribute
+ * @method setAutoplay
+ */
+'autoplay',
+/**
+ * Set loop attribute
+ *
+ * @param {Boolean} loop Value for the loop attribute
+ * @method Html5.prototype.setLoop
+ */
+'loop',
+/**
+ * Set desired speed at which the media resource is to play
+ *
+ * @param {Number} val Speed at which the media resource is to play
+ * @method Html5.prototype.setPlaybackRate
+ */
+'playbackRate'].forEach(function (prop) {
+  Html5.prototype['set' + (0, _toTitleCase2['default'])(prop)] = function (v) {
+    this.el_[prop] = v;
+  };
+});
+
+// wrap native functions with a function
+[
+/**
+ * Pause for html5 tech
+ *
+ * @method Html5.prototype.pause
+ */
+'pause',
+/**
+ * Load media into player
+ *
+ * @method Html5.prototype.load
+ */
+'load'].forEach(function (prop) {
+  Html5.prototype[prop] = function () {
+    return this.el_[prop]();
+  };
+});
+
 _component2['default'].registerComponent('Html5', Html5);
 _tech2['default'].registerTech('Html5', Html5);
 exports['default'] = Html5;
 
-},{"../component":5,"../utils/browser.js":78,"../utils/dom.js":80,"../utils/fn.js":82,"../utils/log.js":85,"../utils/merge-options.js":86,"../utils/to-title-case.js":89,"../utils/url.js":90,"./tech.js":62,"global/document":92,"global/window":93,"object.assign":136,"tsml":146}],61:[function(_dereq_,module,exports){
+},{"136":136,"146":146,"5":5,"62":62,"78":78,"80":80,"82":82,"85":85,"86":86,"89":89,"90":90,"92":92,"93":93}],61:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('../component.js');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _tech = _dereq_('./tech.js');
+var _tech = _dereq_(62);
 
 var _tech2 = _interopRequireDefault(_tech);
 
-var _toTitleCase = _dereq_('../utils/to-title-case.js');
+var _toTitleCase = _dereq_(89);
 
 var _toTitleCase2 = _interopRequireDefault(_toTitleCase);
 
@@ -14170,64 +13833,64 @@ var MediaLoader = function (_Component) {
 _component2['default'].registerComponent('MediaLoader', MediaLoader);
 exports['default'] = MediaLoader;
 
-},{"../component.js":5,"../utils/to-title-case.js":89,"./tech.js":62}],62:[function(_dereq_,module,exports){
+},{"5":5,"62":62,"89":89}],62:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('../component');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _htmlTrackElement = _dereq_('../tracks/html-track-element');
+var _htmlTrackElement = _dereq_(66);
 
 var _htmlTrackElement2 = _interopRequireDefault(_htmlTrackElement);
 
-var _htmlTrackElementList = _dereq_('../tracks/html-track-element-list');
+var _htmlTrackElementList = _dereq_(65);
 
 var _htmlTrackElementList2 = _interopRequireDefault(_htmlTrackElementList);
 
-var _mergeOptions = _dereq_('../utils/merge-options.js');
+var _mergeOptions = _dereq_(86);
 
 var _mergeOptions2 = _interopRequireDefault(_mergeOptions);
 
-var _textTrack = _dereq_('../tracks/text-track');
+var _textTrack = _dereq_(72);
 
 var _textTrack2 = _interopRequireDefault(_textTrack);
 
-var _textTrackList = _dereq_('../tracks/text-track-list');
+var _textTrackList = _dereq_(70);
 
 var _textTrackList2 = _interopRequireDefault(_textTrackList);
 
-var _videoTrackList = _dereq_('../tracks/video-track-list');
+var _videoTrackList = _dereq_(76);
 
 var _videoTrackList2 = _interopRequireDefault(_videoTrackList);
 
-var _audioTrackList = _dereq_('../tracks/audio-track-list');
+var _audioTrackList = _dereq_(63);
 
 var _audioTrackList2 = _interopRequireDefault(_audioTrackList);
 
-var _fn = _dereq_('../utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _log = _dereq_('../utils/log.js');
+var _log = _dereq_(85);
 
 var _log2 = _interopRequireDefault(_log);
 
-var _timeRanges = _dereq_('../utils/time-ranges.js');
+var _timeRanges = _dereq_(88);
 
-var _buffer = _dereq_('../utils/buffer.js');
+var _buffer = _dereq_(79);
 
-var _mediaError = _dereq_('../media-error.js');
+var _mediaError = _dereq_(46);
 
 var _mediaError2 = _interopRequireDefault(_mediaError);
 
-var _window = _dereq_('global/window');
+var _window = _dereq_(93);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -14246,7 +13909,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 */
 
 function createTrackHelper(self, kind, label, language) {
-  var options = arguments.length <= 4 || arguments[4] === undefined ? {} : arguments[4];
+  var options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
 
   var tracks = self.textTracks();
 
@@ -14280,8 +13943,8 @@ var Tech = function (_Component) {
   _inherits(Tech, _Component);
 
   function Tech() {
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-    var ready = arguments.length <= 1 || arguments[1] === undefined ? function () {} : arguments[1];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var ready = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
 
     _classCallCheck(this, Tech);
 
@@ -15188,20 +14851,20 @@ _component2['default'].registerComponent('MediaTechController', Tech);
 Tech.registerTech('Tech', Tech);
 exports['default'] = Tech;
 
-},{"../component":5,"../media-error.js":46,"../tracks/audio-track-list":63,"../tracks/html-track-element":66,"../tracks/html-track-element-list":65,"../tracks/text-track":72,"../tracks/text-track-list":70,"../tracks/video-track-list":76,"../utils/buffer.js":79,"../utils/fn.js":82,"../utils/log.js":85,"../utils/merge-options.js":86,"../utils/time-ranges.js":88,"global/document":92,"global/window":93}],63:[function(_dereq_,module,exports){
+},{"46":46,"5":5,"63":63,"65":65,"66":66,"70":70,"72":72,"76":76,"79":79,"82":82,"85":85,"86":86,"88":88,"92":92,"93":93}],63:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _trackList = _dereq_('./track-list');
+var _trackList = _dereq_(74);
 
 var _trackList2 = _interopRequireDefault(_trackList);
 
-var _browser = _dereq_('../utils/browser.js');
+var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -15261,7 +14924,7 @@ var AudioTrackList = function (_TrackList) {
   function AudioTrackList() {
     var _this, _ret;
 
-    var tracks = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+    var tracks = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 
     _classCallCheck(this, AudioTrackList);
 
@@ -15338,22 +15001,22 @@ var AudioTrackList = function (_TrackList) {
 
 exports['default'] = AudioTrackList;
 
-},{"../utils/browser.js":78,"./track-list":74,"global/document":92}],64:[function(_dereq_,module,exports){
+},{"74":74,"78":78,"92":92}],64:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _trackEnums = _dereq_('./track-enums');
+var _trackEnums = _dereq_(73);
 
-var _track = _dereq_('./track');
+var _track = _dereq_(75);
 
 var _track2 = _interopRequireDefault(_track);
 
-var _mergeOptions = _dereq_('../utils/merge-options');
+var _mergeOptions = _dereq_(86);
 
 var _mergeOptions2 = _interopRequireDefault(_mergeOptions);
 
-var _browser = _dereq_('../utils/browser.js');
+var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
@@ -15388,7 +15051,7 @@ var AudioTrack = function (_Track) {
   function AudioTrack() {
     var _this, _ret;
 
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     _classCallCheck(this, AudioTrack);
 
@@ -15438,16 +15101,16 @@ var AudioTrack = function (_Track) {
 
 exports['default'] = AudioTrack;
 
-},{"../utils/browser.js":78,"../utils/merge-options":86,"./track":75,"./track-enums":73}],65:[function(_dereq_,module,exports){
+},{"73":73,"75":75,"78":78,"86":86}],65:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _browser = _dereq_('../utils/browser.js');
+var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -15461,7 +15124,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var HtmlTrackElementList = function () {
   function HtmlTrackElementList() {
-    var trackElements = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+    var trackElements = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 
     _classCallCheck(this, HtmlTrackElementList);
 
@@ -15527,24 +15190,24 @@ var HtmlTrackElementList = function () {
 
 exports['default'] = HtmlTrackElementList;
 
-},{"../utils/browser.js":78,"global/document":92}],66:[function(_dereq_,module,exports){
+},{"78":78,"92":92}],66:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _browser = _dereq_('../utils/browser.js');
+var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _eventTarget = _dereq_('../event-target');
+var _eventTarget = _dereq_(42);
 
 var _eventTarget2 = _interopRequireDefault(_eventTarget);
 
-var _textTrack = _dereq_('../tracks/text-track');
+var _textTrack = _dereq_(72);
 
 var _textTrack2 = _interopRequireDefault(_textTrack);
 
@@ -15592,7 +15255,7 @@ var HTMLTrackElement = function (_EventTarget) {
   _inherits(HTMLTrackElement, _EventTarget);
 
   function HTMLTrackElement() {
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     _classCallCheck(this, HTMLTrackElement);
 
@@ -15664,16 +15327,16 @@ HTMLTrackElement.ERROR = ERROR;
 
 exports['default'] = HTMLTrackElement;
 
-},{"../event-target":42,"../tracks/text-track":72,"../utils/browser.js":78,"global/document":92}],67:[function(_dereq_,module,exports){
+},{"42":42,"72":72,"78":78,"92":92}],67:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _browser = _dereq_('../utils/browser.js');
+var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -15794,20 +15457,20 @@ var TextTrackCueList = function () {
 
 exports['default'] = TextTrackCueList;
 
-},{"../utils/browser.js":78,"global/document":92}],68:[function(_dereq_,module,exports){
+},{"78":78,"92":92}],68:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('../component');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _fn = _dereq_('../utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _window = _dereq_('global/window');
+var _window = _dereq_(93);
 
 var _window2 = _interopRequireDefault(_window);
 
@@ -16119,7 +15782,7 @@ var TextTrackDisplay = function (_Component) {
 _component2['default'].registerComponent('TextTrackDisplay', TextTrackDisplay);
 exports['default'] = TextTrackDisplay;
 
-},{"../component":5,"../utils/fn.js":82,"global/window":93}],69:[function(_dereq_,module,exports){
+},{"5":5,"82":82,"93":93}],69:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -16217,19 +15880,19 @@ exports['default'] = { textTracksToJson: textTracksToJson, jsonToTextTracks: jso
 
 exports.__esModule = true;
 
-var _trackList = _dereq_('./track-list');
+var _trackList = _dereq_(74);
 
 var _trackList2 = _interopRequireDefault(_trackList);
 
-var _fn = _dereq_('../utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _browser = _dereq_('../utils/browser.js');
+var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -16271,7 +15934,7 @@ var TextTrackList = function (_TrackList) {
   function TextTrackList() {
     var _this, _ret;
 
-    var tracks = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+    var tracks = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 
     _classCallCheck(this, TextTrackList);
 
@@ -16370,32 +16033,32 @@ var TextTrackList = function (_TrackList) {
 
 exports['default'] = TextTrackList;
 
-},{"../utils/browser.js":78,"../utils/fn.js":82,"./track-list":74,"global/document":92}],71:[function(_dereq_,module,exports){
+},{"74":74,"78":78,"82":82,"92":92}],71:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _component = _dereq_('../component');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _events = _dereq_('../utils/events.js');
+var _events = _dereq_(81);
 
 var Events = _interopRequireWildcard(_events);
 
-var _fn = _dereq_('../utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _log = _dereq_('../utils/log.js');
+var _log = _dereq_(85);
 
 var _log2 = _interopRequireDefault(_log);
 
-var _tuple = _dereq_('safe-json-parse/tuple');
+var _tuple = _dereq_(145);
 
 var _tuple2 = _interopRequireDefault(_tuple);
 
-var _window = _dereq_('global/window');
+var _window = _dereq_(93);
 
 var _window2 = _interopRequireDefault(_window);
 
@@ -16692,44 +16355,44 @@ _component2['default'].registerComponent('TextTrackSettings', TextTrackSettings)
 
 exports['default'] = TextTrackSettings;
 
-},{"../component":5,"../utils/events.js":81,"../utils/fn.js":82,"../utils/log.js":85,"global/window":93,"safe-json-parse/tuple":145}],72:[function(_dereq_,module,exports){
+},{"145":145,"5":5,"81":81,"82":82,"85":85,"93":93}],72:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _textTrackCueList = _dereq_('./text-track-cue-list');
+var _textTrackCueList = _dereq_(67);
 
 var _textTrackCueList2 = _interopRequireDefault(_textTrackCueList);
 
-var _fn = _dereq_('../utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _trackEnums = _dereq_('./track-enums');
+var _trackEnums = _dereq_(73);
 
-var _log = _dereq_('../utils/log.js');
+var _log = _dereq_(85);
 
 var _log2 = _interopRequireDefault(_log);
 
-var _window = _dereq_('global/window');
+var _window = _dereq_(93);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _track = _dereq_('./track.js');
+var _track = _dereq_(75);
 
 var _track2 = _interopRequireDefault(_track);
 
-var _url = _dereq_('../utils/url.js');
+var _url = _dereq_(90);
 
-var _xhr = _dereq_('xhr');
+var _xhr = _dereq_(147);
 
 var _xhr2 = _interopRequireDefault(_xhr);
 
-var _mergeOptions = _dereq_('../utils/merge-options');
+var _mergeOptions = _dereq_(86);
 
 var _mergeOptions2 = _interopRequireDefault(_mergeOptions);
 
-var _browser = _dereq_('../utils/browser.js');
+var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
@@ -16866,7 +16529,7 @@ var TextTrack = function (_Track) {
   function TextTrack() {
     var _this, _ret2;
 
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     _classCallCheck(this, TextTrack);
 
@@ -17072,7 +16735,7 @@ TextTrack.prototype.allowedEvents_ = {
 
 exports['default'] = TextTrack;
 
-},{"../utils/browser.js":78,"../utils/fn.js":82,"../utils/log.js":85,"../utils/merge-options":86,"../utils/url.js":90,"./text-track-cue-list":67,"./track-enums":73,"./track.js":75,"global/window":93,"xhr":147}],73:[function(_dereq_,module,exports){
+},{"147":147,"67":67,"73":73,"75":75,"78":78,"82":82,"85":85,"86":86,"90":90,"93":93}],73:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -17159,15 +16822,15 @@ var TextTrackMode = exports.TextTrackMode = {
 
 exports.__esModule = true;
 
-var _eventTarget = _dereq_('../event-target');
+var _eventTarget = _dereq_(42);
 
 var _eventTarget2 = _interopRequireDefault(_eventTarget);
 
-var _browser = _dereq_('../utils/browser.js');
+var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -17198,11 +16861,11 @@ var TrackList = function (_EventTarget) {
   _inherits(TrackList, _EventTarget);
 
   function TrackList() {
-    var tracks = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+    var tracks = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 
     var _ret;
 
-    var list = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+    var list = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
     _classCallCheck(this, TrackList);
 
@@ -17347,24 +17010,24 @@ for (var event in TrackList.prototype.allowedEvents_) {
 
 exports['default'] = TrackList;
 
-},{"../event-target":42,"../utils/browser.js":78,"global/document":92}],75:[function(_dereq_,module,exports){
+},{"42":42,"78":78,"92":92}],75:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _browser = _dereq_('../utils/browser.js');
+var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _guid = _dereq_('../utils/guid.js');
+var _guid = _dereq_(84);
 
 var Guid = _interopRequireWildcard(_guid);
 
-var _eventTarget = _dereq_('../event-target');
+var _eventTarget = _dereq_(42);
 
 var _eventTarget2 = _interopRequireDefault(_eventTarget);
 
@@ -17396,7 +17059,7 @@ var Track = function (_EventTarget) {
   function Track() {
     var _ret;
 
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     _classCallCheck(this, Track);
 
@@ -17441,20 +17104,20 @@ var Track = function (_EventTarget) {
 
 exports['default'] = Track;
 
-},{"../event-target":42,"../utils/browser.js":78,"../utils/guid.js":84,"global/document":92}],76:[function(_dereq_,module,exports){
+},{"42":42,"78":78,"84":84,"92":92}],76:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _trackList = _dereq_('./track-list');
+var _trackList = _dereq_(74);
 
 var _trackList2 = _interopRequireDefault(_trackList);
 
-var _browser = _dereq_('../utils/browser.js');
+var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -17514,7 +17177,7 @@ var VideoTrackList = function (_TrackList) {
   function VideoTrackList() {
     var _this, _ret;
 
-    var tracks = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+    var tracks = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 
     _classCallCheck(this, VideoTrackList);
 
@@ -17599,22 +17262,22 @@ var VideoTrackList = function (_TrackList) {
 
 exports['default'] = VideoTrackList;
 
-},{"../utils/browser.js":78,"./track-list":74,"global/document":92}],77:[function(_dereq_,module,exports){
+},{"74":74,"78":78,"92":92}],77:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _trackEnums = _dereq_('./track-enums');
+var _trackEnums = _dereq_(73);
 
-var _track = _dereq_('./track');
+var _track = _dereq_(75);
 
 var _track2 = _interopRequireDefault(_track);
 
-var _mergeOptions = _dereq_('../utils/merge-options');
+var _mergeOptions = _dereq_(86);
 
 var _mergeOptions2 = _interopRequireDefault(_mergeOptions);
 
-var _browser = _dereq_('../utils/browser.js');
+var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
@@ -17649,7 +17312,7 @@ var VideoTrack = function (_Track) {
   function VideoTrack() {
     var _this, _ret;
 
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     _classCallCheck(this, VideoTrack);
 
@@ -17699,17 +17362,17 @@ var VideoTrack = function (_Track) {
 
 exports['default'] = VideoTrack;
 
-},{"../utils/browser.js":78,"../utils/merge-options":86,"./track":75,"./track-enums":73}],78:[function(_dereq_,module,exports){
+},{"73":73,"75":75,"78":78,"86":86}],78:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 exports.BACKGROUND_SIZE_SUPPORTED = exports.TOUCH_ENABLED = exports.IE_VERSION = exports.IS_IE8 = exports.IS_CHROME = exports.IS_EDGE = exports.IS_FIREFOX = exports.IS_NATIVE_ANDROID = exports.IS_OLD_ANDROID = exports.ANDROID_VERSION = exports.IS_ANDROID = exports.IOS_VERSION = exports.IS_IOS = exports.IS_IPOD = exports.IS_IPHONE = exports.IS_IPAD = undefined;
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _window = _dereq_('global/window');
+var _window = _dereq_(93);
 
 var _window2 = _interopRequireDefault(_window);
 
@@ -17783,13 +17446,13 @@ var IE_VERSION = exports.IE_VERSION = function (result) {
 var TOUCH_ENABLED = exports.TOUCH_ENABLED = !!('ontouchstart' in _window2['default'] || _window2['default'].DocumentTouch && _document2['default'] instanceof _window2['default'].DocumentTouch);
 var BACKGROUND_SIZE_SUPPORTED = exports.BACKGROUND_SIZE_SUPPORTED = 'backgroundSize' in _document2['default'].createElement('video').style;
 
-},{"global/document":92,"global/window":93}],79:[function(_dereq_,module,exports){
+},{"92":92,"93":93}],79:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 exports.bufferedPercent = bufferedPercent;
 
-var _timeRanges = _dereq_('./time-ranges.js');
+var _timeRanges = _dereq_(88);
 
 /**
  * Compute how much your video has been buffered
@@ -17830,15 +17493,15 @@ function bufferedPercent(buffered, duration) {
    * @file buffer.js
    */
 
-},{"./time-ranges.js":88}],80:[function(_dereq_,module,exports){
+},{"88":88}],80:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 exports.$$ = exports.$ = undefined;
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; }; /**
-                                                                                                                                                                                                                                                   * @file dom.js
-                                                                                                                                                                                                                                                   */
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; /**
+                                                                                                                                                                                                                                                                               * @file dom.js
+                                                                                                                                                                                                                                                                               */
 
 
 var _templateObject = _taggedTemplateLiteralLoose(['Setting attributes in the second argument of createEl()\n                has been deprecated. Use the third argument instead.\n                createEl(type, properties, attributes). Attempting to set ', ' to ', '.'], ['Setting attributes in the second argument of createEl()\n                has been deprecated. Use the third argument instead.\n                createEl(type, properties, attributes). Attempting to set ', ' to ', '.']);
@@ -17867,23 +17530,23 @@ exports.normalizeContent = normalizeContent;
 exports.appendContent = appendContent;
 exports.insertContent = insertContent;
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _window = _dereq_('global/window');
+var _window = _dereq_(93);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _guid = _dereq_('./guid.js');
+var _guid = _dereq_(84);
 
 var Guid = _interopRequireWildcard(_guid);
 
-var _log = _dereq_('./log.js');
+var _log = _dereq_(85);
 
 var _log2 = _interopRequireDefault(_log);
 
-var _tsml = _dereq_('tsml');
+var _tsml = _dereq_(146);
 
 var _tsml2 = _interopRequireDefault(_tsml);
 
@@ -17986,9 +17649,9 @@ function getEl(id) {
  * @function createEl
  */
 function createEl() {
-  var tagName = arguments.length <= 0 || arguments[0] === undefined ? 'div' : arguments[0];
-  var properties = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-  var attributes = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+  var tagName = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'div';
+  var properties = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var attributes = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
   var el = _document2['default'].createElement(tagName);
 
@@ -18141,10 +17804,10 @@ function removeElData(el) {
  * @param {String} classToCheck Classname to check
  */
 function hasElClass(element, classToCheck) {
+  throwIfWhitespace(classToCheck);
   if (element.classList) {
     return element.classList.contains(classToCheck);
   }
-  throwIfWhitespace(classToCheck);
   return classRegExp(classToCheck).test(element.className);
 }
 
@@ -18538,7 +18201,7 @@ var $ = exports.$ = createQuerier('querySelector');
  */
 var $$ = exports.$$ = createQuerier('querySelectorAll');
 
-},{"./guid.js":84,"./log.js":85,"global/document":92,"global/window":93,"tsml":146}],81:[function(_dereq_,module,exports){
+},{"146":146,"84":84,"85":85,"92":92,"93":93}],81:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -18548,23 +18211,23 @@ exports.off = off;
 exports.trigger = trigger;
 exports.one = one;
 
-var _dom = _dereq_('./dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
-var _guid = _dereq_('./guid.js');
+var _guid = _dereq_(84);
 
 var Guid = _interopRequireWildcard(_guid);
 
-var _log = _dereq_('./log.js');
+var _log = _dereq_(85);
 
 var _log2 = _interopRequireDefault(_log);
 
-var _window = _dereq_('global/window');
+var _window = _dereq_(93);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -18972,13 +18635,13 @@ function one(elem, type, fn) {
   on(elem, type, func);
 }
 
-},{"./dom.js":80,"./guid.js":84,"./log.js":85,"global/document":92,"global/window":93}],82:[function(_dereq_,module,exports){
+},{"80":80,"84":84,"85":85,"92":92,"93":93}],82:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 exports.bind = undefined;
 
-var _guid = _dereq_('./guid.js');
+var _guid = _dereq_(84);
 
 /**
  * Bind (a.k.a proxy or Context). A simple method for changing the context of a function
@@ -19015,7 +18678,7 @@ var bind = exports.bind = function bind(context, fn, uid) {
     * @file fn.js
     */
 
-},{"./guid.js":84}],83:[function(_dereq_,module,exports){
+},{"84":84}],83:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -19033,7 +18696,7 @@ exports.__esModule = true;
  * @function formatTime
  */
 function formatTime(seconds) {
-  var guide = arguments.length <= 1 || arguments[1] === undefined ? seconds : arguments[1];
+  var guide = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : seconds;
 
   seconds = seconds < 0 ? 0 : seconds;
   var s = Math.floor(seconds % 60);
@@ -19094,16 +18757,16 @@ function newGUID() {
 exports.__esModule = true;
 exports.logByType = undefined;
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; }; /**
-                                                                                                                                                                                                                                                   * @file log.js
-                                                                                                                                                                                                                                                   */
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; /**
+                                                                                                                                                                                                                                                                               * @file log.js
+                                                                                                                                                                                                                                                                               */
 
 
-var _window = _dereq_('global/window');
+var _window = _dereq_(93);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _browser = _dereq_('./browser');
+var _browser = _dereq_(78);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -19121,7 +18784,7 @@ var log = void 0;
  *         but this is exposed as a parameter to facilitate testing.
  */
 var logByType = exports.logByType = function logByType(type, args) {
-  var stringify = arguments.length <= 2 || arguments[2] === undefined ? !!_browser.IE_VERSION && _browser.IE_VERSION < 11 : arguments[2];
+  var stringify = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : !!_browser.IE_VERSION && _browser.IE_VERSION < 11;
 
 
   // If there's no console then don't try to output messages, but they will
@@ -19219,19 +18882,19 @@ log.warn = function () {
 
 exports['default'] = log;
 
-},{"./browser":78,"global/window":93}],86:[function(_dereq_,module,exports){
+},{"78":78,"93":93}],86:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; }; /**
-                                                                                                                                                                                                                                                   * @file merge-options.js
-                                                                                                                                                                                                                                                   */
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; /**
+                                                                                                                                                                                                                                                                               * @file merge-options.js
+                                                                                                                                                                                                                                                                               */
 
 
 exports['default'] = mergeOptions;
 
-var _merge = _dereq_('lodash-compat/object/merge');
+var _merge = _dereq_(131);
 
 var _merge2 = _interopRequireDefault(_merge);
 
@@ -19290,13 +18953,13 @@ function mergeOptions() {
   return args[0];
 }
 
-},{"lodash-compat/object/merge":131}],87:[function(_dereq_,module,exports){
+},{"131":131}],87:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 exports.setTextContent = exports.createStyleElement = undefined;
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -19318,14 +18981,14 @@ var setTextContent = exports.setTextContent = function setTextContent(el, conten
   }
 };
 
-},{"global/document":92}],88:[function(_dereq_,module,exports){
+},{"92":92}],88:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 exports.createTimeRange = undefined;
 exports.createTimeRanges = createTimeRanges;
 
-var _log = _dereq_('./log.js');
+var _log = _dereq_(85);
 
 var _log2 = _interopRequireDefault(_log);
 
@@ -19389,7 +19052,7 @@ function createTimeRanges(start, end) {
 
 exports.createTimeRange = createTimeRanges;
 
-},{"./log.js":85}],89:[function(_dereq_,module,exports){
+},{"85":85}],89:[function(_dereq_,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -19415,11 +19078,11 @@ exports["default"] = toTitleCase;
 exports.__esModule = true;
 exports.isCrossOrigin = exports.getFileExtension = exports.getAbsoluteURL = exports.parseUrl = undefined;
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _window = _dereq_('global/window');
+var _window = _dereq_(93);
 
 var _window2 = _interopRequireDefault(_window);
 
@@ -19547,111 +19210,111 @@ var isCrossOrigin = exports.isCrossOrigin = function isCrossOrigin(url) {
   return crossOrigin;
 };
 
-},{"global/document":92,"global/window":93}],91:[function(_dereq_,module,exports){
+},{"92":92,"93":93}],91:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; }; /**
-                                                                                                                                                                                                                                                   * @file video.js
-                                                                                                                                                                                                                                                   */
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; /**
+                                                                                                                                                                                                                                                                               * @file video.js
+                                                                                                                                                                                                                                                                               */
 
 /* global define */
 
 // Include the built-in techs
 
 
-var _window = _dereq_('global/window');
+var _window = _dereq_(93);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _document = _dereq_('global/document');
+var _document = _dereq_(92);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _setup = _dereq_('./setup');
+var _setup = _dereq_(56);
 
 var setup = _interopRequireWildcard(_setup);
 
-var _stylesheet = _dereq_('./utils/stylesheet.js');
+var _stylesheet = _dereq_(87);
 
 var stylesheet = _interopRequireWildcard(_stylesheet);
 
-var _component = _dereq_('./component');
+var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _eventTarget = _dereq_('./event-target');
+var _eventTarget = _dereq_(42);
 
 var _eventTarget2 = _interopRequireDefault(_eventTarget);
 
-var _events = _dereq_('./utils/events.js');
+var _events = _dereq_(81);
 
 var Events = _interopRequireWildcard(_events);
 
-var _player = _dereq_('./player');
+var _player = _dereq_(51);
 
 var _player2 = _interopRequireDefault(_player);
 
-var _plugins = _dereq_('./plugins.js');
+var _plugins = _dereq_(52);
 
 var _plugins2 = _interopRequireDefault(_plugins);
 
-var _mergeOptions = _dereq_('./utils/merge-options.js');
+var _mergeOptions = _dereq_(86);
 
 var _mergeOptions2 = _interopRequireDefault(_mergeOptions);
 
-var _fn = _dereq_('./utils/fn.js');
+var _fn = _dereq_(82);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _textTrack = _dereq_('./tracks/text-track.js');
+var _textTrack = _dereq_(72);
 
 var _textTrack2 = _interopRequireDefault(_textTrack);
 
-var _audioTrack = _dereq_('./tracks/audio-track.js');
+var _audioTrack = _dereq_(64);
 
 var _audioTrack2 = _interopRequireDefault(_audioTrack);
 
-var _videoTrack = _dereq_('./tracks/video-track.js');
+var _videoTrack = _dereq_(77);
 
 var _videoTrack2 = _interopRequireDefault(_videoTrack);
 
-var _timeRanges = _dereq_('./utils/time-ranges.js');
+var _timeRanges = _dereq_(88);
 
-var _formatTime = _dereq_('./utils/format-time.js');
+var _formatTime = _dereq_(83);
 
 var _formatTime2 = _interopRequireDefault(_formatTime);
 
-var _log = _dereq_('./utils/log.js');
+var _log = _dereq_(85);
 
 var _log2 = _interopRequireDefault(_log);
 
-var _dom = _dereq_('./utils/dom.js');
+var _dom = _dereq_(80);
 
 var Dom = _interopRequireWildcard(_dom);
 
-var _browser = _dereq_('./utils/browser.js');
+var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
-var _url = _dereq_('./utils/url.js');
+var _url = _dereq_(90);
 
 var Url = _interopRequireWildcard(_url);
 
-var _extend = _dereq_('./extend.js');
+var _extend = _dereq_(43);
 
 var _extend2 = _interopRequireDefault(_extend);
 
-var _merge2 = _dereq_('lodash-compat/object/merge');
+var _merge2 = _dereq_(131);
 
 var _merge3 = _interopRequireDefault(_merge2);
 
-var _xhr = _dereq_('xhr');
+var _xhr = _dereq_(147);
 
 var _xhr2 = _interopRequireDefault(_xhr);
 
-var _tech = _dereq_('./tech/tech.js');
+var _tech = _dereq_(62);
 
 var _tech2 = _interopRequireDefault(_tech);
 
@@ -19752,7 +19415,7 @@ setup.autoSetupTimeout(1, videojs);
  *
  * @type {String}
  */
-videojs.VERSION = '5.13.0';
+videojs.VERSION = '5.12.3';
 
 /**
  * The global options object. These are the settings that take effect
@@ -20360,11 +20023,11 @@ if (typeof define === 'function' && define.amd) {
 
 exports['default'] = videojs;
 
-},{"./component":5,"./event-target":42,"./extend.js":43,"./player":51,"./plugins.js":52,"./setup":56,"./tech/tech.js":62,"./tracks/audio-track.js":64,"./tracks/text-track.js":72,"./tracks/video-track.js":77,"./utils/browser.js":78,"./utils/dom.js":80,"./utils/events.js":81,"./utils/fn.js":82,"./utils/format-time.js":83,"./utils/log.js":85,"./utils/merge-options.js":86,"./utils/stylesheet.js":87,"./utils/time-ranges.js":88,"./utils/url.js":90,"global/document":92,"global/window":93,"lodash-compat/object/merge":131,"xhr":147}],92:[function(_dereq_,module,exports){
+},{"131":131,"147":147,"42":42,"43":43,"5":5,"51":51,"52":52,"56":56,"62":62,"64":64,"72":72,"77":77,"78":78,"80":80,"81":81,"82":82,"83":83,"85":85,"86":86,"87":87,"88":88,"90":90,"92":92,"93":93}],92:[function(_dereq_,module,exports){
 (function (global){
 var topLevel = typeof global !== 'undefined' ? global :
     typeof window !== 'undefined' ? window : {}
-var minDoc = _dereq_('min-document');
+var minDoc = _dereq_(94);
 
 if (typeof document !== 'undefined') {
     module.exports = document;
@@ -20379,7 +20042,7 @@ if (typeof document !== 'undefined') {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"min-document":94}],93:[function(_dereq_,module,exports){
+},{"94":94}],93:[function(_dereq_,module,exports){
 (function (global){
 if (typeof window !== "undefined") {
     module.exports = window;
@@ -20395,7 +20058,7 @@ if (typeof window !== "undefined") {
 },{}],94:[function(_dereq_,module,exports){
 
 },{}],95:[function(_dereq_,module,exports){
-var getNative = _dereq_('../internal/getNative');
+var getNative = _dereq_(111);
 
 /* Native method references for those with the same name as other `lodash` methods. */
 var nativeNow = getNative(Date, 'now');
@@ -20420,9 +20083,9 @@ var now = nativeNow || function() {
 
 module.exports = now;
 
-},{"../internal/getNative":111}],96:[function(_dereq_,module,exports){
-var isObject = _dereq_('../lang/isObject'),
-    now = _dereq_('../date/now');
+},{"111":111}],96:[function(_dereq_,module,exports){
+var isObject = _dereq_(124),
+    now = _dereq_(95);
 
 /** Used as the `TypeError` message for "Functions" methods. */
 var FUNC_ERROR_TEXT = 'Expected a function';
@@ -20603,7 +20266,7 @@ function debounce(func, wait, options) {
 
 module.exports = debounce;
 
-},{"../date/now":95,"../lang/isObject":124}],97:[function(_dereq_,module,exports){
+},{"124":124,"95":95}],97:[function(_dereq_,module,exports){
 /** Used as the `TypeError` message for "Functions" methods. */
 var FUNC_ERROR_TEXT = 'Expected a function';
 
@@ -20664,8 +20327,8 @@ function restParam(func, start) {
 module.exports = restParam;
 
 },{}],98:[function(_dereq_,module,exports){
-var debounce = _dereq_('./debounce'),
-    isObject = _dereq_('../lang/isObject');
+var debounce = _dereq_(96),
+    isObject = _dereq_(124);
 
 /** Used as the `TypeError` message for "Functions" methods. */
 var FUNC_ERROR_TEXT = 'Expected a function';
@@ -20727,7 +20390,7 @@ function throttle(func, wait, options) {
 
 module.exports = throttle;
 
-},{"../lang/isObject":124,"./debounce":96}],99:[function(_dereq_,module,exports){
+},{"124":124,"96":96}],99:[function(_dereq_,module,exports){
 /**
  * Copies the values of `source` to `array`.
  *
@@ -20799,7 +20462,7 @@ function baseCopy(source, props, object) {
 module.exports = baseCopy;
 
 },{}],102:[function(_dereq_,module,exports){
-var createBaseFor = _dereq_('./createBaseFor');
+var createBaseFor = _dereq_(109);
 
 /**
  * The base implementation of `baseForIn` and `baseForOwn` which iterates
@@ -20817,9 +20480,9 @@ var baseFor = createBaseFor();
 
 module.exports = baseFor;
 
-},{"./createBaseFor":109}],103:[function(_dereq_,module,exports){
-var baseFor = _dereq_('./baseFor'),
-    keysIn = _dereq_('../object/keysIn');
+},{"109":109}],103:[function(_dereq_,module,exports){
+var baseFor = _dereq_(102),
+    keysIn = _dereq_(130);
 
 /**
  * The base implementation of `_.forIn` without support for callback
@@ -20836,15 +20499,15 @@ function baseForIn(object, iteratee) {
 
 module.exports = baseForIn;
 
-},{"../object/keysIn":130,"./baseFor":102}],104:[function(_dereq_,module,exports){
-var arrayEach = _dereq_('./arrayEach'),
-    baseMergeDeep = _dereq_('./baseMergeDeep'),
-    isArray = _dereq_('../lang/isArray'),
-    isArrayLike = _dereq_('./isArrayLike'),
-    isObject = _dereq_('../lang/isObject'),
-    isObjectLike = _dereq_('./isObjectLike'),
-    isTypedArray = _dereq_('../lang/isTypedArray'),
-    keys = _dereq_('../object/keys');
+},{"102":102,"130":130}],104:[function(_dereq_,module,exports){
+var arrayEach = _dereq_(100),
+    baseMergeDeep = _dereq_(105),
+    isArray = _dereq_(121),
+    isArrayLike = _dereq_(112),
+    isObject = _dereq_(124),
+    isObjectLike = _dereq_(117),
+    isTypedArray = _dereq_(127),
+    keys = _dereq_(129);
 
 /**
  * The base implementation of `_.merge` without support for argument juggling,
@@ -20894,14 +20557,14 @@ function baseMerge(object, source, customizer, stackA, stackB) {
 
 module.exports = baseMerge;
 
-},{"../lang/isArray":121,"../lang/isObject":124,"../lang/isTypedArray":127,"../object/keys":129,"./arrayEach":100,"./baseMergeDeep":105,"./isArrayLike":112,"./isObjectLike":117}],105:[function(_dereq_,module,exports){
-var arrayCopy = _dereq_('./arrayCopy'),
-    isArguments = _dereq_('../lang/isArguments'),
-    isArray = _dereq_('../lang/isArray'),
-    isArrayLike = _dereq_('./isArrayLike'),
-    isPlainObject = _dereq_('../lang/isPlainObject'),
-    isTypedArray = _dereq_('../lang/isTypedArray'),
-    toPlainObject = _dereq_('../lang/toPlainObject');
+},{"100":100,"105":105,"112":112,"117":117,"121":121,"124":124,"127":127,"129":129}],105:[function(_dereq_,module,exports){
+var arrayCopy = _dereq_(99),
+    isArguments = _dereq_(120),
+    isArray = _dereq_(121),
+    isArrayLike = _dereq_(112),
+    isPlainObject = _dereq_(125),
+    isTypedArray = _dereq_(127),
+    toPlainObject = _dereq_(128);
 
 /**
  * A specialized version of `baseMerge` for arrays and objects which performs
@@ -20963,8 +20626,8 @@ function baseMergeDeep(object, source, key, mergeFunc, customizer, stackA, stack
 
 module.exports = baseMergeDeep;
 
-},{"../lang/isArguments":120,"../lang/isArray":121,"../lang/isPlainObject":125,"../lang/isTypedArray":127,"../lang/toPlainObject":128,"./arrayCopy":99,"./isArrayLike":112}],106:[function(_dereq_,module,exports){
-var toObject = _dereq_('./toObject');
+},{"112":112,"120":120,"121":121,"125":125,"127":127,"128":128,"99":99}],106:[function(_dereq_,module,exports){
+var toObject = _dereq_(119);
 
 /**
  * The base implementation of `_.property` without support for deep paths.
@@ -20981,8 +20644,8 @@ function baseProperty(key) {
 
 module.exports = baseProperty;
 
-},{"./toObject":119}],107:[function(_dereq_,module,exports){
-var identity = _dereq_('../utility/identity');
+},{"119":119}],107:[function(_dereq_,module,exports){
+var identity = _dereq_(133);
 
 /**
  * A specialized version of `baseCallback` which only supports `this` binding
@@ -21022,10 +20685,10 @@ function bindCallback(func, thisArg, argCount) {
 
 module.exports = bindCallback;
 
-},{"../utility/identity":133}],108:[function(_dereq_,module,exports){
-var bindCallback = _dereq_('./bindCallback'),
-    isIterateeCall = _dereq_('./isIterateeCall'),
-    restParam = _dereq_('../function/restParam');
+},{"133":133}],108:[function(_dereq_,module,exports){
+var bindCallback = _dereq_(107),
+    isIterateeCall = _dereq_(115),
+    restParam = _dereq_(97);
 
 /**
  * Creates a `_.assign`, `_.defaults`, or `_.merge` function.
@@ -21065,8 +20728,8 @@ function createAssigner(assigner) {
 
 module.exports = createAssigner;
 
-},{"../function/restParam":97,"./bindCallback":107,"./isIterateeCall":115}],109:[function(_dereq_,module,exports){
-var toObject = _dereq_('./toObject');
+},{"107":107,"115":115,"97":97}],109:[function(_dereq_,module,exports){
+var toObject = _dereq_(119);
 
 /**
  * Creates a base function for `_.forIn` or `_.forInRight`.
@@ -21094,8 +20757,8 @@ function createBaseFor(fromRight) {
 
 module.exports = createBaseFor;
 
-},{"./toObject":119}],110:[function(_dereq_,module,exports){
-var baseProperty = _dereq_('./baseProperty');
+},{"119":119}],110:[function(_dereq_,module,exports){
+var baseProperty = _dereq_(106);
 
 /**
  * Gets the "length" property value of `object`.
@@ -21111,8 +20774,8 @@ var getLength = baseProperty('length');
 
 module.exports = getLength;
 
-},{"./baseProperty":106}],111:[function(_dereq_,module,exports){
-var isNative = _dereq_('../lang/isNative');
+},{"106":106}],111:[function(_dereq_,module,exports){
+var isNative = _dereq_(123);
 
 /**
  * Gets the native function at `key` of `object`.
@@ -21129,9 +20792,9 @@ function getNative(object, key) {
 
 module.exports = getNative;
 
-},{"../lang/isNative":123}],112:[function(_dereq_,module,exports){
-var getLength = _dereq_('./getLength'),
-    isLength = _dereq_('./isLength');
+},{"123":123}],112:[function(_dereq_,module,exports){
+var getLength = _dereq_(110),
+    isLength = _dereq_(116);
 
 /**
  * Checks if `value` is array-like.
@@ -21146,7 +20809,7 @@ function isArrayLike(value) {
 
 module.exports = isArrayLike;
 
-},{"./getLength":110,"./isLength":116}],113:[function(_dereq_,module,exports){
+},{"110":110,"116":116}],113:[function(_dereq_,module,exports){
 /**
  * Checks if `value` is a host object in IE < 9.
  *
@@ -21196,9 +20859,9 @@ function isIndex(value, length) {
 module.exports = isIndex;
 
 },{}],115:[function(_dereq_,module,exports){
-var isArrayLike = _dereq_('./isArrayLike'),
-    isIndex = _dereq_('./isIndex'),
-    isObject = _dereq_('../lang/isObject');
+var isArrayLike = _dereq_(112),
+    isIndex = _dereq_(114),
+    isObject = _dereq_(124);
 
 /**
  * Checks if the provided arguments are from an iteratee call.
@@ -21225,7 +20888,7 @@ function isIterateeCall(value, index, object) {
 
 module.exports = isIterateeCall;
 
-},{"../lang/isObject":124,"./isArrayLike":112,"./isIndex":114}],116:[function(_dereq_,module,exports){
+},{"112":112,"114":114,"124":124}],116:[function(_dereq_,module,exports){
 /**
  * Used as the [maximum length](http://ecma-international.org/ecma-262/6.0/#sec-number.max_safe_integer)
  * of an array-like value.
@@ -21262,12 +20925,12 @@ function isObjectLike(value) {
 module.exports = isObjectLike;
 
 },{}],118:[function(_dereq_,module,exports){
-var isArguments = _dereq_('../lang/isArguments'),
-    isArray = _dereq_('../lang/isArray'),
-    isIndex = _dereq_('./isIndex'),
-    isLength = _dereq_('./isLength'),
-    isString = _dereq_('../lang/isString'),
-    keysIn = _dereq_('../object/keysIn');
+var isArguments = _dereq_(120),
+    isArray = _dereq_(121),
+    isIndex = _dereq_(114),
+    isLength = _dereq_(116),
+    isString = _dereq_(126),
+    keysIn = _dereq_(130);
 
 /** Used for native method references. */
 var objectProto = Object.prototype;
@@ -21305,10 +20968,10 @@ function shimKeys(object) {
 
 module.exports = shimKeys;
 
-},{"../lang/isArguments":120,"../lang/isArray":121,"../lang/isString":126,"../object/keysIn":130,"./isIndex":114,"./isLength":116}],119:[function(_dereq_,module,exports){
-var isObject = _dereq_('../lang/isObject'),
-    isString = _dereq_('../lang/isString'),
-    support = _dereq_('../support');
+},{"114":114,"116":116,"120":120,"121":121,"126":126,"130":130}],119:[function(_dereq_,module,exports){
+var isObject = _dereq_(124),
+    isString = _dereq_(126),
+    support = _dereq_(132);
 
 /**
  * Converts `value` to an object if it's not one.
@@ -21333,9 +20996,9 @@ function toObject(value) {
 
 module.exports = toObject;
 
-},{"../lang/isObject":124,"../lang/isString":126,"../support":132}],120:[function(_dereq_,module,exports){
-var isArrayLike = _dereq_('../internal/isArrayLike'),
-    isObjectLike = _dereq_('../internal/isObjectLike');
+},{"124":124,"126":126,"132":132}],120:[function(_dereq_,module,exports){
+var isArrayLike = _dereq_(112),
+    isObjectLike = _dereq_(117);
 
 /** Used for native method references. */
 var objectProto = Object.prototype;
@@ -21369,10 +21032,10 @@ function isArguments(value) {
 
 module.exports = isArguments;
 
-},{"../internal/isArrayLike":112,"../internal/isObjectLike":117}],121:[function(_dereq_,module,exports){
-var getNative = _dereq_('../internal/getNative'),
-    isLength = _dereq_('../internal/isLength'),
-    isObjectLike = _dereq_('../internal/isObjectLike');
+},{"112":112,"117":117}],121:[function(_dereq_,module,exports){
+var getNative = _dereq_(111),
+    isLength = _dereq_(116),
+    isObjectLike = _dereq_(117);
 
 /** `Object#toString` result references. */
 var arrayTag = '[object Array]';
@@ -21411,8 +21074,8 @@ var isArray = nativeIsArray || function(value) {
 
 module.exports = isArray;
 
-},{"../internal/getNative":111,"../internal/isLength":116,"../internal/isObjectLike":117}],122:[function(_dereq_,module,exports){
-var isObject = _dereq_('./isObject');
+},{"111":111,"116":116,"117":117}],122:[function(_dereq_,module,exports){
+var isObject = _dereq_(124);
 
 /** `Object#toString` result references. */
 var funcTag = '[object Function]';
@@ -21451,10 +21114,10 @@ function isFunction(value) {
 
 module.exports = isFunction;
 
-},{"./isObject":124}],123:[function(_dereq_,module,exports){
-var isFunction = _dereq_('./isFunction'),
-    isHostObject = _dereq_('../internal/isHostObject'),
-    isObjectLike = _dereq_('../internal/isObjectLike');
+},{"124":124}],123:[function(_dereq_,module,exports){
+var isFunction = _dereq_(122),
+    isHostObject = _dereq_(113),
+    isObjectLike = _dereq_(117);
 
 /** Used to detect host constructors (Safari > 5). */
 var reIsHostCtor = /^\[object .+?Constructor\]$/;
@@ -21502,7 +21165,7 @@ function isNative(value) {
 
 module.exports = isNative;
 
-},{"../internal/isHostObject":113,"../internal/isObjectLike":117,"./isFunction":122}],124:[function(_dereq_,module,exports){
+},{"113":113,"117":117,"122":122}],124:[function(_dereq_,module,exports){
 /**
  * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
  * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
@@ -21533,11 +21196,11 @@ function isObject(value) {
 module.exports = isObject;
 
 },{}],125:[function(_dereq_,module,exports){
-var baseForIn = _dereq_('../internal/baseForIn'),
-    isArguments = _dereq_('./isArguments'),
-    isHostObject = _dereq_('../internal/isHostObject'),
-    isObjectLike = _dereq_('../internal/isObjectLike'),
-    support = _dereq_('../support');
+var baseForIn = _dereq_(103),
+    isArguments = _dereq_(120),
+    isHostObject = _dereq_(113),
+    isObjectLike = _dereq_(117),
+    support = _dereq_(132);
 
 /** `Object#toString` result references. */
 var objectTag = '[object Object]';
@@ -21614,8 +21277,8 @@ function isPlainObject(value) {
 
 module.exports = isPlainObject;
 
-},{"../internal/baseForIn":103,"../internal/isHostObject":113,"../internal/isObjectLike":117,"../support":132,"./isArguments":120}],126:[function(_dereq_,module,exports){
-var isObjectLike = _dereq_('../internal/isObjectLike');
+},{"103":103,"113":113,"117":117,"120":120,"132":132}],126:[function(_dereq_,module,exports){
+var isObjectLike = _dereq_(117);
 
 /** `Object#toString` result references. */
 var stringTag = '[object String]';
@@ -21651,9 +21314,9 @@ function isString(value) {
 
 module.exports = isString;
 
-},{"../internal/isObjectLike":117}],127:[function(_dereq_,module,exports){
-var isLength = _dereq_('../internal/isLength'),
-    isObjectLike = _dereq_('../internal/isObjectLike');
+},{"117":117}],127:[function(_dereq_,module,exports){
+var isLength = _dereq_(116),
+    isObjectLike = _dereq_(117);
 
 /** `Object#toString` result references. */
 var argsTag = '[object Arguments]',
@@ -21727,9 +21390,9 @@ function isTypedArray(value) {
 
 module.exports = isTypedArray;
 
-},{"../internal/isLength":116,"../internal/isObjectLike":117}],128:[function(_dereq_,module,exports){
-var baseCopy = _dereq_('../internal/baseCopy'),
-    keysIn = _dereq_('../object/keysIn');
+},{"116":116,"117":117}],128:[function(_dereq_,module,exports){
+var baseCopy = _dereq_(101),
+    keysIn = _dereq_(130);
 
 /**
  * Converts `value` to a plain object flattening inherited enumerable
@@ -21760,12 +21423,12 @@ function toPlainObject(value) {
 
 module.exports = toPlainObject;
 
-},{"../internal/baseCopy":101,"../object/keysIn":130}],129:[function(_dereq_,module,exports){
-var getNative = _dereq_('../internal/getNative'),
-    isArrayLike = _dereq_('../internal/isArrayLike'),
-    isObject = _dereq_('../lang/isObject'),
-    shimKeys = _dereq_('../internal/shimKeys'),
-    support = _dereq_('../support');
+},{"101":101,"130":130}],129:[function(_dereq_,module,exports){
+var getNative = _dereq_(111),
+    isArrayLike = _dereq_(112),
+    isObject = _dereq_(124),
+    shimKeys = _dereq_(118),
+    support = _dereq_(132);
 
 /* Native method references for those with the same name as other `lodash` methods. */
 var nativeKeys = getNative(Object, 'keys');
@@ -21808,16 +21471,16 @@ var keys = !nativeKeys ? shimKeys : function(object) {
 
 module.exports = keys;
 
-},{"../internal/getNative":111,"../internal/isArrayLike":112,"../internal/shimKeys":118,"../lang/isObject":124,"../support":132}],130:[function(_dereq_,module,exports){
-var arrayEach = _dereq_('../internal/arrayEach'),
-    isArguments = _dereq_('../lang/isArguments'),
-    isArray = _dereq_('../lang/isArray'),
-    isFunction = _dereq_('../lang/isFunction'),
-    isIndex = _dereq_('../internal/isIndex'),
-    isLength = _dereq_('../internal/isLength'),
-    isObject = _dereq_('../lang/isObject'),
-    isString = _dereq_('../lang/isString'),
-    support = _dereq_('../support');
+},{"111":111,"112":112,"118":118,"124":124,"132":132}],130:[function(_dereq_,module,exports){
+var arrayEach = _dereq_(100),
+    isArguments = _dereq_(120),
+    isArray = _dereq_(121),
+    isFunction = _dereq_(122),
+    isIndex = _dereq_(114),
+    isLength = _dereq_(116),
+    isObject = _dereq_(124),
+    isString = _dereq_(126),
+    support = _dereq_(132);
 
 /** `Object#toString` result references. */
 var arrayTag = '[object Array]',
@@ -21946,9 +21609,9 @@ function keysIn(object) {
 
 module.exports = keysIn;
 
-},{"../internal/arrayEach":100,"../internal/isIndex":114,"../internal/isLength":116,"../lang/isArguments":120,"../lang/isArray":121,"../lang/isFunction":122,"../lang/isObject":124,"../lang/isString":126,"../support":132}],131:[function(_dereq_,module,exports){
-var baseMerge = _dereq_('../internal/baseMerge'),
-    createAssigner = _dereq_('../internal/createAssigner');
+},{"100":100,"114":114,"116":116,"120":120,"121":121,"122":122,"124":124,"126":126,"132":132}],131:[function(_dereq_,module,exports){
+var baseMerge = _dereq_(104),
+    createAssigner = _dereq_(108);
 
 /**
  * Recursively merges own enumerable properties of the source object(s), that
@@ -22002,7 +21665,7 @@ var merge = createAssigner(baseMerge);
 
 module.exports = merge;
 
-},{"../internal/baseMerge":104,"../internal/createAssigner":108}],132:[function(_dereq_,module,exports){
+},{"104":104,"108":108}],132:[function(_dereq_,module,exports){
 /** Used for native method references. */
 var arrayProto = Array.prototype,
     errorProto = Error.prototype,
@@ -22125,7 +21788,7 @@ module.exports = identity;
 },{}],134:[function(_dereq_,module,exports){
 'use strict';
 
-var keys = _dereq_('object-keys');
+var keys = _dereq_(141);
 
 module.exports = function hasSymbols() {
 	if (typeof Symbol !== 'function' || typeof Object.getOwnPropertySymbols !== 'function') { return false; }
@@ -22133,12 +21796,16 @@ module.exports = function hasSymbols() {
 
 	var obj = {};
 	var sym = Symbol('test');
+	var symObj = Object(sym);
 	if (typeof sym === 'string') { return false; }
+
+	if (Object.prototype.toString.call(sym) !== '[object Symbol]') { return false; }
+	if (Object.prototype.toString.call(symObj) !== '[object Symbol]') { return false; }
 
 	// temp disabled per https://github.com/ljharb/object.assign/issues/17
 	// if (sym instanceof Symbol) { return false; }
 	// temp disabled per https://github.com/WebReflection/get-own-property-symbols/issues/4
-	// if (!(Object(sym) instanceof Symbol)) { return false; }
+	// if (!(symObj instanceof Symbol)) { return false; }
 
 	var symVal = 42;
 	obj[sym] = symVal;
@@ -22161,19 +21828,20 @@ module.exports = function hasSymbols() {
 	return true;
 };
 
-},{"object-keys":141}],135:[function(_dereq_,module,exports){
+},{"141":141}],135:[function(_dereq_,module,exports){
 'use strict';
 
 // modified from https://github.com/es-shims/es6-shim
-var keys = _dereq_('object-keys');
-var bind = _dereq_('function-bind');
+var keys = _dereq_(141);
+var bind = _dereq_(140);
 var canBeObject = function (obj) {
 	return typeof obj !== 'undefined' && obj !== null;
 };
-var hasSymbols = _dereq_('./hasSymbols')();
+var hasSymbols = _dereq_(134)();
 var toObject = Object;
 var push = bind.call(Function.call, Array.prototype.push);
 var propIsEnumerable = bind.call(Function.call, Object.prototype.propertyIsEnumerable);
+var originalGetSymbols = hasSymbols ? Object.getOwnPropertySymbols : null;
 
 module.exports = function assign(target, source1) {
 	if (!canBeObject(target)) { throw new TypeError('target must be an object'); }
@@ -22182,8 +21850,9 @@ module.exports = function assign(target, source1) {
 	for (s = 1; s < arguments.length; ++s) {
 		source = toObject(arguments[s]);
 		props = keys(source);
-		if (hasSymbols && Object.getOwnPropertySymbols) {
-			syms = Object.getOwnPropertySymbols(source);
+		var getSymbols = hasSymbols && (Object.getOwnPropertySymbols || originalGetSymbols);
+		if (getSymbols) {
+			syms = getSymbols(source);
 			for (i = 0; i < syms.length; ++i) {
 				key = syms[i];
 				if (propIsEnumerable(source, key)) {
@@ -22202,28 +21871,30 @@ module.exports = function assign(target, source1) {
 	return objTarget;
 };
 
-},{"./hasSymbols":134,"function-bind":140,"object-keys":141}],136:[function(_dereq_,module,exports){
+},{"134":134,"140":140,"141":141}],136:[function(_dereq_,module,exports){
 'use strict';
 
-var defineProperties = _dereq_('define-properties');
+var defineProperties = _dereq_(137);
 
-var implementation = _dereq_('./implementation');
-var getPolyfill = _dereq_('./polyfill');
-var shim = _dereq_('./shim');
+var implementation = _dereq_(135);
+var getPolyfill = _dereq_(143);
+var shim = _dereq_(144);
 
-defineProperties(implementation, {
+var polyfill = getPolyfill();
+
+defineProperties(polyfill, {
 	implementation: implementation,
 	getPolyfill: getPolyfill,
 	shim: shim
 });
 
-module.exports = implementation;
+module.exports = polyfill;
 
-},{"./implementation":135,"./polyfill":143,"./shim":144,"define-properties":137}],137:[function(_dereq_,module,exports){
+},{"135":135,"137":137,"143":143,"144":144}],137:[function(_dereq_,module,exports){
 'use strict';
 
-var keys = _dereq_('object-keys');
-var foreach = _dereq_('foreach');
+var keys = _dereq_(141);
+var foreach = _dereq_(138);
 var hasSymbols = typeof Symbol === 'function' && typeof Symbol() === 'symbol';
 
 var toStr = Object.prototype.toString;
@@ -22277,7 +21948,7 @@ defineProperties.supportsDescriptors = !!supportsDescriptors;
 
 module.exports = defineProperties;
 
-},{"foreach":138,"object-keys":141}],138:[function(_dereq_,module,exports){
+},{"138":138,"141":141}],138:[function(_dereq_,module,exports){
 
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
@@ -22352,18 +22023,18 @@ module.exports = function bind(that) {
 };
 
 },{}],140:[function(_dereq_,module,exports){
-var implementation = _dereq_('./implementation');
+var implementation = _dereq_(139);
 
 module.exports = Function.prototype.bind || implementation;
 
-},{"./implementation":139}],141:[function(_dereq_,module,exports){
+},{"139":139}],141:[function(_dereq_,module,exports){
 'use strict';
 
 // modified from https://github.com/es-shims/es5-shim
 var has = Object.prototype.hasOwnProperty;
 var toStr = Object.prototype.toString;
 var slice = Array.prototype.slice;
-var isArgs = _dereq_('./isArguments');
+var isArgs = _dereq_(142);
 var isEnumerable = Object.prototype.propertyIsEnumerable;
 var hasDontEnumBug = !isEnumerable.call({ toString: null }, 'toString');
 var hasProtoEnumBug = isEnumerable.call(function () {}, 'prototype');
@@ -22498,7 +22169,7 @@ keysShim.shim = function shimObjectKeys() {
 
 module.exports = keysShim;
 
-},{"./isArguments":142}],142:[function(_dereq_,module,exports){
+},{"142":142}],142:[function(_dereq_,module,exports){
 'use strict';
 
 var toStr = Object.prototype.toString;
@@ -22520,7 +22191,7 @@ module.exports = function isArguments(value) {
 },{}],143:[function(_dereq_,module,exports){
 'use strict';
 
-var implementation = _dereq_('./implementation');
+var implementation = _dereq_(135);
 
 var lacksProperEnumerationOrder = function () {
 	if (!Object.assign) {
@@ -22554,6 +22225,7 @@ var assignHasPendingExceptions = function () {
 	} catch (e) {
 		return thrower[1] === 'y';
 	}
+	return false;
 };
 
 module.exports = function getPolyfill() {
@@ -22569,11 +22241,11 @@ module.exports = function getPolyfill() {
 	return Object.assign;
 };
 
-},{"./implementation":135}],144:[function(_dereq_,module,exports){
+},{"135":135}],144:[function(_dereq_,module,exports){
 'use strict';
 
-var define = _dereq_('define-properties');
-var getPolyfill = _dereq_('./polyfill');
+var define = _dereq_(137);
+var getPolyfill = _dereq_(143);
 
 module.exports = function shimAssign() {
 	var polyfill = getPolyfill();
@@ -22585,7 +22257,7 @@ module.exports = function shimAssign() {
 	return polyfill;
 };
 
-},{"./polyfill":143,"define-properties":137}],145:[function(_dereq_,module,exports){
+},{"137":137,"143":143}],145:[function(_dereq_,module,exports){
 module.exports = SafeParseTuple
 
 function SafeParseTuple(obj, reviver) {
@@ -22618,11 +22290,11 @@ module.exports = function tsml (sa) {
 }
 },{}],147:[function(_dereq_,module,exports){
 "use strict";
-var window = _dereq_("global/window")
-var once = _dereq_("once")
-var isFunction = _dereq_("is-function")
-var parseHeaders = _dereq_("parse-headers")
-var xtend = _dereq_("xtend")
+var window = _dereq_(93)
+var once = _dereq_(149)
+var isFunction = _dereq_(148)
+var parseHeaders = _dereq_(152)
+var xtend = _dereq_(153)
 
 module.exports = createXHR
 createXHR.XMLHttpRequest = window.XMLHttpRequest || noop
@@ -22837,7 +22509,7 @@ function _createXHR(options) {
 
 function noop() {}
 
-},{"global/window":93,"is-function":148,"once":149,"parse-headers":152,"xtend":153}],148:[function(_dereq_,module,exports){
+},{"148":148,"149":149,"152":152,"153":153,"93":93}],148:[function(_dereq_,module,exports){
 module.exports = isFunction
 
 var toString = Object.prototype.toString
@@ -22876,7 +22548,7 @@ function once (fn) {
 }
 
 },{}],150:[function(_dereq_,module,exports){
-var isFunction = _dereq_('is-function')
+var isFunction = _dereq_(148)
 
 module.exports = forEach
 
@@ -22923,7 +22595,7 @@ function forEachObject(object, iterator, context) {
     }
 }
 
-},{"is-function":148}],151:[function(_dereq_,module,exports){
+},{"148":148}],151:[function(_dereq_,module,exports){
 
 exports = module.exports = trim;
 
@@ -22940,8 +22612,8 @@ exports.right = function(str){
 };
 
 },{}],152:[function(_dereq_,module,exports){
-var trim = _dereq_('trim')
-  , forEach = _dereq_('for-each')
+var trim = _dereq_(151)
+  , forEach = _dereq_(150)
   , isArray = function(arg) {
       return Object.prototype.toString.call(arg) === '[object Array]';
     }
@@ -22971,7 +22643,7 @@ module.exports = function (headers) {
 
   return result
 }
-},{"for-each":150,"trim":151}],153:[function(_dereq_,module,exports){
+},{"150":150,"151":151}],153:[function(_dereq_,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -25674,7 +25346,7 @@ var AbrController = function (_EventHandler) {
               //abort fragment loading
               frag.loader.abort();
               this.clearTimer();
-              hls.trigger(_events2.default.FRAG_LOAD_EMERGENCY_ABORTED, { frag: frag });
+              hls.trigger(_events2.default.FRAG_LOAD_EMERGENCY_ABORTED, { frag: frag, stats: stats });
             }
           }
         }
@@ -25690,7 +25362,14 @@ var AbrController = function (_EventHandler) {
         // if same frag is loaded multiple times, it might be in browser cache, and loaded quickly
         // and leading to wrong bw estimation
         if (stats.aborted === undefined && frag.loadCounter === 1) {
-          this.bwEstimator.sample(performance.now() - stats.trequest, stats.loaded);
+          var fragLoadingDurationMs = stats.tload - stats.trequest;
+          this.bwEstimator.sample(fragLoadingDurationMs, stats.loaded);
+          // if fragment has been loaded to perform a bitrate test, (hls.startLevel = -1), store bitrate test delay duration
+          if (frag.bitrateTest) {
+            this.bitrateTestDelay = fragLoadingDurationMs / 1000;
+          } else {
+            this.bitrateTestDelay = 0;
+          }
         }
 
         // stop monitoring bw once frag loaded
@@ -25726,6 +25405,40 @@ var AbrController = function (_EventHandler) {
     /** Return the capping/max level value that could be used by automatic level selection algorithm **/
 
   }, {
+    key: 'findBestLevel',
+    value: function findBestLevel(currentLevel, currentFragDuration, currentBw, maxAutoLevel, maxFetchDuration, bwFactor, bwUpFactor, levels) {
+      for (var i = maxAutoLevel; i >= 0; i--) {
+        var levelInfo = levels[i],
+            levelDetails = levelInfo.details,
+            avgDuration = levelDetails ? levelDetails.totalduration / levelDetails.fragments.length : currentFragDuration,
+            adjustedbw = void 0;
+        // follow algorithm captured from stagefright :
+        // https://android.googlesource.com/platform/frameworks/av/+/master/media/libstagefright/httplive/LiveSession.cpp
+        // Pick the highest bandwidth stream below or equal to estimated bandwidth.
+        // consider only 80% of the available bandwidth, but if we are switching up,
+        // be even more conservative (70%) to avoid overestimating and immediately
+        // switching back.
+        if (i <= currentLevel) {
+          adjustedbw = bwFactor * currentBw;
+        } else {
+          adjustedbw = bwUpFactor * currentBw;
+        }
+        var bitrate = levels[i].bitrate,
+            fetchDuration = bitrate * avgDuration / adjustedbw;
+
+        _logger.logger.trace('level/adjustedbw/bitrate/avgDuration/maxFetchDuration/fetchDuration: ' + i + '/' + Math.round(adjustedbw) + '/' + bitrate + '/' + avgDuration + '/' + maxFetchDuration + '/' + fetchDuration);
+        // if adjusted bw is greater than level bitrate AND
+        if (adjustedbw > bitrate && (
+        // fragment fetchDuration unknown or fragment fetchDuration less than max allowed fetch duration, then this level matches
+        !fetchDuration || fetchDuration < maxFetchDuration)) {
+          // as we are looping from highest to lowest, this will return the best achievable quality level
+          return i;
+        }
+      }
+      // not enough time budget even with quality level 0 ... rebuffering might happen
+      return -1;
+    }
+  }, {
     key: 'autoLevelCapping',
     get: function get() {
       return this._autoLevelCapping;
@@ -25739,45 +25452,79 @@ var AbrController = function (_EventHandler) {
   }, {
     key: 'nextAutoLevel',
     get: function get() {
-      var hls = this.hls,
-          config = hls.config,
-          levels = hls.levels,
-          v = hls.media,
-          i = void 0,
-          maxAutoLevel = void 0;
-      if (levels && levels.length && (this._autoLevelCapping === -1 || this._autoLevelCapping > levels.length - 1)) {
-        maxAutoLevel = levels.length - 1;
-      } else {
-        maxAutoLevel = this._autoLevelCapping;
+      var nextAutoLevel = this._nextAutoLevel,
+          bwEstimator = this.bwEstimator;
+      // in case next auto level has been forced, and bw not available or not reliable
+      if (nextAutoLevel !== -1 && (!bwEstimator || !bwEstimator.canEstimate())) {
+        // cap next auto level by max auto level
+        return Math.min(nextAutoLevel, this.maxAutoLevel);
       }
-
-      // in case next auto level has been forced, return it straight-away (but capped)
-      if (this._nextAutoLevel !== -1) {
-        return Math.min(this._nextAutoLevel, maxAutoLevel);
+      // compute next level using ABR logic
+      var nextABRAutoLevel = this.nextABRAutoLevel;
+      if (nextAutoLevel !== -1) {
+        // nextAutoLevel is defined, use it to cap ABR computed quality level
+        nextABRAutoLevel = Math.min(nextAutoLevel, nextABRAutoLevel);
       }
-      var playbackRate = v && v.playbackRate !== 0 ? Math.abs(v.playbackRate) : 1.0,
-          avgbw = this.bwEstimator ? this.bwEstimator.getEstimate() / playbackRate : config.abrEwmaDefaultEstimate / playbackRate,
-          adjustedbw = void 0;
-      // follow algorithm captured from stagefright :
-      // https://android.googlesource.com/platform/frameworks/av/+/master/media/libstagefright/httplive/LiveSession.cpp
-      // Pick the highest bandwidth stream below or equal to estimated bandwidth.
-      for (i = 0; i <= maxAutoLevel; i++) {
-        // consider only 80% of the available bandwidth, but if we are switching up,
-        // be even more conservative (70%) to avoid overestimating and immediately
-        // switching back.
-        if (i <= this.lastLoadedFragLevel) {
-          adjustedbw = config.abrBandWidthFactor * avgbw;
-        } else {
-          adjustedbw = config.abrBandWidthUpFactor * avgbw;
-        }
-        if (adjustedbw < levels[i].bitrate) {
-          return Math.max(0, i - 1);
-        }
-      }
-      return i - 1;
+      return nextABRAutoLevel;
     },
     set: function set(nextLevel) {
       this._nextAutoLevel = nextLevel;
+    }
+  }, {
+    key: 'maxAutoLevel',
+    get: function get() {
+      var levels = this.hls.levels,
+          autoLevelCapping = this._autoLevelCapping,
+          maxAutoLevel;
+      if (autoLevelCapping === -1 && levels && levels.length) {
+        maxAutoLevel = levels.length - 1;
+      } else {
+        maxAutoLevel = autoLevelCapping;
+      }
+      return maxAutoLevel;
+    }
+  }, {
+    key: 'nextABRAutoLevel',
+    get: function get() {
+      var hls = this.hls,
+          maxAutoLevel = this.maxAutoLevel,
+          levels = hls.levels,
+          config = hls.config;
+      var v = hls.media,
+          currentLevel = this.lastLoadedFragLevel,
+          currentFragDuration = this.fragCurrent ? this.fragCurrent.duration : 0,
+          pos = v ? v.currentTime : 0,
+
+      // playbackRate is the absolute value of the playback rate; if v.playbackRate is 0, we use 1 to load as
+      // if we're playing back at the normal rate.
+      playbackRate = v && v.playbackRate !== 0 ? Math.abs(v.playbackRate) : 1.0,
+          avgbw = this.bwEstimator ? this.bwEstimator.getEstimate() : config.abrEwmaDefaultEstimate,
+
+      // bufferStarvationDelay is the wall-clock time left until the playback buffer is exhausted.
+      bufferStarvationDelay = (_bufferHelper2.default.bufferInfo(v, pos, config.maxBufferHole).end - pos) / playbackRate;
+
+      // First, look to see if we can find a level matching with our avg bandwidth AND that could also guarantee no rebuffering at all
+      var bestLevel = this.findBestLevel(currentLevel, currentFragDuration, avgbw, maxAutoLevel, bufferStarvationDelay, config.abrBandWidthFactor, config.abrBandWidthUpFactor, levels);
+      if (bestLevel >= 0) {
+        return bestLevel;
+      } else {
+        _logger.logger.trace('rebuffering expected to happen, lets try to find a quality level minimizing the rebuffering');
+        // not possible to get rid of rebuffering ... let's try to find level that will guarantee less than maxStarvationDelay of rebuffering
+        // if no matching level found, logic will return 0
+        var maxStarvationDelay = config.maxStarvationDelay;
+        if (bufferStarvationDelay === 0) {
+          // in case buffer is empty, let's check if previous fragment was loaded to perform a bitrate test
+          var bitrateTestDelay = this.bitrateTestDelay;
+          if (bitrateTestDelay) {
+            // if it is the case, then we need to decrease this bitrate test duration from our maxStarvationDelay.
+            // rationale is that we need to account for this bitrate test duration
+            maxStarvationDelay -= bitrateTestDelay;
+            _logger.logger.trace('bitrate test took ' + Math.round(1000 * bitrateTestDelay) + 'ms, set first fragment max fetchDuration to ' + Math.round(1000 * maxStarvationDelay) + ' ms');
+          }
+        }
+        bestLevel = this.findBestLevel(currentLevel, currentFragDuration, avgbw, maxAutoLevel, bufferStarvationDelay + maxStarvationDelay, config.abrBandWidthFactor, config.abrBandWidthUpFactor, levels);
+        return Math.max(bestLevel, 0);
+      }
     }
   }]);
 
@@ -26400,12 +26147,13 @@ var AudioStreamController = function (_EventHandler) {
             } else {
               loadError = 1;
             }
-            if (loadError <= this.config.fragLoadingMaxRetry) {
+            var config = this.config;
+            if (loadError <= config.fragLoadingMaxRetry) {
               this.fragLoadError = loadError;
               // reset load counter to avoid frag loop loading error
               frag.loadCounter = 0;
-              // exponential backoff capped to 64s
-              var delay = Math.min(Math.pow(2, loadError - 1) * this.config.fragLoadingRetryDelay, 64000);
+              // exponential backoff capped to config.fragLoadingMaxRetryTimeout
+              var delay = Math.min(Math.pow(2, loadError - 1) * config.fragLoadingRetryDelay, config.fragLoadingMaxRetryTimeout);
               _logger.logger.warn('audioStreamController: frag loading failed, retry in ' + delay + ' ms');
               this.retryDate = performance.now() + delay;
               // retry loading state
@@ -27364,16 +27112,23 @@ var EwmaBandWidthEstimator = function () {
       this.slow_.sample(weight, bandwidth);
     }
   }, {
+    key: 'canEstimate',
+    value: function canEstimate() {
+      var fast = this.fast_;
+      return fast && fast.getTotalWeight() >= this.minWeight_;
+    }
+  }, {
     key: 'getEstimate',
     value: function getEstimate() {
-      if (!this.fast_ || !this.slow_ || this.fast_.getTotalWeight() < this.minWeight_) {
+      if (this.canEstimate()) {
+        //console.log('slow estimate:'+ Math.round(this.slow_.getEstimate()));
+        //console.log('fast estimate:'+ Math.round(this.fast_.getEstimate()));
+        // Take the minimum of these two estimates.  This should have the effect of
+        // adapting down quickly, but up more slowly.
+        return Math.min(this.fast_.getEstimate(), this.slow_.getEstimate());
+      } else {
         return this.defaultEstimate_;
       }
-      //console.log('slow estimate:'+ Math.round(this.slow_.getEstimate()));
-      //console.log('fast estimate:'+ Math.round(this.fast_.getEstimate()));
-      // Take the minimum of these two estimates.  This should have the effect of
-      // adapting down quickly, but up more slowly.
-      return Math.min(this.fast_.getEstimate(), this.slow_.getEstimate());
     }
   }, {
     key: 'destroy',
@@ -27697,7 +27452,6 @@ var LevelController = function (_EventHandler) {
       /* try to switch to a redundant stream if any available.
        * if no redundant stream available, emergency switch down (if in auto mode and current level not 0)
        * otherwise, we cannot recover this network error ...
-       * don't raise FRAG_LOAD_ERROR and FRAG_LOAD_TIMEOUT as fatal, as it is handled by mediaController
        */
       if (levelId !== undefined) {
         level = this._levels[levelId];
@@ -27717,8 +27471,8 @@ var LevelController = function (_EventHandler) {
               // reset this._level so that another call to set level() will retrigger a frag load
               this._level = undefined;
             }
-            // FRAG_LOAD_ERROR and FRAG_LOAD_TIMEOUT are handled by mediaController
-          } else if (details !== _errors.ErrorDetails.FRAG_LOAD_ERROR && details !== _errors.ErrorDetails.FRAG_LOAD_TIMEOUT) {
+            // fragment errors are all handled  by streamController
+          } else if (details !== _errors.ErrorDetails.FRAG_LOAD_ERROR && details !== _errors.ErrorDetails.FRAG_LOAD_TIMEOUT && details !== _errors.ErrorDetails.FRAG_LOOP_LOADING_ERROR) {
               _logger.logger.error('cannot recover ' + details + ' error');
               this._level = undefined;
               // stopping live reloading timer if any
@@ -27815,8 +27569,15 @@ var LevelController = function (_EventHandler) {
   }, {
     key: 'startLevel',
     get: function get() {
+      // hls.startLevel takes precedence over config.startLevel
+      // if none of these values are defined, fallback on this._firstLevel (first quality level appearing in variant manifest)
       if (this._startLevel === undefined) {
-        return this._firstLevel;
+        var configStartLevel = this.hls.config.startLevel;
+        if (configStartLevel !== undefined) {
+          return configStartLevel;
+        } else {
+          return this._firstLevel;
+        }
       } else {
         return this._startLevel;
       }
@@ -28089,10 +27850,10 @@ var StreamController = function (_EventHandler) {
       var maxBufLen = void 0;
       if (this.levels[level].hasOwnProperty('bitrate')) {
         maxBufLen = Math.max(8 * config.maxBufferSize / this.levels[level].bitrate, config.maxBufferLength);
-        maxBufLen = Math.min(maxBufLen, config.maxMaxBufferLength);
       } else {
         maxBufLen = config.maxBufferLength;
       }
+      maxBufLen = Math.min(maxBufLen, config.maxMaxBufferLength);
 
       // determine next candidate fragment to be loaded, based on current position and end of buffer position
       // ensure up to `config.maxMaxBufferLength` of buffer upfront
@@ -28362,9 +28123,10 @@ var StreamController = function (_EventHandler) {
           frag.loadCounter = 1;
         }
         frag.loadIdx = this.fragLoadIdx;
-        frag.autoLevel = hls.autoLevelEnabled;
         this.fragCurrent = frag;
         this.startFragRequested = true;
+        frag.autoLevel = hls.autoLevelEnabled;
+        frag.bitrateTest = this.fragBitrateTest;
         hls.trigger(_events2.default.FRAG_LOADING, { frag: frag });
         this.state = State.FRAG_LOADING;
         return true;
@@ -28415,7 +28177,7 @@ var StreamController = function (_EventHandler) {
       var rangeCurrent,
           currentTime,
           video = this.media;
-      if (video && video.seeking === false) {
+      if (video && video.readyState && video.seeking === false) {
         currentTime = video.currentTime;
         /* if video element is in seeked state, currentTime can only increase.
           (assuming that playback rate is positive ...)
@@ -28737,7 +28499,7 @@ var StreamController = function (_EventHandler) {
 
       if (this.startFragRequested === false) {
         // compute start position if set to -1. use it straight away if value is defined
-        if (this.startPosition === -1) {
+        if (this.startPosition === -1 || this.lastCurrentTime === -1) {
           // first, check if start time offset has been set in playlist, if yes, use this value
           var startTimeOffset = newDetails.startTimeOffset;
           if (!isNaN(startTimeOffset)) {
@@ -28777,20 +28539,26 @@ var StreamController = function (_EventHandler) {
   }, {
     key: 'onFragLoaded',
     value: function onFragLoaded(data) {
-      var fragCurrent = this.fragCurrent;
-      if (this.state === State.FRAG_LOADING && fragCurrent && data.frag.type === 'main' && data.frag.level === fragCurrent.level && data.frag.sn === fragCurrent.sn) {
+      var fragCurrent = this.fragCurrent,
+          fragLoaded = data.frag;
+      if (this.state === State.FRAG_LOADING && fragCurrent && fragLoaded.type === 'main' && fragLoaded.level === fragCurrent.level && fragLoaded.sn === fragCurrent.sn) {
+        var stats = data.stats;
         _logger.logger.log('Loaded  ' + fragCurrent.sn + ' of level ' + fragCurrent.level);
-        if (this.fragBitrateTest === true) {
+        // reset frag bitrate test in any case after frag loaded event
+        this.fragBitrateTest = false;
+        // if this frag was loaded to perform a bitrate test AND if hls.nextLoadLevel is greater than 0
+        // then this means that we should be able to load a fragment at a higher quality level
+        if (fragLoaded.bitrateTest === true && this.hls.nextLoadLevel) {
           // switch back to IDLE state ... we just loaded a fragment to determine adequate start bitrate and initialize autoswitch algo
           this.state = State.IDLE;
-          this.fragBitrateTest = false;
           this.startFragRequested = false;
-          data.stats.tparsed = data.stats.tbuffered = performance.now();
-          this.hls.trigger(_events2.default.FRAG_BUFFERED, { stats: data.stats, frag: fragCurrent, id: 'main' });
+          stats.tparsed = stats.tbuffered = performance.now();
+          this.hls.trigger(_events2.default.FRAG_BUFFERED, { stats: stats, frag: fragCurrent, id: 'main' });
+          this.tick();
         } else {
           this.state = State.PARSING;
           // transmux the MPEG-TS data to ISO-BMFF segments
-          this.stats = data.stats;
+          this.stats = stats;
           var currentLevel = this.levels[this.level],
               details = currentLevel.details,
               duration = details.totalduration,
@@ -29058,11 +28826,15 @@ var StreamController = function (_EventHandler) {
   }, {
     key: 'onError',
     value: function onError(data) {
-      var frag = data.frag;
+      var frag = data.frag || this.fragCurrent;
       // don't handle frag error not related to main fragment
       if (frag && frag.type !== 'main') {
         return;
       }
+      var media = this.media,
+
+      // 0.4 : tolerance needed as some browsers stalls playback before reaching buffered end
+      mediaBuffered = media && this.isBuffered(media.currentTime) && this.isBuffered(media.currentTime + 0.4);
       switch (data.details) {
         case _errors.ErrorDetails.FRAG_LOAD_ERROR:
         case _errors.ErrorDetails.FRAG_LOAD_TIMEOUT:
@@ -29073,14 +28845,14 @@ var StreamController = function (_EventHandler) {
             } else {
               loadError = 1;
             }
-            if (loadError <= this.config.fragLoadingMaxRetry ||
+            var config = this.config;
             // keep retrying / don't raise fatal network error if current position is buffered
-            this.media && this.isBuffered(this.media.currentTime)) {
+            if (loadError <= config.fragLoadingMaxRetry || mediaBuffered) {
               this.fragLoadError = loadError;
               // reset load counter to avoid frag loop loading error
               frag.loadCounter = 0;
-              // exponential backoff capped to 64s
-              var delay = Math.min(Math.pow(2, loadError - 1) * this.config.fragLoadingRetryDelay, 64000);
+              // exponential backoff capped to config.fragLoadingMaxRetryTimeout
+              var delay = Math.min(Math.pow(2, loadError - 1) * config.fragLoadingRetryDelay, config.fragLoadingMaxRetryTimeout);
               _logger.logger.warn('mediaController: frag loading failed, retry in ' + delay + ' ms');
               this.retryDate = performance.now() + delay;
               // retry loading state
@@ -29095,6 +28867,25 @@ var StreamController = function (_EventHandler) {
           }
           break;
         case _errors.ErrorDetails.FRAG_LOOP_LOADING_ERROR:
+          if (!data.fatal) {
+            // if buffer is not empty
+            if (mediaBuffered) {
+              // try to reduce max buffer length : rationale is that we could get
+              // frag loop loading error because of buffer eviction
+              this._reduceMaxMaxBufferLength(frag.duration);
+              this.state = State.IDLE;
+            } else {
+              // buffer empty. report as fatal if in manual mode or if lowest level.
+              // level controller takes care of emergency switch down logic
+              if (!frag.autoLevel || frag.level === 0) {
+                // redispatch same error but with fatal set to true
+                data.fatal = true;
+                this.hls.trigger(_events2.default.ERROR, data);
+                this.state = State.ERROR;
+              }
+            }
+          }
+          break;
         case _errors.ErrorDetails.LEVEL_LOAD_ERROR:
         case _errors.ErrorDetails.LEVEL_LOAD_TIMEOUT:
         case _errors.ErrorDetails.KEY_LOAD_ERROR:
@@ -29107,18 +28898,38 @@ var StreamController = function (_EventHandler) {
           }
           break;
         case _errors.ErrorDetails.BUFFER_FULL_ERROR:
-          // only reduce max buf len if in appending state
+          // if in appending state
           if (this.state === State.PARSING || this.state === State.PARSED) {
-            // reduce max buffer length as it might be too high. we do this to avoid loop flushing ...
-            this.config.maxMaxBufferLength /= 2;
-            _logger.logger.warn('reduce max buffer length to ' + this.config.maxMaxBufferLength + 's and switch to IDLE state');
-            // increase fragment load Index to avoid frag loop loading error after buffer flush
-            this.fragLoadIdx += 2 * this.config.fragLoadingLoopThreshold;
-            this.state = State.IDLE;
+            // reduce max buf len if current position is buffered
+            if (mediaBuffered) {
+              this._reduceMaxMaxBufferLength(frag.duration);
+              this.state = State.IDLE;
+            } else {
+              // current position is not buffered, but browser is still complaining about buffer full error
+              // this happens on IE/Edge, refer to https://github.com/dailymotion/hls.js/pull/708
+              // in that case flush the whole buffer to recover
+              _logger.logger.warn('buffer full error also media.currentTime is not buffered, flush everything');
+              this.fragCurrent = null;
+              this.state = State.PAUSED;
+              // flush everything
+              this.hls.trigger(_events2.default.BUFFER_FLUSHING, { startOffset: 0, endOffset: Number.POSITIVE_INFINITY });
+            }
           }
           break;
         default:
           break;
+      }
+    }
+  }, {
+    key: '_reduceMaxMaxBufferLength',
+    value: function _reduceMaxMaxBufferLength(minLength) {
+      var config = this.config;
+      if (config.maxMaxBufferLength >= minLength) {
+        // reduce max buffer length as it might be too high. we do this to avoid loop flushing ...
+        config.maxMaxBufferLength /= 2;
+        _logger.logger.warn('reduce max buffer length to ' + config.maxMaxBufferLength + 's and switch to IDLE state');
+        // increase fragment load Index to avoid frag loop loading error after buffer flush
+        this.fragLoadIdx += 2 * config.fragLoadingLoopThreshold;
       }
     }
   }, {
@@ -29203,6 +29014,11 @@ var StreamController = function (_EventHandler) {
     key: 'onFragLoadEmergencyAborted',
     value: function onFragLoadEmergencyAborted() {
       this.state = State.IDLE;
+      // if loadedmetadata is not set, it means that we are emergency switch down on first frag
+      // in that case, reset startFragRequested flag
+      if (!this.loadedmetadata) {
+        this.startFragRequested = false;
+      }
       this.tick();
     }
   }, {
@@ -29350,8 +29166,19 @@ var TimelineController = function (_EventHandler) {
       var channel1 = {
         'newCue': function newCue(startTime, endTime, screen) {
           if (!self.textTrack1) {
-            self.textTrack1 = self.createTextTrack('captions', 'Unknown CC1', 'en');
-            //            self.textTrack1.mode = 'showing';
+            //Enable reuse of existing text track.
+            var existingTrack1 = self.getExistingTrack('1');
+            if (!existingTrack1) {
+              self.textTrack1 = self.createTextTrack('captions', 'English', 'en');
+              self.textTrack1.textTrack1 = true;
+            } else {
+              self.textTrack1 = existingTrack1;
+              self.clearCurrentCues(self.textTrack1);
+
+              var e = new window.Event('addtrack');
+              e.track = self.textTrack1;
+              self.media.dispatchEvent(e);
+            }
           }
 
           self.Cues.newCue(self.textTrack1, startTime, endTime, screen);
@@ -29361,7 +29188,19 @@ var TimelineController = function (_EventHandler) {
       var channel2 = {
         'newCue': function newCue(startTime, endTime, screen) {
           if (!self.textTrack2) {
-            self.textTrack2 = self.createTextTrack('captions', 'Unknown CC2', 'es');
+            //Enable reuse of existing text track.
+            var existingTrack2 = self.getExistingTrack('2');
+            if (!existingTrack2) {
+              self.textTrack2 = self.createTextTrack('captions', 'Spanish', 'es');
+              self.textTrack2.textTrack2 = true;
+            } else {
+              self.textTrack2 = existingTrack2;
+              self.clearCurrentCues(self.textTrack2);
+
+              var e = new window.Event('addtrack');
+              e.track = self.textTrack2;
+              self.media.dispatchEvent(e);
+            }
           }
 
           self.Cues.newCue(self.textTrack2, startTime, endTime, screen);
@@ -29381,6 +29220,21 @@ var TimelineController = function (_EventHandler) {
           track.removeCue(track.cues[0]);
         }
       }
+    }
+  }, {
+    key: 'getExistingTrack',
+    value: function getExistingTrack(channelNumber) {
+      var media = this.media;
+      if (media) {
+        for (var i = 0; i < media.textTracks.length; i++) {
+          var textTrack = media.textTracks[i];
+          var propName = 'textTrack' + channelNumber;
+          if (textTrack[propName] === true) {
+            return textTrack;
+          }
+        }
+      }
+      return null;
     }
   }, {
     key: 'createTextTrack',
@@ -30208,8 +30062,8 @@ var ADTS = function () {
       // byte 3
       adtsChanelConfig |= (data[offset + 3] & 0xC0) >>> 6;
       _logger.logger.log('manifest codec:' + audioCodec + ',ADTS data:type:' + adtsObjectType + ',sampleingIndex:' + adtsSampleingIndex + '[' + adtsSampleingRates[adtsSampleingIndex] + 'Hz],channelConfig:' + adtsChanelConfig);
-      // firefox: freq less than 24kHz = AAC SBR (HE-AAC)
-      if (userAgent.indexOf('firefox') !== -1) {
+      // firefox/Opera: freq less than 24kHz = AAC SBR (HE-AAC)
+      if (/firefox|OPR/i.test(userAgent)) {
         if (adtsSampleingIndex >= 6) {
           adtsObjectType = 5;
           config = new Array(4);
@@ -30228,7 +30082,7 @@ var ADTS = function () {
           config = new Array(2);
           adtsExtensionSampleingIndex = adtsSampleingIndex;
         } else {
-          /*  for other browsers (chrome ...)
+          /*  for other browsers (Chrome/Vivaldi ...)
               always force audio type to be HE-AAC SBR, as some browsers do not support audio codec switch properly (like Chrome ...)
           */
           adtsObjectType = 5;
@@ -31758,12 +31612,17 @@ var TSDemuxer = function () {
               track.pps = [unit.data];
             }
             break;
+          // AUD
           case 9:
             push = false;
             if (avcSample) {
               _this.pushAccesUnit(avcSample, track);
             }
             avcSample = _this.avcSample = { key: false, pts: pes.pts, dts: pes.dts, units: { units: [], length: 0 }, debug: debug ? 'AUD ' : '' };
+            break;
+          // Filler Data
+          case 12:
+            push = false;
             break;
           default:
             push = false;
@@ -32772,7 +32631,7 @@ var Hls = function () {
     key: 'version',
     get: function get() {
       // replaced with browserify-versionify transform
-      return '0.6.2';
+      return '0.6.4';
     }
   }, {
     key: 'Events',
@@ -32818,6 +32677,7 @@ var Hls = function () {
           manifestLoadingMaxRetry: 1,
           manifestLoadingRetryDelay: 1000,
           manifestLoadingMaxRetryTimeout: 64000,
+          startLevel: undefined,
           levelLoadingTimeOut: 10000,
           levelLoadingMaxRetry: 4,
           levelLoadingRetryDelay: 1000,
@@ -32855,7 +32715,8 @@ var Hls = function () {
           abrEwmaSlowVoD: 15,
           abrEwmaDefaultEstimate: 5e5, // 500 kbps
           abrBandWidthFactor: 0.8,
-          abrBandWidthUpFactor: 0.7
+          abrBandWidthUpFactor: 0.7,
+          maxStarvationDelay: 4
         };
       }
       return Hls.defaultConfig;
@@ -33805,7 +33666,8 @@ var PlaylistLoader = function (_EventHandler) {
             var startParams = result[1];
             var startAttrs = new _attrList2.default(startParams);
             var startTimeOffset = startAttrs.decimalFloatingPoint('TIME-OFFSET');
-            if (startTimeOffset) {
+            //TIME-OFFSET can be 0
+            if (!isNaN(startTimeOffset)) {
               level.startTimeOffset = startTimeOffset;
             }
             break;
@@ -33854,7 +33716,7 @@ var PlaylistLoader = function (_EventHandler) {
       if (string.indexOf('#EXTM3U') === 0) {
         if (string.indexOf('#EXTINF:') > 0) {
           var isLevel = type !== 'audioTrack',
-              levelDetails = this.parseLevelPlaylist(string, url, level || id || 0, isLevel ? 'main' : 'audio');
+              levelDetails = this.parseLevelPlaylist(string, url, isLevel ? level : id || 0, isLevel ? 'main' : 'audio');
           levelDetails.tload = stats.tload;
           if (type === 'manifest') {
             // first request, stream manifest (no master playlist), fire manifest loaded event with level details
@@ -34898,6 +34760,15 @@ var MP4Remuxer = function () {
       });
       samples0 = track.samples;
 
+      // for audio samples, also consider consecutive fragments as being contiguous (even if a level switch occurs),
+      // for sake of clarity:
+      // consecutive fragments are frags with less than 100ms gaps between new time offset and next expected PTS
+      // contiguous fragments are consecutive fragments from same quality level (same level, new SN = old SN + 1)
+      // this helps ensuring audio continuity
+      // and this also avoids audio glitches/cut when switching quality, or reporting wrong duration on first audio frame
+
+      contiguous |= samples0.length && this.nextAacPts && Math.abs(timeOffset - this.nextAacPts / pesTimeScale) < 0.1;
+
       var nextAacPts = contiguous ? this.nextAacPts : timeOffset * pesTimeScale;
 
       // If the audio track is missing samples, the frames seem to get "left-shifted" within the
@@ -34913,19 +34784,19 @@ var MP4Remuxer = function () {
             ptsNorm = this._PTSNormalize(sample.pts - this._initDTS, nextAacPts),
             delta = ptsNorm - nextPtsNorm;
 
-        // If we're overlapping by more than half a duration, drop this sample
-        if (delta < -0.5 * pesFrameDuration) {
-          _logger.logger.log('Dropping frame due to ' + Math.round(Math.abs(delta / 90)) + ' ms overlap.');
+        // If we're overlapping by more than a duration, drop this sample
+        if (delta <= -pesFrameDuration) {
+          _logger.logger.warn('Dropping 1 audio frame @ ' + Math.round(nextPtsNorm / 90) / 1000 + 's due to ' + Math.round(Math.abs(delta / 90)) + ' ms overlap.');
           samples0.splice(i, 1);
           track.len -= sample.unit.length;
           // Don't touch nextPtsNorm or i
         }
-        // Otherwise, if we're more than half a frame away from where we should be, insert missing frames
-        else if (delta > 0.5 * pesFrameDuration) {
+        // Otherwise, if we're more than a frame away from where we should be, insert missing frames
+        else if (delta >= pesFrameDuration) {
             var missing = Math.round(delta / pesFrameDuration);
-            _logger.logger.log('Injecting ' + missing + ' frame' + (missing > 1 ? 's' : '') + ' of missing audio due to ' + Math.round(delta / 90) + ' ms gap.');
+            _logger.logger.warn('Injecting ' + missing + ' audio frame @ ' + Math.round(nextPtsNorm / 90) / 1000 + 's due to ' + Math.round(delta / 90) + ' ms gap.');
             for (var j = 0; j < missing; j++) {
-              newStamp = sample.pts - (missing - j) * pesFrameDuration;
+              newStamp = nextPtsNorm + this._initDTS;
               newStamp = Math.max(newStamp, this._initDTS);
               fillFrame = _aac2.default.getSilentFrame(track.channelCount);
               if (!fillFrame) {
@@ -34934,12 +34805,13 @@ var MP4Remuxer = function () {
               }
               samples0.splice(i, 0, { unit: fillFrame, pts: newStamp, dts: newStamp });
               track.len += fillFrame.length;
+              nextPtsNorm += pesFrameDuration;
               i += 1;
             }
 
             // Adjust sample to next expected pts
-            sample.pts = samples0[i - 1].pts + pesFrameDuration;
-            nextPtsNorm = this._PTSNormalize(sample.pts + pesFrameDuration - this._initDTS, nextAacPts);
+            sample.pts = sample.dts = nextPtsNorm + this._initDTS;
+            nextPtsNorm += pesFrameDuration;
             i += 1;
           }
           // Otherwise, we're within half a frame duration, so just adjust pts
@@ -34949,9 +34821,9 @@ var MP4Remuxer = function () {
               }
               nextPtsNorm += pesFrameDuration;
               if (i === 0) {
-                sample.pts = this._initDTS + nextAacPts;
+                sample.pts = sample.dts = this._initDTS + nextAacPts;
               } else {
-                sample.pts = samples0[i - 1].pts + pesFrameDuration;
+                sample.pts = sample.dts = samples0[i - 1].pts + pesFrameDuration;
               }
               i += 1;
             }
@@ -37175,7 +37047,7 @@ var XhrLoader = function () {
         xhr = this.loader = new XMLHttpRequest();
       }
 
-      xhr.onloadend = this.loadend.bind(this);
+      xhr.onreadystatechange = this.readystatechange.bind(this);
       xhr.onprogress = this.loadprogress.bind(this);
 
       xhr.open('GET', context.url, true);
@@ -37195,10 +37067,10 @@ var XhrLoader = function () {
       xhr.send();
     }
   }, {
-    key: 'loadend',
-    value: function loadend(event) {
+    key: 'readystatechange',
+    value: function readystatechange(event) {
       var xhr = event.currentTarget,
-          status = xhr.status,
+          readyState = xhr.readyState,
           stats = this.stats,
           context = this.context,
           config = this.config;
@@ -37211,36 +37083,47 @@ var XhrLoader = function () {
       // in any case clear the current xhrs timeout
       window.clearTimeout(this.requestTimeout);
 
-      // http status between 200 to 299 are all successful
-      if (status >= 200 && status < 300) {
-        stats.tload = Math.max(stats.tfirst, performance.now());
-        var data = void 0,
-            len = void 0;
-        if (context.responseType === 'arraybuffer') {
-          data = xhr.response;
-          len = data.byteLength;
-        } else {
-          data = xhr.responseText;
-          len = data.length;
+      // HEADERS_RECEIVED
+      if (readyState >= 2) {
+        if (stats.tfirst === 0) {
+          stats.tfirst = Math.max(performance.now(), stats.trequest);
+          // reset timeout to total timeout duration minus the time it took to receive headers
+          this.requestTimeout = window.setTimeout(this.loadtimeout.bind(this), config.timeout - (stats.tfirst - stats.trequest));
         }
-        stats.loaded = stats.total = len;
-        var response = { url: xhr.responseURL, data: data };
-        this.callbacks.onSuccess(response, stats, context);
-      } else {
-        // if max nb of retries reached or if http status between 400 and 499 (such error cannot be recovered, retrying is useless), return error
-        if (stats.retry >= config.maxRetry || status >= 400 && status < 499) {
-          _logger.logger.error(status + ' while loading ' + context.url);
-          this.callbacks.onError({ code: status, text: xhr.statusText }, context);
-        } else {
-          // retry
-          _logger.logger.warn(status + ' while loading ' + context.url + ', retrying in ' + this.retryDelay + '...');
-          // aborts and resets internal state
-          this.destroy();
-          // schedule retry
-          this.retryTimeout = window.setTimeout(this.loadInternal.bind(this), this.retryDelay);
-          // set exponential backoff
-          this.retryDelay = Math.min(2 * this.retryDelay, config.maxRetryDelay);
-          stats.retry++;
+        if (readyState === 4) {
+          var status = xhr.status;
+          // http status between 200 to 299 are all successful
+          if (status >= 200 && status < 300) {
+            stats.tload = Math.max(stats.tfirst, performance.now());
+            var data = void 0,
+                len = void 0;
+            if (context.responseType === 'arraybuffer') {
+              data = xhr.response;
+              len = data.byteLength;
+            } else {
+              data = xhr.responseText;
+              len = data.length;
+            }
+            stats.loaded = stats.total = len;
+            var response = { url: xhr.responseURL, data: data };
+            this.callbacks.onSuccess(response, stats, context);
+          } else {
+            // if max nb of retries reached or if http status between 400 and 499 (such error cannot be recovered, retrying is useless), return error
+            if (stats.retry >= config.maxRetry || status >= 400 && status < 499) {
+              _logger.logger.error(status + ' while loading ' + context.url);
+              this.callbacks.onError({ code: status, text: xhr.statusText }, context);
+            } else {
+              // retry
+              _logger.logger.warn(status + ' while loading ' + context.url + ', retrying in ' + this.retryDelay + '...');
+              // aborts and resets internal state
+              this.destroy();
+              // schedule retry
+              this.retryTimeout = window.setTimeout(this.loadInternal.bind(this), this.retryDelay);
+              // set exponential backoff
+              this.retryDelay = Math.min(2 * this.retryDelay, config.maxRetryDelay);
+              stats.retry++;
+            }
+          }
         }
       }
     }
@@ -37254,9 +37137,6 @@ var XhrLoader = function () {
     key: 'loadprogress',
     value: function loadprogress(event) {
       var stats = this.stats;
-      if (stats.tfirst === 0) {
-        stats.tfirst = Math.max(performance.now(), stats.trequest);
-      }
       stats.loaded = event.loaded;
       if (event.lengthComputable) {
         stats.total = event.total;
@@ -40325,10 +40205,9 @@ var
         player.one('loadedmetadata', function(){
           var playlists = hls.playlists.master.playlists;
 
-          var _sources = [{ src: 'auto', type: 'application/x-mpegURL', label: 'auto', res: 'auto'}];
+          var _sources = [{ src: hls.playlists.master.uri.replace(/^.*\/\/.+\//, ''), type: 'application/x-mpegURL', label: 'auto', res: 'auto'}];
 
           playlists.map(function(value){
-            value.attributes.RESOLUTION = value.attributes.RESOLUTION || { height: 'auto' };
             _sources.push({
               src: value.uri,
               type: 'application/x-mpegURL',

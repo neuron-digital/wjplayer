@@ -10,7 +10,7 @@
   "homepage": "https://github.com/Go-Promo/wjplayer",
   "dependencies": {},
   "devDependencies": {
-    "video.js": "^5.11.0",
+    "video.js": "^5.12.3",
     "videojs-ima": "https://github.com/Go-Promo/videojs-ima.git#master",
     "videojs-social": "https://github.com/Go-Promo/videojs-social.git#no-socials",
     "videojs-download-button": "https://github.com/Go-Promo/videojs-download-button.git#0.1.0",
@@ -18,6 +18,6 @@
     "videojs5-hlsjs-source-handler": "https://github.com/Go-Promo/videojs5-hlsjs-source-handler.git#hls6"
   },
   "resolutions": {
-    "video.js": "^5.11.0"
+    "video.js": "^5.12.3"
   }
 }
