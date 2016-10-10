@@ -37394,26 +37394,6 @@ videojs.plugin('qualityPickerPlugin', qualityPickerPlugin);
    *   }]
    * );
    *
-   * // Specify resolution and label of each source
-   * var player = wjplayer({
-   *  containerId: 'player-container',
-   *  defaultQuality: 'high',
-   *  // sourcesWithRes array will be passed to videojs-resolution-switcher
-   *  sourcesWithRes: [
-   *  {
-   *    src: 'path-to-video-low-quality.m3u8',
-   *    type: 'application/x-mpegURL',
-   *    res: 360,
-   *    label: 'SD'
-   *  },
-   *  {
-   *    src: 'path-to-video-high-quality.m3u8',
-   *    type: 'application/x-mpegURL',
-   *    res: 720,
-   *    label: 'HD'
-   *  }]
-   * });
-   *
    * // Create an audio player
    *  var audioPlayer = wjplayer({
    *    containerId: 'player-container',
@@ -37444,14 +37424,9 @@ videojs.plugin('qualityPickerPlugin', qualityPickerPlugin);
    *   where player shoud be inserted (appendChild() will be used)
    *
    * @param {Array} options.sources
-   *   REQUIRED IF `sourcesWithRes` IS NOT PROVIDED
+   *   REQUIRED
    *   Array of sources to pass to player.src()
    *   @see http://docs.videojs.com/docs/api/player.html#Methodssrc
-   *
-   * @param {Array} options.sourcesWithRes
-   *   REQUIRED IF `sources` IS NOT PROVIDED
-   *   Array of sources to pass to player.updateSrc()
-   *   @see https://github.com/kmoskwiak/videojs-resolution-switcher#updatesrcsource
    *
    * @param {String} options.playerId
    *   id to assign to the player element.
@@ -37571,7 +37546,6 @@ videojs.plugin('qualityPickerPlugin', qualityPickerPlugin);
       playerId: 'player',
       playerType: 'video',
       sources: [],
-      sourcesWithRes: [],
       pathToSwf: '',
       poster: '',
       autoplay: false,
@@ -37582,13 +37556,7 @@ videojs.plugin('qualityPickerPlugin', qualityPickerPlugin);
       volumeStyle: 'vertical',
       stretch: false,
       skin: 'default',
-      classes: [],
-      enableResolutionSwitcher: false,
-      html5: {
-        hlsjsConfig: {
-          debug: true
-        }
-      }
+      classes: []
     };
 
     if (!(typeof options === 'object' && options.containerId)) {
@@ -37610,6 +37578,9 @@ videojs.plugin('qualityPickerPlugin', qualityPickerPlugin);
       loop: this.options.loop,
       poster: this.options.poster,
       language: this.options.locale,
+      html5: {
+        hlsjsConfig: {}
+      },
       plugins: {},
       controlBar: {}
     }, this.options.videojs);
@@ -37624,16 +37595,6 @@ videojs.plugin('qualityPickerPlugin', qualityPickerPlugin);
       this.options.videojs.controlBar.volumeMenuButton = {
         inline: false,
         vertical: true
-      };
-    }
-
-    if (this.options.playerType === 'video'
-      && (!this.browser.IS_MOBILE || this.options.sourcesWithRes.length)) {
-      this.options.enableResolutionSwitcher = true;
-      // will be passed to videoJsResolutionSwitcher plugin
-      this.options.videojs.plugins.videoJsResolutionSwitcher = {
-        default: this.options.defaultQuality,
-        dynamicLabel: true
       };
     }
 
@@ -37670,7 +37631,6 @@ videojs.plugin('qualityPickerPlugin', qualityPickerPlugin);
 
     // Init player
     this.player = videojs(this.options.playerId, this.options.videojs, function() {
-      this.player.qualityPickerPlugin({});
       if (!!this.options.panorama && (this.player.panorama)) {
         this.player.panorama(typeof this.options.panorama === 'object'
           ? this.options.panorama
@@ -37681,11 +37641,6 @@ videojs.plugin('qualityPickerPlugin', qualityPickerPlugin);
           canvas = this.player.getChild('Canvas');
           return canvas.handleResize();
         });
-      }
-
-      // Init resolution switcher plugin
-      if (this.options.enableResolutionSwitcher && this.options.sourcesWithRes.length) {
-        this.player.updateSrc(this.options.sourcesWithRes);
       }
 
       // Init download button plugin
@@ -37714,6 +37669,7 @@ videojs.plugin('qualityPickerPlugin', qualityPickerPlugin);
         this.initAds();
       }
     }.bind(this));
+    this.player.qualityPickerPlugin({});
   };
 
   WJPlayer.prototype.createPlayer = function() {
