@@ -1,5 +1,9 @@
 {
-  "dependencies": {},
+  "dependencies": {
+    "hls.js": "^0.6.5",
+    "video.js": "^5.11.7",
+    "videojs5-hlsjs-source-handler": "github:streamroot/videojs5-hlsjs-source-handler"
+  },
   "devDependencies": {
     "babel-eslint": "^6.1.2",
     "bower": "^1.7.9",
@@ -16,8 +20,7 @@
     "gulp-eslint": "^3.0.1",
     "gulp-sass": "^2.3.2",
     "gulp-util": "^3.0.7",
-    "run-sequence": "^1.2.1",
-    "videojs-contrib-hls": "^3.3.0"
+    "run-sequence": "^1.2.1"
   },
   "name": "wjplayer",
   "description": "A wrapper around Video.js with contrib plugins bundle that supports HLS, VAST/VMAP, 360-degree videos, and more",
