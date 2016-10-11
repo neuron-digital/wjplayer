@@ -2,6 +2,7 @@
   "dependencies": {
     "hls.js": "^0.6.5",
     "video.js": "^5.11.7",
+    "videojs-quality-picker": "github:go-promo/videojs-quality-picker",
     "videojs5-hlsjs-source-handler": "github:streamroot/videojs5-hlsjs-source-handler"
   },
   "devDependencies": {
