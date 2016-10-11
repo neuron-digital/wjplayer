@@ -76,6 +76,7 @@ const includes = {
       paths.BOWER + '/videojs-panorama/dist/videojs-panorama.css'
     ]
   },
+  fonts: paths.BOWER + '/video.js/dist/font',
   swf: paths.BOWER + '/video.js/dist/video-js.swf'
 };
 
@@ -90,7 +91,7 @@ deps360.forEach(function(inc) {
 });
 
 gulp.task('default', () => {
-  runSequence('build', 'copy-swf');
+  runSequence('build', 'fonts', 'swf');
 });
 
 // Open in browser for testing
@@ -136,7 +137,12 @@ gulp.task('skins', () => {
     .pipe(gulp.dest(paths.DIST_SKINS));
 });
 
-gulp.task('copy-swf', () => {
+gulp.task('fonts', () => {
+  return gulp.src(includes.fonts)
+    .pipe(gulp.dest(paths.DIST));
+});
+
+gulp.task('swf', () => {
   return gulp.src(includes.swf)
     .pipe(gulp.dest(paths.DIST));
 });

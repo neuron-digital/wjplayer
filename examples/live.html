@@ -17,40 +17,15 @@
   <div id="player-container"></div>
 
   <script>
-    var STREAM_HOST = 'https://tv.life.ru';
-    var STREAM_URL_240 = STREAM_HOST + '/lifetv/240p/index.m3u8';
-    var STREAM_URL_360 = STREAM_HOST + '/lifetv/360p/index.m3u8';
-    var STREAM_URL_480 = STREAM_HOST + '/lifetv/480p/index.m3u8';
-    var STREAM_URL_720 = STREAM_HOST + '/lifetv/720p/index.m3u8';
-
     var options = {
       containerId: 'player-container',
       skin: 'nmd',
       autoplay: true,
-      defaultQuality: 480,
-      sourcesWithRes: [
+      sources: [
         {
-          src: STREAM_URL_720,
-          type: 'application/x-mpegURL',
-          label: '720p',
-          res: 720
-        }, {
-          src: STREAM_URL_480,
-          type: 'application/x-mpegURL',
-          label: '480p',
-          res: 480
-        }, {
-          src: STREAM_URL_360,
-          type: 'application/x-mpegURL',
-          label: '360p',
-          res: 360
-        }, {
-          src: STREAM_URL_240,
-          type: 'application/x-mpegURL',
-          label: '240p',
-          res: 240
-        }
-      ],
+          src: 'https://radio.life.ru/radio/index.m3u8',
+          type: 'application/x-mpegURL'
+        }],
       ads: window.ads
     };
     window.player = wjplayer(options);
