@@ -15,6 +15,7 @@ const paths = {
   BOWER: './bower_components',
   DIST: './dist',
   DIST_SKINS: './dist/skins',
+  DIST_FONTS: './dist/font',
   SRC_JS: './src/js/*.js',
   SRC_SCSS: './src/scss/*.scss',
   SRC_SCSS_SKINS: './src/scss/skins/*.scss'
@@ -76,7 +77,7 @@ const includes = {
       paths.BOWER + '/videojs-panorama/dist/videojs-panorama.css'
     ]
   },
-  fonts: paths.BOWER + '/video.js/dist/font',
+  fonts: paths.BOWER + '/video.js/dist/font/*',
   swf: paths.BOWER + '/video.js/dist/video-js.swf'
 };
 
@@ -139,7 +140,7 @@ gulp.task('skins', () => {
 
 gulp.task('fonts', () => {
   return gulp.src(includes.fonts)
-    .pipe(gulp.dest(paths.DIST));
+    .pipe(gulp.dest(paths.DIST_FONTS));
 });
 
 gulp.task('swf', () => {
