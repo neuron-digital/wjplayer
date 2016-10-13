@@ -1,6 +1,6 @@
 # wjplayer
 
-A wrapper around Video.js with contrib plugins bundle that supports HLS, VAST/VMAP, 360-degree videos, and more.
+Video.js bundle that supports HLS, VAST/VMAP, 360-degree videos, and more.
 
 ## What's included
 
