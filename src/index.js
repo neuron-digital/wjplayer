@@ -1,5 +1,9 @@
 import 'expose-loader?videojs!video.js';
 import 'videojs5-hlsjs-source-handler';
+import 'videojs-contrib-ads/src/videojs.ads';
+import 'videojs-ima';
+import 'videojs-social';
+import 'videojs-download-button';
 
 const google = window.google;
 
@@ -350,7 +354,8 @@ class WJPlayer {
     this.player.ima(this.options.ads, this.adsManagerLoadedCallback.bind(this));
     this.player.ima.initializeAdDisplayContainer();
     this.player.ima.requestAds();
-    this.imaContainer = document.getElementById('ima-ad-container');
+    this.imaContainer = document.getElementById(this.options.ads.id + '_ima-ad-container');
+    this.imaContainer.style.display = 'none';
 
     if (!this.placeholder) {
       this.imaContainer.addEventListener('click', () => {

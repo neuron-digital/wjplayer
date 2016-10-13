@@ -1,8 +1,13 @@
 {
   "dependencies": {
     "hls.js": "^0.6.5",
+    "three": "^0.81.2",
     "video.js": "^5.11.7",
+    "videojs-download-button": "go-promo/videojs-download-button",
+    "videojs-ima": "^0.5.0",
+    "videojs-panorama": "0.0.5",
     "videojs-quality-picker": "0.0.3",
+    "videojs-social": "github:go-promo/videojs-social#no-socials",
     "videojs5-hlsjs-source-handler": "streamroot/videojs5-hlsjs-source-handler"
   },
   "devDependencies": {
@@ -33,7 +38,7 @@
   "version": "1.0.5",
   "main": "dist/wjplayer.js",
   "scripts": {
-    "build": "webpack --mode=build",
+    "build": "webpack --mode=build && webpack --mode=dev",
     "dev": "webpack --progress --colors --watch --mode=dev",
     "start": "gulp browse",
     "test": "echo \"Error: no test specified\" && exit 1"
