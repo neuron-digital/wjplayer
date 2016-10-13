@@ -35,7 +35,7 @@
   },
   "name": "wjplayer",
   "description": "A wrapper around Video.js with contrib plugins bundle that supports HLS, VAST/VMAP, 360-degree videos, and more",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "main": "dist/wjplayer.js",
   "scripts": {
     "build": "webpack --mode=build && webpack --mode=dev",

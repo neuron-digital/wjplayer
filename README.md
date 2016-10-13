@@ -8,9 +8,9 @@ A wrapper around Video.js with contrib plugins bundle that supports HLS, VAST/VM
 - https://github.com/videojs/video.js
 
 ### Video.js plugins
-- https://github.com/videojs/videojs-contrib-hls
-- https://github.com/Go-Promo/videojs-ima (forked from https://github.com/googleads/videojs-ima)
-- https://github.com/Go-Promo/videojs-resolution-switcher (forked from https://github.com/kmoskwiak/videojs-resolution-switcher)
+- https://github.com/dailymotion/hls.js
+- https://github.com/streamroot/videojs5-hlsjs-source-handler
+- https://github.com/googleads/videojs-ima
 - https://github.com/Go-Promo/videojs-social (forked from https://github.com/codex-corp/videojs-social)
 - https://github.com/Go-Promo/videojs-download-button
 - https://github.com/yanwsh/videojs-panorama
