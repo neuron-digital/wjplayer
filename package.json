@@ -21,7 +21,7 @@
   },
   "name": "wjplayer",
   "description": "A wrapper around Video.js with contrib plugins bundle that supports HLS, VAST/VMAP, 360-degree videos, and more",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "main": "gulpfile.js",
   "scripts": {
     "start": "gulp browse",
