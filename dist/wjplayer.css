@@ -585,9 +585,6 @@ body.vjs-full-window {
   -moz-transition: visibility 1s, opacity 1s;
   -o-transition: visibility 1s, opacity 1s;
   transition: visibility 1s, opacity 1s; }
-  @media \0screen {
-    .vjs-has-started.vjs-user-inactive.vjs-playing .vjs-control-bar {
-      visibility: hidden; } }
 
 .vjs-controls-disabled .vjs-control-bar,
 .vjs-using-native-controls .vjs-control-bar,
@@ -597,10 +594,6 @@ body.vjs-full-window {
 .vjs-audio.vjs-has-started.vjs-user-inactive.vjs-playing .vjs-control-bar {
   opacity: 1;
   visibility: visible; }
-
-@media \0screen {
-  .vjs-user-inactive.vjs-playing .vjs-control-bar :before {
-    content: ""; } }
 
 .vjs-has-started.vjs-no-flex .vjs-control-bar {
   display: table; }
@@ -1243,7 +1236,8 @@ video::-webkit-media-text-track-display {
   min-height: 40px;
   border: none; }
 
-.vjs-caption-settings .vjs-tracksetting label, legend {
+.vjs-caption-settings .vjs-tracksetting label,
+.vjs-caption-settings .vjs-tracksetting legend {
   display: block;
   width: 100px;
   margin-bottom: 5px; }
@@ -1299,6 +1293,18 @@ video::-webkit-media-text-track-display {
 @media print {
   .video-js > *:not(.vjs-tech):not(.vjs-poster) {
     visibility: hidden; } }
+
+@media \0screen {
+  .vjs-user-inactive.vjs-playing .vjs-control-bar :before {
+    content: "";
+  }
+}
+
+@media \0screen {
+  .vjs-has-started.vjs-user-inactive.vjs-playing .vjs-control-bar {
+    visibility: hidden;
+  }
+}
 
 /**
  * Copyright 2014 Google Inc.
