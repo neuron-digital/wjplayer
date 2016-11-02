@@ -23,7 +23,7 @@ const paths = {
 const distName = 'wjplayer';
 const distName360 = 'wjplayer-360';
 
-const deps = ['core', 'ads', 'switcher', 'share', 'download'];
+const deps = ['core', 'ads', 'switcher', 'share', 'download', 'ga'];
 const deps360 = ['360'];
 
 let includesJs = [];
@@ -51,6 +51,9 @@ const includes = {
     download: [
       paths.BOWER  + '/videojs-download-button/dist/videojs-download-button.js'
     ],
+    ga: [
+      paths.NPM + '/videojs-ga/dist/videojs.ga.js'
+    ],
     360: [
       paths.BOWER + '/three.js/three.js',
       paths.BOWER + '/videojs-panorama/dist/videojs-panorama.v5.js'
@@ -72,6 +75,7 @@ const includes = {
     download: [
       paths.BOWER  + '/videojs-download-button/dist/videojs-download-button.css'
     ],
+    ga: [],
     360: [
       paths.BOWER + '/videojs-panorama/dist/videojs-panorama.css'
     ]

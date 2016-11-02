@@ -5,18 +5,19 @@ A wrapper around Video.js with contrib plugins bundle that supports HLS, VAST/VM
 ## What's included
 
 ### Video.js 5
-- https://github.com/videojs/video.js
+* https://github.com/videojs/video.js
 
 ### Video.js plugins
-- https://github.com/videojs/videojs-contrib-hls
-- https://github.com/Go-Promo/videojs-ima (forked from https://github.com/googleads/videojs-ima)
-- https://github.com/Go-Promo/videojs-resolution-switcher (forked from https://github.com/kmoskwiak/videojs-resolution-switcher)
-- https://github.com/Go-Promo/videojs-social (forked from https://github.com/codex-corp/videojs-social)
-- https://github.com/Go-Promo/videojs-download-button
-- https://github.com/yanwsh/videojs-panorama
+* https://github.com/videojs/videojs-contrib-hls
+* https://github.com/Go-Promo/videojs-ima
+* https://github.com/Go-Promo/videojs-resolution-switcher
+* https://github.com/Go-Promo/videojs-social
+* https://github.com/Go-Promo/videojs-download-button
+* https://github.com/Go-Promo/videojs-ga
+* https://github.com/yanwsh/videojs-panorama
 
 ### Plugins dependencies
-- https://github.com/mrdoob/three.js (required by videojs-panorama)
+* https://github.com/mrdoob/three.js (required by videojs-panorama)
 
 ## Testing
 

@@ -17,7 +17,8 @@
     "gulp-sass": "^2.3.2",
     "gulp-util": "^3.0.7",
     "run-sequence": "^1.2.1",
-    "videojs-contrib-hls": "^3.3.0"
+    "videojs-contrib-hls": "^3.3.0",
+    "videojs-ga": "github:go-promo/videojs-ga"
   },
   "name": "wjplayer",
   "description": "A wrapper around Video.js with contrib plugins bundle that supports HLS, VAST/VMAP, 360-degree videos, and more",
