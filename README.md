@@ -2,7 +2,7 @@
 
 Video.js bundle that supports HLS, VAST/VMAP, 360-degree videos, and more.
 
-#### [DEMO](https://go-promo.github.io/wjplayer/)
+#### [DEMO](https://go-promo.github.io/wjplayer/examples/)
 
 ## What's included
 
