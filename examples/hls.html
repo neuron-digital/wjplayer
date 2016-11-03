@@ -26,18 +26,21 @@
           src: 'https://embed.life.ru/playlist/3dd8517cb4957deb77f01dbe0b33ec31/index.m3u8',
           type: 'application/x-mpegURL'
         }],
-      ads: window.ads,
-      plugins: {
-        ga: {
-          eventsToTrack: ['loaded', 'secondsPlayed', 'percentsPlayed', 'start',
-            'end', 'seek', 'play', 'pause', 'resize',
-            'volumeChange', 'error', 'fullscreen'],
-          percentsPlayedInterval: 10,
-          secondsPlayedMoments: [10, 30, 60, 3*60, 5*60],
-          autoLabel: false,
-          debug: true
-        }
-      }
+      ads: window.ads
+    });
+    player.ga({
+      eventsToTrack: [
+        'loaded', 'percentsPlayed', 'secondsPlayed',
+        'start', 'end', 'seek', 'play', 'pause', 'resize',
+        'volumeChange', 'error', 'fullscreen',
+        'adstart', 'adend', 'adskip'
+      ],
+      autoLabel: false,
+      percentsPlayedInterval: 5,
+      secondsPlayedInterval: 10,
+      secondsPlayedMoments: [15, 25],
+      trackReplaySeconds: true,
+      debug: true
     });
   </script>
 </body>
