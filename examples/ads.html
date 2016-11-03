@@ -69,6 +69,20 @@
           debug: true
         });
 
+        player.ga({
+          eventsToTrack: [
+            'loaded', 'percentsPlayed', 'secondsPlayed',
+            'start', 'end', 'seek', 'play', 'pause', 'resize',
+            'volumeChange', 'error', 'fullscreen',
+            'adstart', 'adend', 'adskip'
+          ],
+          percentsPlayedInterval: 5,
+          secondsPlayedInterval: 10,
+          secondsPlayedMoments: [15, 25],
+          trackReplaySeconds: true,
+          debug: true
+        });
+
         this.setAttribute('disabled', true);
         this.innerText = 'Applied';
       });

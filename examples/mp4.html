@@ -10,6 +10,11 @@
   <script src="//imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
   <script src="/dist/wjplayer.js"></script>
   <script src="sample.js"></script>
+  <style>
+    html, body {
+      overflow: hidden;
+    }
+  </style>
   </head>
 
   <body>
@@ -32,6 +37,22 @@
           }],
         ads: window.ads
     });
+      player.ga({
+        eventsToTrack: [
+          'loaded', 'percentsPlayed', 'secondsPlayed',
+          'start', 'end', 'seek', 'play', 'pause', 'resize',
+          'volumeChange', 'error', 'fullscreen',
+          'adstart', 'adend', 'adskip'
+        ],
+        percentsPlayedInterval: 5,
+        secondsPlayedInterval: 10,
+        secondsPlayedMoments: [15, 25],
+        trackReplaySeconds: true,
+        debug: true
+      });
+      player.on('gaEvent', function(e, gaEvent) {
+        console.log(gaEvent);
+      })
     </script>
 </body>
 

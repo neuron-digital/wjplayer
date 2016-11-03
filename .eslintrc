@@ -1,8 +1,12 @@
 {
-  "extends": "eslint-config-airbnb-es5",
+  "parser": "babel-eslint",
   "rules": {
-    "func-names": 0,
-    "eqeqeq": ["error", "smart"],
-    "no-eq-null": 0
+    "strict": 0,
+    "quotes": [2, "single"]
+  },
+  "env": {
+    "browser": true,
+    "mocha": true,
+    "node": true
   }
 }

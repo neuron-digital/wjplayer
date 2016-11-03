@@ -15,6 +15,7 @@ const paths = {
   BOWER: './bower_components',
   DIST: './dist',
   DIST_SKINS: './dist/skins',
+  DIST_FONTS: './dist/font',
   SRC_JS: './src/js/*.js',
   SRC_SCSS: './src/scss/*.scss',
   SRC_SCSS_SKINS: './src/scss/skins/*.scss'
@@ -23,7 +24,7 @@ const paths = {
 const distName = 'wjplayer';
 const distName360 = 'wjplayer-360';
 
-const deps = ['core', 'ads', 'switcher', 'share', 'download'];
+const deps = ['core', 'ads', 'switcher', 'share', 'download', 'ga'];
 const deps360 = ['360'];
 
 let includesJs = [];
@@ -35,7 +36,7 @@ const includes = {
   js: {
     core: [
       paths.BOWER + '/video.js/dist/video.js',
-      paths.NPM + '/videojs-contrib-hls/dist/videojs-contrib-hls.js',
+      paths.BOWER + '/videojs5-hlsjs-source-handler/dist/videojs5-hlsjs-source-handler.js',
       paths.SRC_JS
     ],
     ads: [
@@ -50,6 +51,9 @@ const includes = {
     ],
     download: [
       paths.BOWER  + '/videojs-download-button/dist/videojs-download-button.js'
+    ],
+    ga: [
+      paths.NPM + '/videojs-ga/dist/videojs.ga.js'
     ],
     360: [
       paths.BOWER + '/three.js/three.js',
@@ -72,10 +76,12 @@ const includes = {
     download: [
       paths.BOWER  + '/videojs-download-button/dist/videojs-download-button.css'
     ],
+    ga: [],
     360: [
       paths.BOWER + '/videojs-panorama/dist/videojs-panorama.css'
     ]
   },
+  fonts: paths.BOWER + '/video.js/dist/font/*',
   swf: paths.BOWER + '/video.js/dist/video-js.swf'
 };
 
@@ -90,7 +96,7 @@ deps360.forEach(function(inc) {
 });
 
 gulp.task('default', () => {
-  runSequence('build', 'copy-swf');
+  runSequence('build', 'fonts', 'swf');
 });
 
 // Open in browser for testing
@@ -136,7 +142,12 @@ gulp.task('skins', () => {
     .pipe(gulp.dest(paths.DIST_SKINS));
 });
 
-gulp.task('copy-swf', () => {
+gulp.task('fonts', () => {
+  return gulp.src(includes.fonts)
+    .pipe(gulp.dest(paths.DIST_FONTS));
+});
+
+gulp.task('swf', () => {
   return gulp.src(includes.swf)
     .pipe(gulp.dest(paths.DIST));
 });
