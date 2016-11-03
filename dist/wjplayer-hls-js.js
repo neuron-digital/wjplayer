@@ -104,7 +104,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var require;var require;/* WEBPACK VAR INJECTION */(function(global) {/**
 	 * @license
-	 * Video.js 5.11.7 <http://videojs.com/>
+	 * Video.js 5.11.9 <http://videojs.com/>
 	 * Copyright Brightcove, Inc. <https://www.brightcove.com/>
 	 * Available under Apache License Version 2.0
 	 * <https://github.com/videojs/video.js/blob/master/LICENSE>
@@ -133,7 +133,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	//# sourceMappingURL=data:application/json;charset:utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm5vZGVfbW9kdWxlcy9nbG9iYWwvZG9jdW1lbnQuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IjtBQUFBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBIiwiZmlsZSI6ImdlbmVyYXRlZC5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzQ29udGVudCI6WyJ2YXIgdG9wTGV2ZWwgPSB0eXBlb2YgZ2xvYmFsICE9PSAndW5kZWZpbmVkJyA/IGdsb2JhbCA6XG4gICAgdHlwZW9mIHdpbmRvdyAhPT0gJ3VuZGVmaW5lZCcgPyB3aW5kb3cgOiB7fVxudmFyIG1pbkRvYyA9IHJlcXVpcmUoJ21pbi1kb2N1bWVudCcpO1xuXG5pZiAodHlwZW9mIGRvY3VtZW50ICE9PSAndW5kZWZpbmVkJykge1xuICAgIG1vZHVsZS5leHBvcnRzID0gZG9jdW1lbnQ7XG59IGVsc2Uge1xuICAgIHZhciBkb2NjeSA9IHRvcExldmVsWydfX0dMT0JBTF9ET0NVTUVOVF9DQUNIRUA0J107XG5cbiAgICBpZiAoIWRvY2N5KSB7XG4gICAgICAgIGRvY2N5ID0gdG9wTGV2ZWxbJ19fR0xPQkFMX0RPQ1VNRU5UX0NBQ0hFQDQnXSA9IG1pbkRvYztcbiAgICB9XG5cbiAgICBtb2R1bGUuZXhwb3J0cyA9IGRvY2N5O1xufVxuIl19
 	},{"min-document":3}],2:[function(_dereq_,module,exports){
 	(function (global){
 	if (typeof window !== "undefined") {
@@ -147,7 +146,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	//# sourceMappingURL=data:application/json;charset:utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm5vZGVfbW9kdWxlcy9nbG9iYWwvd2luZG93LmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSIsImZpbGUiOiJnZW5lcmF0ZWQuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlc0NvbnRlbnQiOlsiaWYgKHR5cGVvZiB3aW5kb3cgIT09IFwidW5kZWZpbmVkXCIpIHtcbiAgICBtb2R1bGUuZXhwb3J0cyA9IHdpbmRvdztcbn0gZWxzZSBpZiAodHlwZW9mIGdsb2JhbCAhPT0gXCJ1bmRlZmluZWRcIikge1xuICAgIG1vZHVsZS5leHBvcnRzID0gZ2xvYmFsO1xufSBlbHNlIGlmICh0eXBlb2Ygc2VsZiAhPT0gXCJ1bmRlZmluZWRcIil7XG4gICAgbW9kdWxlLmV4cG9ydHMgPSBzZWxmO1xufSBlbHNlIHtcbiAgICBtb2R1bGUuZXhwb3J0cyA9IHt9O1xufVxuIl19
 	},{}],3:[function(_dereq_,module,exports){
 	
 	},{}],4:[function(_dereq_,module,exports){
@@ -7861,6 +7859,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _Component.call(this, player, options);
 	
 	    this.on(player, 'durationchange', this.updateContent);
+	
+	    // Also listen for timeupdate and loadedmetadata because removing those
+	    // listeners could have broken dependent applications/libraries. These
+	    // can likely be removed for 6.0.
+	    this.on(player, 'timeupdate', this.updateContent);
+	    this.on(player, 'loadedmetadata', this.updateContent);
 	  }
 	
 	  /**
@@ -22006,7 +22010,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *
 	 * @type {String}
 	 */
-	videojs.VERSION = '5.11.7';
+	videojs.VERSION = '5.11.9';
 	
 	/**
 	 * The global options object. These are the settings that take effect
@@ -22617,9 +22621,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	},{"../../src/js/utils/merge-options.js":148,"./component":67,"./event-target":104,"./extend.js":105,"./player":113,"./plugins.js":114,"./setup":118,"./tech/flash.js":121,"./tech/html5.js":122,"./tech/tech.js":124,"./tracks/audio-track.js":126,"./tracks/text-track.js":134,"./tracks/video-track.js":139,"./utils/browser.js":140,"./utils/dom.js":142,"./utils/events.js":143,"./utils/fn.js":144,"./utils/format-time.js":145,"./utils/log.js":147,"./utils/stylesheet.js":149,"./utils/time-ranges.js":150,"./utils/url.js":152,"global/document":1,"global/window":2,"lodash-compat/object/merge":40,"xhr":56}]},{},[153])(153)
 	});
-	
-	
-	//# sourceMappingURL=video.js.map
 	/* vtt.js - v0.12.1 (https://github.com/mozilla/vtt.js) built on 08-07-2015 */
 	
 	(function(root) {

@@ -1,9 +1,9 @@
 {
   "dependencies": {
-    "hls.js": "^0.6.5",
+    "hls.js": "^0.6.7",
     "three": "^0.81.2",
-    "video.js": "^5.11.7",
-    "videojs-contrib-hls": "^3.3.0",
+    "video.js": "^5.11.9",
+    "videojs-contrib-hls": "^3.6.6",
     "videojs-download-button": "go-promo/videojs-download-button",
     "videojs-ga": "github:go-promo/videojs-ga",
     "videojs-ima": "^0.5.0",

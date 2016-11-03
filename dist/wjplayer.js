@@ -106,7 +106,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var require;var require;/* WEBPACK VAR INJECTION */(function(global) {/**
 	 * @license
-	 * Video.js 5.11.7 <http://videojs.com/>
+	 * Video.js 5.11.9 <http://videojs.com/>
 	 * Copyright Brightcove, Inc. <https://www.brightcove.com/>
 	 * Available under Apache License Version 2.0
 	 * <https://github.com/videojs/video.js/blob/master/LICENSE>
@@ -135,7 +135,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	//# sourceMappingURL=data:application/json;charset:utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm5vZGVfbW9kdWxlcy9nbG9iYWwvZG9jdW1lbnQuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IjtBQUFBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBIiwiZmlsZSI6ImdlbmVyYXRlZC5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzQ29udGVudCI6WyJ2YXIgdG9wTGV2ZWwgPSB0eXBlb2YgZ2xvYmFsICE9PSAndW5kZWZpbmVkJyA/IGdsb2JhbCA6XG4gICAgdHlwZW9mIHdpbmRvdyAhPT0gJ3VuZGVmaW5lZCcgPyB3aW5kb3cgOiB7fVxudmFyIG1pbkRvYyA9IHJlcXVpcmUoJ21pbi1kb2N1bWVudCcpO1xuXG5pZiAodHlwZW9mIGRvY3VtZW50ICE9PSAndW5kZWZpbmVkJykge1xuICAgIG1vZHVsZS5leHBvcnRzID0gZG9jdW1lbnQ7XG59IGVsc2Uge1xuICAgIHZhciBkb2NjeSA9IHRvcExldmVsWydfX0dMT0JBTF9ET0NVTUVOVF9DQUNIRUA0J107XG5cbiAgICBpZiAoIWRvY2N5KSB7XG4gICAgICAgIGRvY2N5ID0gdG9wTGV2ZWxbJ19fR0xPQkFMX0RPQ1VNRU5UX0NBQ0hFQDQnXSA9IG1pbkRvYztcbiAgICB9XG5cbiAgICBtb2R1bGUuZXhwb3J0cyA9IGRvY2N5O1xufVxuIl19
 	},{"min-document":3}],2:[function(_dereq_,module,exports){
 	(function (global){
 	if (typeof window !== "undefined") {
@@ -149,7 +148,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	//# sourceMappingURL=data:application/json;charset:utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm5vZGVfbW9kdWxlcy9nbG9iYWwvd2luZG93LmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSIsImZpbGUiOiJnZW5lcmF0ZWQuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlc0NvbnRlbnQiOlsiaWYgKHR5cGVvZiB3aW5kb3cgIT09IFwidW5kZWZpbmVkXCIpIHtcbiAgICBtb2R1bGUuZXhwb3J0cyA9IHdpbmRvdztcbn0gZWxzZSBpZiAodHlwZW9mIGdsb2JhbCAhPT0gXCJ1bmRlZmluZWRcIikge1xuICAgIG1vZHVsZS5leHBvcnRzID0gZ2xvYmFsO1xufSBlbHNlIGlmICh0eXBlb2Ygc2VsZiAhPT0gXCJ1bmRlZmluZWRcIil7XG4gICAgbW9kdWxlLmV4cG9ydHMgPSBzZWxmO1xufSBlbHNlIHtcbiAgICBtb2R1bGUuZXhwb3J0cyA9IHt9O1xufVxuIl19
 	},{}],3:[function(_dereq_,module,exports){
 	
 	},{}],4:[function(_dereq_,module,exports){
@@ -7863,6 +7861,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _Component.call(this, player, options);
 	
 	    this.on(player, 'durationchange', this.updateContent);
+	
+	    // Also listen for timeupdate and loadedmetadata because removing those
+	    // listeners could have broken dependent applications/libraries. These
+	    // can likely be removed for 6.0.
+	    this.on(player, 'timeupdate', this.updateContent);
+	    this.on(player, 'loadedmetadata', this.updateContent);
 	  }
 	
 	  /**
@@ -22008,7 +22012,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *
 	 * @type {String}
 	 */
-	videojs.VERSION = '5.11.7';
+	videojs.VERSION = '5.11.9';
 	
 	/**
 	 * The global options object. These are the settings that take effect
@@ -22619,9 +22623,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	},{"../../src/js/utils/merge-options.js":148,"./component":67,"./event-target":104,"./extend.js":105,"./player":113,"./plugins.js":114,"./setup":118,"./tech/flash.js":121,"./tech/html5.js":122,"./tech/tech.js":124,"./tracks/audio-track.js":126,"./tracks/text-track.js":134,"./tracks/video-track.js":139,"./utils/browser.js":140,"./utils/dom.js":142,"./utils/events.js":143,"./utils/fn.js":144,"./utils/format-time.js":145,"./utils/log.js":147,"./utils/stylesheet.js":149,"./utils/time-ranges.js":150,"./utils/url.js":152,"global/document":1,"global/window":2,"lodash-compat/object/merge":40,"xhr":56}]},{},[153])(153)
 	});
-	
-	
-	//# sourceMappingURL=video.js.map
 	/* vtt.js - v0.12.1 (https://github.com/mozilla/vtt.js) built on 08-07-2015 */
 	
 	(function(root) {
@@ -27605,7 +27606,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var require;var require;/* WEBPACK VAR INJECTION */(function(global) {/**
 	 * videojs-contrib-hls
-	 * @version 3.6.0
+	 * @version 3.6.6
 	 * @copyright 2016 Brightcove, Inc
 	 * @license Apache-2.0
 	 */
@@ -27863,6 +27864,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.consecutiveUpdates = 0;
 	    this.lastRecordedTime = null;
 	    this.timer_ = null;
+	    this.checkCurrentTimeTimeout_ = null;
 	
 	    if (options.debug) {
 	      this.logger_ = _videoJs2['default'].log.bind(_videoJs2['default'], 'gap-skipper ->');
@@ -27872,34 +27874,51 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var waitingHandler = function waitingHandler() {
 	      return _this.waiting_();
 	    };
-	    var timeupdateHandler = function timeupdateHandler() {
-	      return _this.timeupdate_();
-	    };
 	    var cancelTimerHandler = function cancelTimerHandler() {
 	      return _this.cancelTimer_();
 	    };
 	
 	    this.tech_.on('waiting', waitingHandler);
-	    this.tech_.on('timeupdate', timeupdateHandler);
 	    this.tech_.on(timerCancelEvents, cancelTimerHandler);
+	    this.monitorCurrentTime_();
 	
 	    // Define the dispose function to clean up our events
 	    this.dispose = function () {
 	      _this.logger_('dispose');
 	      _this.tech_.off('waiting', waitingHandler);
-	      _this.tech_.off('timeupdate', timeupdateHandler);
 	      _this.tech_.off(timerCancelEvents, cancelTimerHandler);
+	      if (_this.checkCurrentTimeTimeout_) {
+	        clearTimeout(_this.checkCurrentTimeTimeout_);
+	      }
 	      _this.cancelTimer_();
 	    };
 	  }
 	
 	  /**
-	   * Handler for `waiting` events from the player
+	   * Periodically check for timeupdates to see if a gap has been encountered.
 	   *
 	   * @private
 	   */
 	
 	  _createClass(GapSkipper, [{
+	    key: 'monitorCurrentTime_',
+	    value: function monitorCurrentTime_() {
+	      this.checkCurrentTime_();
+	
+	      if (this.checkCurrentTimeTimeout_) {
+	        clearTimeout(this.checkCurrentTimeTimeout_);
+	      }
+	
+	      // 42 = 24 fps // 250 is what Webkit uses // FF uses 15
+	      this.checkCurrentTimeTimeout_ = setTimeout(this.monitorCurrentTime_.bind(this), 250);
+	    }
+	
+	    /**
+	     * Handler for `waiting` events from the player
+	     *
+	     * @private
+	     */
+	  }, {
 	    key: 'waiting_',
 	    value: function waiting_() {
 	      if (!this.tech_.seeking()) {
@@ -27915,8 +27934,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @private
 	     */
 	  }, {
-	    key: 'timeupdate_',
-	    value: function timeupdate_() {
+	    key: 'checkCurrentTime_',
+	    value: function checkCurrentTime_() {
 	      if (this.tech_.paused() || this.tech_.seeking()) {
 	        return;
 	      }
@@ -28505,12 +28524,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'handleAudioinfoUpdate_',
 	    value: function handleAudioinfoUpdate_(event) {
-	      if (!_videoJs2['default'].browser.IS_FIREFOX || !this.audioInfo_ || !objectChanged(this.audioInfo_, event.info)) {
+	      if (Hls.supportsAudioInfoChange_() || !this.audioInfo_ || !objectChanged(this.audioInfo_, event.info)) {
 	        this.audioInfo_ = event.info;
 	        return;
 	      }
 	
-	      var error = 'had different audio properties (channels, sample rate, etc.) ' + 'or changed in some other way.  This behavior is currently ' + 'unsupported in Firefox due to an issue: \n\n' + 'https://bugzilla.mozilla.org/show_bug.cgi?id=1247138\n\n';
+	      var error = 'had different audio properties (channels, sample rate, etc.) ' + 'or changed in some other way.  This behavior is currently ' + 'unsupported in Firefox 48 and below due to an issue: \n\n' + 'https://bugzilla.mozilla.org/show_bug.cgi?id=1247138\n\n';
 	
 	      var enabledIndex = this.activeAudioGroup().map(function (track) {
 	        return track.enabled;
@@ -29144,7 +29163,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          var codecString = variant.attributes.CODECS;
 	
 	          variantCodecs = parseCodecs(codecString);
-	          if (!MediaSource.isTypeSupported('video/mp4; codecs="' + codecString + '"')) {
+	          if (window.MediaSource && window.MediaSource.isTypeSupported && !window.MediaSource.isTypeSupported('video/mp4; codecs="' + codecString + '"')) {
 	            variant.excludeUntil = Infinity;
 	          }
 	        }
@@ -30763,10 +30782,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Object} playlist a media playlist object
 	 * @param {Object} mediaSource the MediaSource object
 	 * @param {Number} segmentIndex the index of segment we last appended
-	 * @param {Object} currentBuffered buffered region that currentTime resides in
 	 * @returns {Boolean} do we need to call endOfStream on the MediaSource
 	 */
-	var detectEndOfStream = function detectEndOfStream(playlist, mediaSource, segmentIndex, currentBuffered) {
+	var detectEndOfStream = function detectEndOfStream(playlist, mediaSource, segmentIndex) {
 	  if (!playlist) {
 	    return false;
 	  }
@@ -30775,13 +30793,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  // determine a few boolean values to help make the branch below easier
 	  // to read
-	  var appendedLastSegment = segmentIndex === segments.length - 1;
-	  var bufferedToEnd = currentBuffered.length && segments[segments.length - 1].end <= currentBuffered.end(0);
+	  var appendedLastSegment = segmentIndex === segments.length;
 	
 	  // if we've buffered to the end of the video, we need to call endOfStream
 	  // so that MediaSources can trigger the `ended` event when it runs out of
 	  // buffered data instead of waiting for me
-	  return playlist.endList && mediaSource.readyState === 'open' && (appendedLastSegment || bufferedToEnd);
+	  return playlist.endList && mediaSource.readyState === 'open' && appendedLastSegment;
 	};
 	
 	/**
@@ -31092,12 +31109,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @param {TimeRanges} buffered - the state of the buffer
 	     * @param {Object} playlist - the playlist object to fetch segments from
 	     * @param {Number} currentTime - the playback position in seconds
+	     * @param {Boolean} hasPlayed - if the player has played before
+	     * @param {Number} expired - the seconds expired off the playlist
+	     * @param {Number} timeCorrection - correction value to add to current time when
+	     *  when determining media index to use
 	     * @returns {Object} a segment info object that describes the
 	     * request that should be made or null if no request is necessary
 	     */
 	  }, {
 	    key: 'checkBuffer_',
-	    value: function checkBuffer_(buffered, playlist, currentTime) {
+	    value: function checkBuffer_(buffered, playlist, currentTime, hasPlayed, expired, timeCorrection) {
 	      var currentBuffered = _ranges2['default'].findRange(buffered, currentTime);
 	
 	      // There are times when MSE reports the first segment as starting a
@@ -31109,16 +31130,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      var bufferedTime = undefined;
 	      var currentBufferedEnd = undefined;
-	      var segment = undefined;
 	      var mediaIndex = undefined;
 	
 	      if (!playlist.segments.length) {
-	        return;
+	        return null;
 	      }
 	
 	      if (currentBuffered.length === 0) {
 	        // find the segment containing currentTime
-	        mediaIndex = (0, _playlist.getMediaIndexForTime_)(playlist, currentTime + this.timeCorrection_, this.expired_);
+	        mediaIndex = (0, _playlist.getMediaIndexForTime_)(playlist, currentTime + timeCorrection, expired);
 	      } else {
 	        // find the segment adjacent to the end of the current
 	        // buffered region
@@ -31127,46 +31147,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        // if the video has not yet played only, and we already have
 	        // one segment downloaded do nothing
-	        if (!this.hasPlayed_() && bufferedTime >= 1) {
+	        if (!hasPlayed && bufferedTime >= 1) {
 	          return null;
 	        }
 	
 	        // if there is plenty of content buffered, and the video has
 	        // been played before relax for awhile
-	        if (this.hasPlayed_() && bufferedTime >= _config2['default'].GOAL_BUFFER_LENGTH) {
+	        if (hasPlayed && bufferedTime >= _config2['default'].GOAL_BUFFER_LENGTH) {
 	          return null;
 	        }
-	        mediaIndex = (0, _playlist.getMediaIndexForTime_)(playlist, currentBufferedEnd + this.timeCorrection_, this.expired_);
+	        mediaIndex = (0, _playlist.getMediaIndexForTime_)(playlist, currentBufferedEnd + timeCorrection, expired);
 	      }
 	
-	      if (mediaIndex < 0 || mediaIndex === playlist.segments.length) {
-	        return null;
-	      }
-	
-	      segment = playlist.segments[mediaIndex];
-	      return {
-	        // resolve the segment URL relative to the playlist
-	        uri: segment.resolvedUri,
-	        // the segment's mediaIndex at the time it was requested
-	        mediaIndex: mediaIndex,
-	        // the segment's playlist
-	        playlist: playlist,
-	        // unencrypted bytes of the segment
-	        bytes: null,
-	        // when a key is defined for this segment, the encrypted bytes
-	        encryptedBytes: null,
-	        // the state of the buffer before a segment is appended will be
-	        // stored here so that the actual segment duration can be
-	        // determined after it has been appended
-	        buffered: null,
-	        // The target timestampOffset for this segment when we append it
-	        // to the source buffer
-	        timestampOffset: NaN,
-	        // The timeline that the segment is in
-	        timeline: segment.timeline,
-	        // The expected duration of the segment in seconds
-	        duration: segment.duration
-	      };
+	      return mediaIndex;
 	    }
 	
 	    /**
@@ -31212,42 +31205,82 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return;
 	      }
 	
+	      var buffered = this.sourceUpdater_.buffered();
+	      var playlist = this.playlist_;
+	      var currentTime = this.currentTime_();
+	      var hasPlayed = this.hasPlayed_();
+	      var expired = this.expired_;
+	      var timeCorrection = this.timeCorrection_;
+	
 	      // see if we need to begin loading immediately
-	      var segmentInfo = this.checkBuffer_(this.sourceUpdater_.buffered(), this.playlist_, this.currentTime_());
+	      var requestIndex = this.checkBuffer_(buffered, playlist, currentTime, hasPlayed, expired, timeCorrection);
 	
-	      if (!segmentInfo) {
+	      if (requestIndex === null) {
 	        return;
 	      }
 	
-	      if (segmentInfo.mediaIndex === this.playlist_.segments.length - 1 && this.mediaSource_.readyState === 'ended' && !this.seeking_()) {
+	      var isEndOfStream = detectEndOfStream(playlist, this.mediaSource_, requestIndex);
+	
+	      if (isEndOfStream) {
+	        this.mediaSource_.endOfStream();
 	        return;
 	      }
 	
-	      var segment = this.playlist_.segments[segmentInfo.mediaIndex];
-	      var startOfSegment = (0, _playlist.duration)(this.playlist_, this.playlist_.mediaSequence + segmentInfo.mediaIndex, this.expired_);
+	      if (requestIndex === playlist.segments.length - 1 && this.mediaSource_.readyState === 'ended' && !this.seeking_()) {
+	        return;
+	      }
 	
-	      // We will need to change timestampOffset of the sourceBuffer if either of
-	      // the following conditions are true:
-	      // - The segment.timeline !== this.currentTimeline
-	      //   (we are crossing a discontinuity)
+	      if (requestIndex < 0 || requestIndex >= playlist.segments.length) {
+	        return;
+	      }
+	
+	      var segment = this.playlist_.segments[requestIndex];
+	
+	      var request = {
+	        // resolve the segment URL relative to the playlist
+	        uri: segment.resolvedUri,
+	        // the segment's mediaIndex at the time it was requested
+	        mediaIndex: requestIndex,
+	        // the segment's playlist
+	        playlist: playlist,
+	        // unencrypted bytes of the segment
+	        bytes: null,
+	        // when a key is defined for this segment, the encrypted bytes
+	        encryptedBytes: null,
+	        // the state of the buffer before a segment is appended will be
+	        // stored here so that the actual segment duration can be
+	        // determined after it has been appended
+	        buffered: null,
+	        // The target timestampOffset for this segment when we append it
+	        // to the source buffer
+	        timestampOffset: NaN,
+	        // The timeline that the segment is in
+	        timeline: segment.timeline,
+	        // The expected duration of the segment in seconds
+	        duration: segment.duration
+	      };
+	
+	      var startOfSegment = (0, _playlist.duration)(playlist, playlist.mediaSequence + request.mediaIndex, expired);
+	
+	      //   (we are crossing a discontinuity somehow)
 	      // - The "timestampOffset" for the start of this segment is less than
 	      //   the currently set timestampOffset
-	      segmentInfo.timestampOffset = this.sourceUpdater_.timestampOffset();
+	      request.timestampOffset = this.sourceUpdater_.timestampOffset();
 	      if (segment.timeline !== this.currentTimeline_ || startOfSegment < this.sourceUpdater_.timestampOffset()) {
-	        segmentInfo.timestampOffset = startOfSegment;
+	        request.timestampOffset = startOfSegment;
 	      }
 	
 	      // Sanity check the segment-index determining logic by calcuating the
 	      // percentage of the chosen segment that is buffered. If more than 90%
 	      // of the segment is buffered then fetching it will likely not help in
 	      // any way
-	      var percentBuffered = _ranges2['default'].getSegmentBufferedPercent(startOfSegment, segment.duration, this.currentTime_(), this.sourceUpdater_.buffered());
+	      var percentBuffered = _ranges2['default'].getSegmentBufferedPercent(startOfSegment, segment.duration, currentTime, buffered);
 	
 	      if (percentBuffered >= 90) {
 	        // Increment the timeCorrection_ variable to push the fetcher forward
 	        // in time and hopefully skip any gaps or flaws in our understanding
 	        // of the media
-	        var correctionApplied = this.incrementTimeCorrection_(this.playlist_.targetDuration / 2, 1);
+	        var correctionApplied = this.incrementTimeCorrection_(playlist.targetDuration / 2, 1);
 	
 	        if (correctionApplied && !this.paused()) {
 	          this.fillBuffer_();
@@ -31256,7 +31289,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return;
 	      }
 	
-	      this.loadSegment_(segmentInfo);
+	      this.loadSegment_(request);
 	    }
 	
 	    /**
@@ -31626,7 +31659,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // any time an update finishes and the last segment is in the
 	      // buffer, end the stream. this ensures the "ended" event will
 	      // fire if playback reaches that point.
-	      var isEndOfStream = detectEndOfStream(segmentInfo.playlist, this.mediaSource_, currentMediaIndex, currentBuffered);
+	      var isEndOfStream = detectEndOfStream(segmentInfo.playlist, this.mediaSource_, currentMediaIndex + 1);
 	
 	      if (isEndOfStream) {
 	        this.mediaSource_.endOfStream();
@@ -36547,13 +36580,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (config && track && track.newMetadata &&
 	        (frame.keyFrame || tags.length === 0)) {
 	      // Push extra data on every IDR frame in case we did a stream change + seek
-	      tags.push(metaDataTag(config, frame.pts));
-	      tags.push(extraDataTag(track, frame.pts));
+	      tags.push(metaDataTag(config, frame.dts));
+	      tags.push(extraDataTag(track, frame.dts));
 	      track.newMetadata = false;
 	    }
 	
 	    frame.endNalUnit();
 	    tags.push(frame);
+	    h264Frame = null;
 	  };
 	
 	  this.push = function(data) {
@@ -40044,17 +40078,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  initSegment = mp4.initSegment(this.pendingTracks);
 	
-	  // Create a new typed array large enough to hold the init
-	  // segment and all tracks
-	  event.data = new Uint8Array(initSegment.byteLength +
-	                              this.pendingBytes);
+	  // Create a new typed array to hold the init segment
+	  event.initSegment = new Uint8Array(initSegment.byteLength);
 	
 	  // Create an init segment containing a moov
 	  // and track definitions
-	  event.data.set(initSegment);
-	  offset += initSegment.byteLength;
+	  event.initSegment.set(initSegment);
 	
-	  // Append each moof+mdat (one per track) after the init segment
+	  // Create a new typed array to hold the moof+mdats
+	  event.data = new Uint8Array(this.pendingBytes);
+	
+	  // Append each moof+mdat (one per track) together
 	  for (i = 0; i < this.pendingBoxes.length; i++) {
 	    event.data.set(this.pendingBoxes[i], offset);
 	    offset += this.pendingBoxes[i].byteLength;
@@ -40503,7 +40537,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (!listeners[type]) {
 	        listeners[type] = [];
 	      }
-	      listeners[type].push(listener);
+	      listeners[type] = listeners[type].concat(listener);
 	    };
 	    /**
 	     * Remove a listener for a specified event type.
@@ -40517,6 +40551,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return false;
 	      }
 	      index = listeners[type].indexOf(listener);
+	      listeners[type] = listeners[type].slice();
 	      listeners[type].splice(index, 1);
 	      return index > -1;
 	    };
@@ -40648,6 +40683,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	};
 	
+	var durationOfVideo = function durationOfVideo(duration) {
+	  var dur = undefined;
+	
+	  if (isNaN(duration) || Math.abs(duration) === Infinity) {
+	    dur = Number.MAX_VALUE;
+	  } else {
+	    dur = duration;
+	  }
+	  return dur;
+	};
 	/**
 	 * Add text track data to a source handler given the captions and
 	 * metadata from the buffer.
@@ -40667,6 +40712,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	
 	  if (metadataArray) {
+	    var videoDuration = durationOfVideo(sourceHandler.mediaSource_.duration);
+	
 	    metadataArray.forEach(function (metadata) {
 	      var time = metadata.cueTime + this.timestampOffset;
 	
@@ -40676,13 +40723,40 @@ return /******/ (function(modules) { // webpackBootstrap
 	        cue.frame = frame;
 	        cue.value = frame;
 	        deprecateOldCue(cue);
+	
 	        this.metadataTrack_.addCue(cue);
 	      }, this);
 	    }, sourceHandler);
+	
+	    /** Updating the metadeta cues so that
+	     * the endTime of each cue is the startTime of the next cue
+	     * the endTime of last cue is the duration of the video
+	     */
+	    if (sourceHandler.metadataTrack_ && sourceHandler.metadataTrack_.cues) {
+	      var cues = sourceHandler.metadataTrack_.cues;
+	      var cuesArray = [];
+	
+	      for (var j = 0; j < cues.length; j++) {
+	        cuesArray.push(cues[j]);
+	      }
+	      cuesArray.sort(function (first, second) {
+	        return first.startTime - second.startTime;
+	      });
+	
+	      for (var i = 0; i < cuesArray.length - 1; i++) {
+	        if (cuesArray[i].endTime !== cuesArray[i + 1].startTime) {
+	          cuesArray[i].endTime = cuesArray[i + 1].startTime;
+	        }
+	      }
+	      cuesArray[cuesArray.length - 1].endTime = videoDuration;
+	    }
 	  }
 	};
 	
-	exports['default'] = addTextTrackData;
+	exports['default'] = {
+	  addTextTrackData: addTextTrackData,
+	  durationOfVideo: durationOfVideo
+	};
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 	},{"global/window":25}],85:[function(require,module,exports){
@@ -41082,8 +41156,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _addTextTrackData = require('./add-text-track-data');
 	
-	var _addTextTrackData2 = _interopRequireDefault(_addTextTrackData);
-	
 	var _flashConstants = require('./flash-constants');
 	
 	var _flashConstants2 = _interopRequireDefault(_flashConstants);
@@ -41155,7 +41227,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // media timeline and PTS values
 	    this.basePtsOffset_ = NaN;
 	
-	    this.mediaSource = mediaSource;
+	    this.mediaSource_ = mediaSource;
 	
 	    // indicates whether the asynchronous continuation of an operation
 	    // is still being processed
@@ -41167,10 +41239,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.segmentParser_ = new _muxJsLibFlv2['default'].Transmuxer();
 	    this.segmentParser_.on('data', this.receiveBuffer_.bind(this));
 	    encodedHeader = _globalWindow2['default'].btoa(String.fromCharCode.apply(null, Array.prototype.slice.call(this.segmentParser_.getFlvHeader())));
-	    this.mediaSource.swfObj.vjs_appendBuffer(encodedHeader);
+	    this.mediaSource_.swfObj.vjs_appendBuffer(encodedHeader);
 	
 	    this.one('updateend', function () {
-	      _this.mediaSource.tech_.trigger('loadedmetadata');
+	      _this.mediaSource_.tech_.trigger('loadedmetadata');
 	    });
 	
 	    Object.defineProperty(this, 'timestampOffset', {
@@ -41183,7 +41255,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          this.segmentParser_ = new _muxJsLibFlv2['default'].Transmuxer();
 	          this.segmentParser_.on('data', this.receiveBuffer_.bind(this));
 	          // We have to tell flash to expect a discontinuity
-	          this.mediaSource.swfObj.vjs_discontinuity();
+	          this.mediaSource_.swfObj.vjs_discontinuity();
 	          // the media <-> PTS mapping must be re-established after
 	          // the discontinuity
 	          this.basePtsOffset_ = NaN;
@@ -41193,11 +41265,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    Object.defineProperty(this, 'buffered', {
 	      get: function get() {
-	        if (!this.mediaSource || !this.mediaSource.swfObj || !('vjs_getProperty' in this.mediaSource.swfObj)) {
+	        if (!this.mediaSource_ || !this.mediaSource_.swfObj || !('vjs_getProperty' in this.mediaSource_.swfObj)) {
 	          return _videoJs2['default'].createTimeRange();
 	        }
 	
-	        var buffered = this.mediaSource.swfObj.vjs_getProperty('buffered');
+	        var buffered = this.mediaSource_.swfObj.vjs_getProperty('buffered');
 	
 	        if (buffered && buffered.length) {
 	          buffered[0][0] = toDecimalPlaces(buffered[0][0], 3);
@@ -41209,7 +41281,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    // On a seek we remove all text track data since flash has no concept
 	    // of a buffered-range and everything else is reset on seek
-	    this.mediaSource.player_.on('seeked', function () {
+	    this.mediaSource_.player_.on('seeked', function () {
 	      (0, _removeCuesFromTrack2['default'])(0, Infinity, _this.metadataTrack_);
 	      (0, _removeCuesFromTrack2['default'])(0, Infinity, _this.inbandTextTrack_);
 	    });
@@ -41240,7 +41312,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	
 	      this.updating = true;
-	      this.mediaSource.readyState = 'open';
+	      this.mediaSource_.readyState = 'open';
 	      this.trigger({ type: 'update' });
 	
 	      // this is here to use recursion
@@ -41267,7 +41339,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: function abort() {
 	      this.buffer_ = [];
 	      this.bufferSize_ = 0;
-	      this.mediaSource.swfObj.vjs_abort();
+	      this.mediaSource_.swfObj.vjs_abort();
 	
 	      // report any outstanding updates have ended
 	      if (this.updating) {
@@ -41306,8 +41378,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var _this3 = this;
 	
 	      // create an in-band caption track if one is present in the segment
-	      (0, _createTextTracksIfNecessary2['default'])(this, this.mediaSource, segment);
-	      (0, _addTextTrackData2['default'])(this, segment.captions, segment.metadata);
+	      (0, _createTextTracksIfNecessary2['default'])(this, this.mediaSource_, segment);
+	      (0, _addTextTrackData.addTextTrackData)(this, segment.captions, segment.metadata);
 	
 	      // Do this asynchronously since convertTagsToData_ can be time consuming
 	      scheduleTick(function () {
@@ -41376,7 +41448,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        // bypass normal ExternalInterface calls and pass xml directly
 	        // IE can be slow by default
-	        this.mediaSource.swfObj.CallFunction('<invoke name="vjs_appendBuffer"' + 'returntype="javascript"><arguments><string>' + b64str + '</string></arguments></invoke>');
+	        this.mediaSource_.swfObj.CallFunction('<invoke name="vjs_appendBuffer"' + 'returntype="javascript"><arguments><string>' + b64str + '</string></arguments></invoke>');
 	        appendTime = new Date() - startTime;
 	      } while (this.buffer_.length && appendTime < _flashConstants2['default'].TIME_PER_TICK);
 	
@@ -41417,7 +41489,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    key: 'convertTagsToData_',
 	    value: function convertTagsToData_(segmentData) {
 	      var segmentByteLength = 0;
-	      var tech = this.mediaSource.tech_;
+	      var tech = this.mediaSource_.tech_;
 	      var targetPts = 0;
 	      var i = undefined;
 	      var j = undefined;
@@ -41431,13 +41503,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.basePtsOffset_ = tags[0].pts;
 	      }
 	
-	      // Trim any tags that are before the end of the end of
-	      // the current buffer
-	      if (tech.buffered().length) {
-	        targetPts = tech.buffered().end(0) - this.timestampOffset;
-	      }
 	      // Trim to currentTime if it's ahead of buffered or buffered doesn't exist
-	      targetPts = Math.max(targetPts, tech.currentTime() - this.timestampOffset);
+	      if (tech.seeking()) {
+	        targetPts = Math.max(targetPts, tech.currentTime() - this.timestampOffset);
+	      }
 	
 	      // PTS values are represented in milliseconds
 	      targetPts *= 1e3;
@@ -41545,6 +41614,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _virtualSourceBuffer = require('./virtual-source-buffer');
 	
 	var _virtualSourceBuffer2 = _interopRequireDefault(_virtualSourceBuffer);
+	
+	var _addTextTrackData = require('./add-text-track-data');
 	
 	var _codecUtils = require('./codec-utils');
 	
@@ -41678,6 +41749,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        //      what stream is the video stream, rather than relying on videoTracks
 	        /* eslinst-enable */
 	
+	        sourceBuffer.appendAudioInitSegment_ = true;
+	
 	        if (sourceBuffer.videoCodec_ && sourceBuffer.audioCodec_) {
 	          // combined
 	          sourceBuffer.audioDisabled_ = combined;
@@ -41696,6 +41769,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	
 	        _this.activeSourceBuffers_.push(sourceBuffer);
+	      });
+	    };
+	
+	    this.onPlayerMediachange_ = function () {
+	      _this.sourceBuffers.forEach(function (sourceBuffer) {
+	        sourceBuffer.appendAudioInitSegment_ = true;
 	      });
 	    };
 	
@@ -41721,6 +41800,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	        _this.player_.audioTracks().on('addtrack', _this.updateActiveSourceBuffers_);
 	        _this.player_.audioTracks().on('removetrack', _this.updateActiveSourceBuffers_);
 	      }
+	
+	      _this.player_.on('mediachange', _this.onPlayerMediachange_);
+	    });
+	
+	    this.on('sourceended', function (event) {
+	      var duration = (0, _addTextTrackData.durationOfVideo)(_this.duration);
+	
+	      for (var i = 0; i < _this.sourceBuffers.length; i++) {
+	        var sourcebuffer = _this.sourceBuffers[i];
+	        var cues = sourcebuffer.metadataTrack_ && sourcebuffer.metadataTrack_.cues;
+	
+	        if (cues) {
+	          cues[cues.length - 1].endTime = duration;
+	        }
+	      }
 	    });
 	
 	    // explicitly terminate any WebWorkers that were created
@@ -41741,6 +41835,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.player_.audioTracks().off('addtrack', this.updateActiveSourceBuffers_);
 	        this.player_.audioTracks().off('removetrack', this.updateActiveSourceBuffers_);
 	      }
+	
+	      this.player_.off('mediachange', this.onPlayerMediachange_);
 	    });
 	  }
 	
@@ -41830,7 +41926,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports['default'] = HtmlMediaSource;
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./codec-utils":85,"./virtual-source-buffer":94,"global/document":24,"global/window":25}],91:[function(require,module,exports){
+	},{"./add-text-track-data":84,"./codec-utils":85,"./virtual-source-buffer":94,"global/document":24,"global/window":25}],91:[function(require,module,exports){
 	/**
 	 * @file remove-cues-from-track.js
 	 */
@@ -41918,6 +42014,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // instead of doing a copy to save memory
 	    // ArrayBuffers are transferable but generic TypedArrays are not
 	    // @link https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers#Passing_data_by_transferring_ownership_(transferable_objects)
+	    var initArray = segment.initSegment;
+	
+	    segment.initSegment = {
+	      data: initArray.buffer,
+	      byteOffset: initArray.byteOffset,
+	      byteLength: initArray.byteLength
+	    };
+	
 	    var typedArray = segment.data;
 	
 	    segment.data = typedArray.buffer;
@@ -42254,8 +42358,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _addTextTrackData = require('./add-text-track-data');
 	
-	var _addTextTrackData2 = _interopRequireDefault(_addTextTrackData);
-	
 	var _webworkify = require('webworkify');
 	
 	var _webworkify2 = _interopRequireDefault(_webworkify);
@@ -42297,6 +42399,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.audioCodec_ = null;
 	    this.videoCodec_ = null;
 	    this.audioDisabled_ = false;
+	    this.appendAudioInitSegment_ = true;
 	
 	    var options = {
 	      remux: false
@@ -42334,6 +42437,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      set: function set(val) {
 	        if (typeof val === 'number' && val >= 0) {
 	          this.timestampOffset_ = val;
+	          this.appendAudioInitSegment_ = true;
 	
 	          // We have to tell the transmuxer to set the baseMediaDecodeTime to
 	          // the desired timestampOffset for the next segment
@@ -42471,6 +42575,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      // Cast ArrayBuffer to TypedArray
 	      segment.data = new Uint8Array(segment.data, event.data.byteOffset, event.data.byteLength);
+	
+	      segment.initSegment = new Uint8Array(segment.initSegment.data, segment.initSegment.byteOffset, segment.initSegment.byteLength);
 	
 	      (0, _createTextTracksIfNecessary2['default'])(this, this.mediaSource_, segment);
 	
@@ -42649,9 +42755,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	      sortedSegments = this.pendingBuffers_.reduce(function (segmentObj, segment) {
 	        var type = segment.type;
 	        var data = segment.data;
+	        var initSegment = segment.initSegment;
 	
 	        segmentObj[type].segments.push(data);
 	        segmentObj[type].bytes += data.byteLength;
+	
+	        segmentObj[type].initSegment = initSegment;
 	
 	        // Gather any captions into a single array
 	        if (segment.captions) {
@@ -42692,11 +42801,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.mediaSource_.trigger({ type: 'videoinfo', info: sortedSegments.video.info });
 	      }
 	
+	      if (this.appendAudioInitSegment_) {
+	        if (!this.audioDisabled_ && this.audioBuffer_) {
+	          sortedSegments.audio.segments.unshift(sortedSegments.audio.initSegment);
+	          sortedSegments.audio.bytes += sortedSegments.audio.initSegment.byteLength;
+	        }
+	        this.appendAudioInitSegment_ = false;
+	      }
+	
 	      // Merge multiple video and audio segments into one and append
 	      if (this.videoBuffer_) {
+	        sortedSegments.video.segments.unshift(sortedSegments.video.initSegment);
+	        sortedSegments.video.bytes += sortedSegments.video.initSegment.byteLength;
 	        this.concatAndAppendSegments_(sortedSegments.video, this.videoBuffer_);
 	        // TODO: are video tracks the only ones with text tracks?
-	        (0, _addTextTrackData2['default'])(this, sortedSegments.captions, sortedSegments.metadata);
+	        (0, _addTextTrackData.addTextTrackData)(this, sortedSegments.captions, sortedSegments.metadata);
 	      }
 	      if (!this.audioDisabled_ && this.audioBuffer_) {
 	        this.concatAndAppendSegments_(sortedSegments.audio, this.audioBuffer_);
@@ -43099,6 +43218,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return _videoJs2['default'].log.warn('HLS is no longer a tech. Please remove it from ' + 'your player\'s techOrder.');
 	};
 	
+	var USER_AGENT = _globalWindow2['default'].navigator && _globalWindow2['default'].navigator.userAgent || '';
+	
+	/**
+	 * Determines whether the browser supports a change in the audio configuration
+	 * during playback. Currently only Firefox 48 and below do not support this.
+	 * window.isSecureContext is a propterty that was added to window in firefox 49,
+	 * so we can use it to detect Firefox 49+.
+	 *
+	 * @return {Boolean} Whether the browser supports audio config change during playback
+	 */
+	Hls.supportsAudioInfoChange_ = function () {
+	  if (_videoJs2['default'].browser.IS_FIREFOX) {
+	    var firefoxVersionMap = /Firefox\/([\d.]+)/i.exec(USER_AGENT);
+	    var version = parseInt(firefoxVersionMap[1], 10);
+	
+	    return version >= 49;
+	  }
+	  return true;
+	};
+	
 	var Component = _videoJs2['default'].getComponent('Component');
 	
 	/**
@@ -43130,7 +43269,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (!_player.hasOwnProperty('hls')) {
 	        Object.defineProperty(_player, 'hls', {
 	          get: function get() {
-	            _videoJs2['default'].log.warn('player.hls is deprecated. Use player.tech.hls instead.');
+	            _videoJs2['default'].log.warn('player.hls is deprecated. Use player.tech_.hls instead.');
 	            return _this;
 	          }
 	        });
@@ -43190,7 +43329,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // start playlist selection at a reasonable bandwidth for
 	      // broadband internet
 	      // 0.5 MB/s
-	      this.options_.bandwidth = this.options_.bandwidth || 4194304;
+	      if (typeof this.options_.bandwidth !== 'number') {
+	        this.options_.bandwidth = 4194304;
+	      }
 	
 	      // grab options passed to player.src
 	      ['withCredentials', 'bandwidth'].forEach(function (option) {

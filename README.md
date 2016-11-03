@@ -15,7 +15,7 @@ Video.js bundle that supports HLS, VAST/VMAP, 360-degree videos, and more.
 * https://github.com/streamroot/videojs5-hlsjs-source-handler - uses dailymotion hls
 
 #### Other plugins
-* https://github.com/Go-Promo/videojs-ima
+* https://github.com/googleads/videojs-ima
 * https://github.com/Go-Promo/videojs-resolution-switcher
 * https://github.com/Go-Promo/videojs-social
 * https://github.com/Go-Promo/videojs-download-button
