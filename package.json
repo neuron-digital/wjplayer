@@ -37,7 +37,7 @@
     "webpack": "^1.13.2"
   },
   "name": "wjplayer",
-  "description": "A wrapper around Video.js with contrib plugins bundle that supports HLS, VAST/VMAP, 360-degree videos, and more",
+  "description": "Video.js HLS bundle that supports VAST/VMAP ads, 360-degree videos, and more",
   "version": "1.1.1",
   "main": "dist/wjplayer.js",
   "scripts": {
@@ -54,9 +54,13 @@
     "url": "https://github.com/Go-Promo/wjplayer/issues"
   },
   "homepage": "https://github.com/Go-Promo/wjplayer",
-  "authors": [
-    "Mikhail Khazov <m.hazov@go-promo.ru>",
-    "Alexey Avdeev <aavdeev@go-promo.ru>"
-  ],
+  "author": {
+    "name": "Mikhail Khazov",
+    "email": "mkhazov.work@gmail.com"
+  },
+  "contributors": [{
+    "name": "Alexey Avdeev",
+    "email": "aavdeev@go-promo.ru"
+  }],
   "license": "MIT"
 }
