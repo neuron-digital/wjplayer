@@ -16,7 +16,8 @@ if (env === 'build') {
 
 var config = {
   entry: {
-    wjplayer: __dirname + '/src/index.js',
+    'wjplayer': __dirname + '/src/contrib-hls/index.js',
+    'wjplayer-hls-js': __dirname + '/src/hls-js/index.js',
     // there's a problem with the result file, TODO
     // 'wjplayer-360': __dirname + '/src/wjplayer-360.js',
   },

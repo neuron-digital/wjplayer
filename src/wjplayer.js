@@ -1,11 +1,3 @@
-import 'expose-loader?videojs!video.js';
-import 'videojs5-hlsjs-source-handler';
-import 'videojs-contrib-ads/src/videojs.ads';
-import 'videojs-ima';
-import 'videojs-ga/dist/videojs.ga.js';
-import 'videojs-social';
-import 'videojs-download-button';
-
 const google = window.google;
 
 /**
@@ -20,6 +12,26 @@ const google = window.google;
  *     type: 'video/mp4'
  *   }]
  * );
+ *
+ * // Specify resolution and label of each source
+ * var player = wjplayer({
+ *  containerId: 'player-container',
+ *  defaultQuality: 'high',
+ *  // sourcesWithRes array will be passed to videojs-resolution-switcher
+ *  sourcesWithRes: [
+ *  {
+ *    src: 'path-to-video-low-quality.m3u8',
+ *    type: 'application/x-mpegURL',
+ *    res: 360,
+ *    label: 'SD'
+ *  },
+ *  {
+ *    src: 'path-to-video-high-quality.m3u8',
+ *    type: 'application/x-mpegURL',
+ *    res: 720,
+ *    label: 'HD'
+ *  }]
+ * });
  *
  * // Create an audio player
  *  var audioPlayer = wjplayer({
@@ -51,9 +63,14 @@ const google = window.google;
  *   where player shoud be inserted (appendChild() will be used)
  *
  * @param {Array} options.sources
- *   REQUIRED
+ *   REQUIRED IF `sourcesWithRes` IS NOT PROVIDED
  *   Array of sources to pass to player.src()
  *   @see http://docs.videojs.com/docs/api/player.html#Methodssrc
+ *
+ * @param {Array} options.sourcesWithRes
+ *   REQUIRED IF `sources` IS NOT PROVIDED
+ *   Array of sources to pass to player.updateSrc()
+ *   @see https://github.com/kmoskwiak/videojs-resolution-switcher#updatesrcsource
  *
  * @param {String} options.playerId
  *   id to assign to the player element.
@@ -178,6 +195,7 @@ class WJPlayer {
       playerId: 'player',
       playerType: 'video',
       sources: [],
+      sourcesWithRes: [],
       pathToSwf: '',
       poster: '',
       autoplay: false,
@@ -188,7 +206,8 @@ class WJPlayer {
       volumeStyle: 'vertical',
       stretch: false,
       skin: 'default',
-      classes: []
+      classes: [],
+      enableResolutionSwitcher: false
     };
 
     this.browser = {
@@ -223,6 +242,16 @@ class WJPlayer {
       this.options.videojs.controlBar.volumeMenuButton = {
         inline: false,
         vertical: true
+      };
+    }
+
+    if (this.options.playerType === 'video'
+      && (!this.browser.IS_MOBILE || this.options.sourcesWithRes.length)) {
+      this.options.enableResolutionSwitcher = true;
+      // will be passed to videoJsResolutionSwitcher plugin
+      this.options.videojs.plugins.videoJsResolutionSwitcher = {
+        default: this.options.defaultQuality,
+        dynamicLabel: true
       };
     }
 
@@ -270,6 +299,11 @@ class WJPlayer {
         });
       }
 
+      // Init resolution switcher plugin
+      if (this.options.enableResolutionSwitcher && this.options.sourcesWithRes.length) {
+        this.player.updateSrc(this.options.sourcesWithRes);
+      }
+
       // Init download button plugin
       if (this.options.downloadButton && (this.player.downloadButton)) {
         this.player.downloadButton(this.options.downloadButton);
@@ -296,7 +330,9 @@ class WJPlayer {
         this.initAds();
       }
     });
-    this.player.qualityPickerPlugin({});
+    if (typeof this.player.qualityPickerPlugin === 'function') {
+      this.player.qualityPickerPlugin({});
+    }
   }
 
   createPlayer() {

@@ -9,6 +9,7 @@
     "videojs-ima": "^0.5.0",
     "videojs-panorama": "0.0.5",
     "videojs-quality-picker": "0.0.3",
+    "videojs-resolution-switcher": "github:go-promo/videojs-resolution-switcher#hls",
     "videojs-social": "github:go-promo/videojs-social#no-socials",
     "videojs5-hlsjs-source-handler": "streamroot/videojs5-hlsjs-source-handler"
   },
