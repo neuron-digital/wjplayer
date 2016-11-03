@@ -1,5 +1,6 @@
 {
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
     "hls.js": "^0.6.7",
     "three": "^0.81.2",
     "video.js": "^5.11.9",
@@ -11,9 +12,7 @@
     "videojs-quality-picker": "0.0.3",
     "videojs-resolution-switcher": "github:go-promo/videojs-resolution-switcher#hls",
     "videojs-social": "github:go-promo/videojs-social#no-socials",
-    "videojs5-hlsjs-source-handler": "streamroot/videojs5-hlsjs-source-handler"
-  },
-  "devDependencies": {
+    "videojs5-hlsjs-source-handler": "streamroot/videojs5-hlsjs-source-handler",
     "babel-cli": "^6.16.0",
     "babel-core": "^6.17.0",
     "babel-eslint": "^6.1.2",
@@ -38,7 +37,7 @@
   },
   "name": "wjplayer",
   "description": "Video.js HLS bundle that supports VAST/VMAP ads, 360-degree videos, and more",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "main": "dist/wjplayer.js",
   "scripts": {
     "build": "webpack --mode=build && webpack --mode=dev",
