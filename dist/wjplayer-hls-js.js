@@ -27860,7 +27860,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      };
 	    }
 	
-	    if (this.options.playerType === 'video' && (!this.browser.IS_MOBILE || this.options.sourcesWithRes.length)) {
+	    if (this.options.playerType === 'video' && videojs.Hls && (!this.browser.IS_MOBILE || this.options.sourcesWithRes.length)) {
 	      this.options.enableResolutionSwitcher = true;
 	      // will be passed to videoJsResolutionSwitcher plugin
 	      this.options.videojs.plugins.videoJsResolutionSwitcher = {
