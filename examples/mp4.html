@@ -4,11 +4,11 @@
 <head>
   <meta charset=utf-8 />
   <title>Video.js MP4</title>
-  <link href="/dist/wjplayer.css" rel="stylesheet">
-  <link href="/dist/skins/nmd.css" rel="stylesheet">
+  <link href="../dist/wjplayer.css" rel="stylesheet">
+  <link href="../dist/skins/nmd.css" rel="stylesheet">
   <link rel="stylesheet" href="sample.css">
   <script src="//imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
-  <script src="/dist/wjplayer.js"></script>
+  <script src="../dist/wjplayer.js"></script>
   <script src="sample.js"></script>
   <style>
     html, body {
@@ -24,7 +24,7 @@
     <script>
       window.player = wjplayer({
         containerId: 'player-container',
-        pathToSwf: '/dist/video-js.swf',
+        pathToSwf: '../dist/video-js.swf',
         skin: 'nmd',
         controls: getQueryParam('controls') === 'false' ? false : true,
         autoplay: getQueryParam('autoplay'),
