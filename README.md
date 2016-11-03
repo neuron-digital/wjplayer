@@ -41,7 +41,14 @@ index.html with the list of examples will be opened in your browser.
 <!-- If you need ads in your videos, include ima sdk first -->
 <script src="//imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
 
+
+<!-- HLS support using videojs-contrib-hls -->
 <script src="path/to/wjplayer/dist/wjplayer.js"></script>
+
+<!-- OR  -->
+
+<!-- HLS support using hls.js  -->
+<script src="path/to/wjplayer/dist/wjplayer-hls-js.js"></script>
 ```
 
 To enable 360-degree video support add these includes:
@@ -118,6 +125,23 @@ var player = wjplayer({
   ads: {
     adTagUrl: '//example.com/vmap.xml'
   }
+});
+```
+
+**Send player events to Google Analytics**
+```js
+var player = wjplayer({
+  containerId: 'player-container',
+  sources: [{
+    src: '//vjs.zencdn.net/v/oceans.mp4',
+    type: 'video/mp4'
+  }]
+);
+player.ga({
+  percentsPlayedInterval: 10,
+  secondsPlayedMoments: [10, 30, 60, 3 * 60, 5 * 60],
+  percentsPlayedInterval: 25,
+  sendGaEventDirectly: true
 });
 ```
 
