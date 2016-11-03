@@ -5,18 +5,25 @@ Video.js bundle that supports HLS, VAST/VMAP, 360-degree videos, and more.
 ## What's included
 
 ### Video.js 5
-- https://github.com/videojs/video.js
+* https://github.com/videojs/video.js
 
 ### Video.js plugins
-- https://github.com/dailymotion/hls.js
-- https://github.com/streamroot/videojs5-hlsjs-source-handler
-- https://github.com/googleads/videojs-ima
-- https://github.com/Go-Promo/videojs-social (forked from https://github.com/codex-corp/videojs-social)
-- https://github.com/Go-Promo/videojs-download-button
-- https://github.com/yanwsh/videojs-panorama
+
+#### HLS plugins
+* https://github.com/videojs/videojs-contrib-hls
+* https://github.com/dailymotion/hls.js - alternative to videojs-contrib-hls
+* https://github.com/streamroot/videojs5-hlsjs-source-handler - uses dailymotion hls
+
+#### Other plugins
+* https://github.com/Go-Promo/videojs-ima
+* https://github.com/Go-Promo/videojs-resolution-switcher
+* https://github.com/Go-Promo/videojs-social
+* https://github.com/Go-Promo/videojs-download-button
+* https://github.com/Go-Promo/videojs-ga
+* https://github.com/yanwsh/videojs-panorama
 
 ### Plugins dependencies
-- https://github.com/mrdoob/three.js (required by videojs-panorama)
+* https://github.com/mrdoob/three.js (required by videojs-panorama)
 
 ## Testing
 

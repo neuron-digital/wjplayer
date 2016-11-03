@@ -29,6 +29,16 @@
       ads: window.ads
     };
     window.player = wjplayer(options);
+    player.ga({
+      eventsToTrack: ['loaded', 'secondsPlayed', 'percentsPlayed', 'start',
+        'end', 'seek', 'play', 'pause', 'resize',
+        'volumeChange', 'error', 'fullscreen'],
+      percentsPlayedInterval: 10,
+      secondsPlayedMoments: [10, 30, 60, 3*60, 5*60],
+      percentsPlayedInterval: 25,
+      autoLabel: false,
+      debug: true
+    });
   </script>
 </body>
 

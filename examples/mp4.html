@@ -32,6 +32,20 @@
           }],
         ads: window.ads
     });
+      player.ga({
+        eventsToTrack: ['loaded', 'secondsPlayed', 'percentsPlayed', 'start',
+          'end', 'seek', 'play', 'pause', 'resize',
+          'volumeChange', 'error', 'fullscreen'],
+        percentsPlayedInterval: 5,
+        secondsPlayedInterval: 5,
+        secondsPlayedMoments: [7, 14, 44],
+        trackFiniteSeconds: true,
+        trackReplaySeconds: true,
+        debug: false
+      });
+      player.on('gaEvent', function(e, gaEvent) {
+        console.log(gaEvent);
+      })
     </script>
 </body>
 

@@ -20,12 +20,24 @@
     window.player = wjplayer({
       containerId: 'player-container',
       skin: 'nmd',
+      autoplay: false,
       sources: [
         {
           src: 'https://embed.life.ru/playlist/3dd8517cb4957deb77f01dbe0b33ec31/index.m3u8',
           type: 'application/x-mpegURL'
         }],
-      ads: window.ads
+      ads: window.ads,
+      plugins: {
+        ga: {
+          eventsToTrack: ['loaded', 'secondsPlayed', 'percentsPlayed', 'start',
+            'end', 'seek', 'play', 'pause', 'resize',
+            'volumeChange', 'error', 'fullscreen'],
+          percentsPlayedInterval: 10,
+          secondsPlayedMoments: [10, 30, 60, 3*60, 5*60],
+          autoLabel: false,
+          debug: true
+        }
+      }
     });
   </script>
 </body>
