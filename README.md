@@ -2,6 +2,8 @@
 
 Video.js bundle that supports HLS, VAST/VMAP, 360-degree videos, and more.
 
+#### [DEMO](https://go-promo.github.io/wjplayer/examples/)
+
 ## What's included
 
 ### Video.js 5
@@ -78,6 +80,18 @@ var player = wjplayer({
     type: 'video/ogg'
   }]
 );
+```
+
+**HLS**
+```js
+var player = wjplayer({
+  containerId: 'player-container',
+  sources: [{
+    src: 'path-to-video.m3u8',
+    type: 'application/x-mpegURL'
+  }]
+});
+player.reloadSourceOnError(); // init `reloadSourceOnError` plugin (part of videjs-contrib-hls)
 ```
 
 **Specify resolution and label of each source**
