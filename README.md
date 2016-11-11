@@ -82,6 +82,18 @@ var player = wjplayer({
 );
 ```
 
+**HLS**
+```js
+var player = wjplayer({
+  containerId: 'player-container',
+  sources: [{
+    src: 'path-to-video.m3u8',
+    type: 'application/x-mpegURL'
+  }]
+});
+player.reloadSourceOnError(); // init `reloadSourceOnError` plugin (part of videjs-contrib-hls)
+```
+
 **Specify resolution and label of each source**
 ```js
 var player = wjplayer({

@@ -109,6 +109,7 @@
       ads: window.ads
     };
     window.player = wjplayer(options);
+    player.reloadSourceOnError();
     player.ga({
       eventsToTrack: [
         'loaded', 'secondsPlayed', 'percentsPlayed',
