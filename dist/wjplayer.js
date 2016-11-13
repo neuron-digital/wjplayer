@@ -25659,7 +25659,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 	
 	  videojs.plugin('ga', function(options) {
-	    var adend, adpause, adserror, adskip, adstart, adtimeout, autoLabel, dataSetupOptions, defaultsEventsToTrack, end, ended, error, eventCategory, eventLabel, eventsToTrack, firstplay, fullscreen, getCurrentTime, getCurrentValue, init, interval, isFinite, loaded, parsedOptions, pause, percentsAlreadyTracked, percentsPlayedInterval, play, playing, resize, secondsPlayed, secondsPlayedInterval, secondsPlayedMoments, seekEnd, seekStart, seeking, sendbeacon, skipZeroPauses, startTimeTracking, stopTimeTracking, timeupdate, trackReplaySeconds, trackSeconds, trackingTime, volumeChange,
+	    var adend, adpause, adserror, adskip, adstart, adtimeout, autoLabel, dataSetupOptions, defaultsEventsToTrack, end, ended, error, eventCategory, eventLabel, eventsToTrack, firstplay, fullscreen, getCurrentTime, getCurrentValue, init, interval, isFinite, loaded, parsedOptions, pause, percentsAlreadyTracked, percentsPlayedInterval, play, playing, resize, secondsPlayed, secondsPlayedInterval, secondsPlayedMoments, seekEnd, seekStart, seeking, sendbeacon, startTimeTracking, stopTimeTracking, timeupdate, trackReplaySeconds, trackSeconds, trackingTime, volumeChange,
 	      _this = this;
 	    if (options == null) {
 	      options = {};
@@ -25680,7 +25680,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    secondsPlayedInterval = options.secondsPlayedInterval || dataSetupOptions.secondsPlayedInterval || 60;
 	    secondsPlayedMoments = options.secondsPlayedMoments || dataSetupOptions.secondsPlayedMoments;
 	    trackReplaySeconds = options.trackReplaySeconds;
-	    skipZeroPauses = options.skipZeroPauses != null ? options.skipZeroPauses : videojs.ima != null;
 	    percentsAlreadyTracked = [];
 	    seekStart = seekEnd = 0;
 	    seeking = false;
@@ -25798,7 +25797,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      stopTimeTracking();
 	      currentTime = getCurrentValue();
 	      duration = Math.round(this.duration());
-	      if (currentTime !== duration && !seeking && (!skipZeroPauses || currentTime)) {
+	      if (currentTime !== duration && !seeking) {
 	        sendbeacon('pause', false, currentTime);
 	      }
 	    };
@@ -26572,7 +26571,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var require;var require;/* WEBPACK VAR INJECTION */(function(global) {/**
 	 * videojs-contrib-hls
-	 * @version 3.6.10
+	 * @version 3.6.11
 	 * @copyright 2016 Brightcove, Inc
 	 * @license Apache-2.0
 	 */
@@ -28256,7 +28255,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  * master playlist with the updated media playlist merged in, or
 	  * null if the merge produced no change.
 	  */
-	var updateMaster = function updateMaster(master, media) {
+	var updateMaster = function updateMaster(master, media, resolveUrl) {
 	  var changed = false;
 	  var result = (0, _videoJs.mergeOptions)(master, {});
 	  var i = master.playlists.length;
@@ -28289,13 +28288,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	      while (j--) {
 	        segment = result.playlists[i].segments[j];
 	        if (!segment.resolvedUri) {
-	          segment.resolvedUri = (0, _resolveUrl2['default'])(playlist.resolvedUri, segment.uri);
+	          segment.resolvedUri = resolveUrl(playlist.resolvedUri, segment.uri);
 	        }
 	        if (segment.key && !segment.key.resolvedUri) {
-	          segment.key.resolvedUri = (0, _resolveUrl2['default'])(playlist.resolvedUri, segment.key.uri);
+	          segment.key.resolvedUri = resolveUrl(playlist.resolvedUri, segment.key.uri);
 	        }
 	        if (segment.map && !segment.map.resolvedUri) {
-	          segment.map.resolvedUri = (0, _resolveUrl2['default'])(playlist.resolvedUri, segment.map.uri);
+	          segment.map.resolvedUri = resolveUrl(playlist.resolvedUri, segment.map.uri);
 	        }
 	      }
 	      changed = true;
@@ -28324,6 +28323,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var request = undefined;
 	  var playlistRequestError = undefined;
 	  var haveMetadata = undefined;
+	  var resolveUrl = (0, _resolveUrl2['default'])();
 	
 	  PlaylistLoader.prototype.constructor.call(this);
 	
@@ -28378,7 +28378,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    parser.manifest.uri = url;
 	
 	    // merge this playlist into the master
-	    update = updateMaster(loader.master, parser.manifest);
+	    update = updateMaster(loader.master, parser.manifest, resolveUrl);
 	    refreshDelay = (parser.manifest.targetDuration || 10) * 1000;
 	    loader.targetDuration = parser.manifest.targetDuration;
 	    if (update) {
@@ -28537,7 +28537,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    // there is already an outstanding playlist request
 	    if (request) {
-	      if ((0, _resolveUrl2['default'])(loader.master.uri, playlist.uri) === request.url) {
+	      if (resolveUrl(loader.master.uri, playlist.uri) === request.url) {
 	        // requesting to switch to the same playlist multiple times
 	        // has no effect after the first
 	        return;
@@ -28552,7 +28552,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.trigger('mediachanging');
 	    }
 	    request = this.hls_.xhr({
-	      uri: (0, _resolveUrl2['default'])(loader.master.uri, playlist.uri),
+	      uri: resolveUrl(loader.master.uri, playlist.uri),
 	      withCredentials: withCredentials
 	    }, function (error, req) {
 	      // disposed
@@ -28597,7 +28597,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    loader.state = 'HAVE_CURRENT_METADATA';
 	    request = this.hls_.xhr({
-	      uri: (0, _resolveUrl2['default'])(loader.master.uri, loader.media().uri),
+	      uri: resolveUrl(loader.master.uri, loader.media().uri),
 	      withCredentials: withCredentials
 	    }, function (error, req) {
 	      // disposed
@@ -28686,7 +28686,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        while (i--) {
 	          playlist = loader.master.playlists[i];
 	          loader.master.playlists[playlist.uri] = playlist;
-	          playlist.resolvedUri = (0, _resolveUrl2['default'])(loader.master.uri, playlist.uri);
+	          playlist.resolvedUri = resolveUrl(loader.master.uri, playlist.uri);
 	        }
 	
 	        // resolve any media group URIs
@@ -28695,7 +28695,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var alternateAudio = loader.master.mediaGroups.AUDIO[groupKey][labelKey];
 	
 	            if (alternateAudio.uri) {
-	              alternateAudio.resolvedUri = (0, _resolveUrl2['default'])(loader.master.uri, alternateAudio.uri);
+	              alternateAudio.resolvedUri = resolveUrl(loader.master.uri, alternateAudio.uri);
 	            }
 	          }
 	        }
@@ -29568,6 +29568,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @private
 	   */
 	  var setSource = function setSource(sourceObj) {
+	    if (sourceObj === null || sourceObj === undefined) {
+	      return;
+	    }
 	    seekTo = player.duration() !== Infinity && player.currentTime() || 0;
 	
 	    player.one('loadedmetadata', loadedMetadataHandler);
@@ -29753,6 +29756,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  value: true
 	});
 	
+	var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
 	var _globalDocument = require('global/document');
@@ -29760,45 +29765,63 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _globalDocument2 = _interopRequireDefault(_globalDocument);
 	
 	/**
-	 * Constructs a new URI by interpreting a path relative to another
-	 * URI.
-	 *
-	 * @see http://stackoverflow.com/questions/470832/getting-an-absolute-url-from-a-relative-one-ie6-issue
-	 * @param {String} basePath a relative or absolute URI
-	 * @param {String} path a path part to combine with the base
-	 * @return {String} a URI that is equivalent to composing `base`
-	 * with `path`
+	 * Creates an iframe to contain our base and anchor elements for url resolving function
 	 */
-	var resolveUrl = function resolveUrl(basePath, path) {
-	  // use the base element to get the browser to handle URI resolution
-	  var oldBase = _globalDocument2['default'].querySelector('base');
-	  var docHead = _globalDocument2['default'].querySelector('head');
-	  var a = _globalDocument2['default'].createElement('a');
-	  var base = oldBase;
-	  var oldHref = undefined;
-	  var result = undefined;
+	var createResolverElements = function createResolverElements() {
+	  var iframe = _globalDocument2['default'].createElement('iframe');
 	
-	  // prep the document
-	  if (oldBase) {
-	    oldHref = oldBase.href;
-	  } else {
-	    base = docHead.appendChild(_globalDocument2['default'].createElement('base'));
-	  }
+	  iframe.style.display = 'none';
+	  iframe.src = 'about:blank';
+	  _globalDocument2['default'].body.appendChild(iframe);
 	
-	  base.href = basePath;
-	  a.href = path;
-	  result = a.href;
+	  var iframeDoc = iframe.contentWindow.document;
 	
-	  // clean up
-	  if (oldBase) {
-	    oldBase.href = oldHref;
-	  } else {
-	    docHead.removeChild(base);
-	  }
-	  return result;
+	  iframeDoc.open();
+	  iframeDoc.write('<html><head><base></base></head><body><a></a></body></html>');
+	  iframeDoc.close();
+	
+	  var base = iframeDoc.querySelector('base');
+	  var anchor = iframeDoc.querySelector('a');
+	
+	  _globalDocument2['default'].body.removeChild(iframe);
+	
+	  return [base, anchor];
 	};
 	
-	exports['default'] = resolveUrl;
+	/**
+	 * Build a new URI resolver by adding an iframe for resolving and returning a resolving function
+	 * that can be disposed
+	 */
+	var resolveUrlFactory = function resolveUrlFactory() {
+	  var _createResolverElements = createResolverElements();
+	
+	  var _createResolverElements2 = _slicedToArray(_createResolverElements, 2);
+	
+	  var base = _createResolverElements2[0];
+	  var anchor = _createResolverElements2[1];
+	
+	  /**
+	   * Constructs a new URI by interpreting a path relative to another
+	   * URI.
+	   *
+	   * @see http://stackoverflow.com/questions/470832/getting-an-absolute-url-from-a-relative-one-ie6-issue
+	   * @param {String} basePath a relative or absolute URI
+	   * @param {String} path a path part to combine with the base
+	   * @return {String} a URI that is equivalent to composing `base`
+	   * with `path`
+	   */
+	  var resolveUrl = function resolveUrl(basePath, path) {
+	    if (basePath !== base.href) {
+	      base.href = basePath;
+	    }
+	    anchor.href = path;
+	    return anchor.href;
+	  };
+	
+	  return resolveUrl;
+	};
+	
+	exports['default'] = resolveUrlFactory;
 	module.exports = exports['default'];
 	},{"global/document":25}],12:[function(require,module,exports){
 	(function (global){
@@ -43443,6 +43466,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {String} options.share.embedCode
 	 *   Iframe embed code for sharing the video.
 	 *
+	 * @param {Object} options.reloadSourceOnError
+	 *   Will be passed to `reloadSourceOnError` plugin (part of videojs-contrib-hls), if available.
+	 * @param {Number} options.reloadSourceOnError.errorInterval
+	 *   Will override the default minimum time between errors in seconds.
+	 * @param {Function} options.reloadSourceOnError.getSource
+	 *   Function that can be used to provide a new source to load on error.
+	 *
 	 * @return {Object} the player object.
 	 */
 	function wjplayer(options) {
@@ -43473,7 +43503,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      stretch: false,
 	      skin: 'default',
 	      classes: [],
-	      enableResolutionSwitcher: false
+	      enableResolutionSwitcher: false,
+	      reloadSourceOnError: {}
 	    };
 	
 	    this.browser = {
@@ -43594,6 +43625,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      });
 	      if (typeof this.player.qualityPickerPlugin === 'function') {
 	        this.player.qualityPickerPlugin({});
+	      }
+	      if (typeof this.player.reloadSourceOnError === 'function') {
+	        this.player.reloadSourceOnError(this.options.reloadSourceOnError);
 	      }
 	    }
 	  }, {

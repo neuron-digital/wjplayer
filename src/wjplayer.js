@@ -179,6 +179,13 @@ const google = window.google;
  * @param {String} options.share.embedCode
  *   Iframe embed code for sharing the video.
  *
+ * @param {Object} options.reloadSourceOnError
+ *   Will be passed to `reloadSourceOnError` plugin (part of videojs-contrib-hls), if available.
+ * @param {Number} options.reloadSourceOnError.errorInterval
+ *   Will override the default minimum time between errors in seconds.
+ * @param {Function} options.reloadSourceOnError.getSource
+ *   Function that can be used to provide a new source to load on error.
+ *
  * @return {Object} the player object.
  */
 function wjplayer(options) {
@@ -207,7 +214,8 @@ class WJPlayer {
       stretch: false,
       skin: 'default',
       classes: [],
-      enableResolutionSwitcher: false
+      enableResolutionSwitcher: false,
+      reloadSourceOnError: {}
     };
 
     this.browser = {
@@ -333,6 +341,9 @@ class WJPlayer {
     });
     if (typeof this.player.qualityPickerPlugin === 'function') {
       this.player.qualityPickerPlugin({});
+    }
+    if (typeof this.player.reloadSourceOnError === 'function') {
+      this.player.reloadSourceOnError(this.options.reloadSourceOnError);
     }
   }
 

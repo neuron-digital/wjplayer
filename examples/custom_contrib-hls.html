@@ -106,10 +106,12 @@
         src: 'https://radio.life.ru/radio/index.m3u8',
         type: 'application/x-mpegURL'
       }],
-      ads: window.ads
+      ads: window.ads,
+      reloadSourceOnError: {
+        errorInterval: 10
+      }
     };
     window.player = wjplayer(options);
-    player.reloadSourceOnError();
     player.ga({
       eventsToTrack: [
         'loaded', 'secondsPlayed', 'percentsPlayed',
