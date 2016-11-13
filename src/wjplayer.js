@@ -224,10 +224,10 @@ class WJPlayer {
     };
     this.browser.IS_MOBILE = this.browser.IS_IOS || this.browser.IS_ANDROID;
 
-    this.options = merge(this.defaults, options);
+    this.options = videojs.mergeOptions(this.defaults, options);
 
     // will be passed to videojs
-    this.options.videojs = merge({
+    this.options.videojs = videojs.mergeOptions({
       controls: this.options.controls,
       preload: this.options.preload,
       loop: this.options.loop,
@@ -266,7 +266,7 @@ class WJPlayer {
 
     if (this.options.ads && this.options.ads.adTagUrl && !this.browser.IS_IOS) {
       // will be passed to ima plugin
-      this.options.ads = merge({
+      this.options.ads = videojs.mergeOptions({
         id: this.options.playerId,
         locale: this.options.locale,
         showControlsForJSAds: false
@@ -421,29 +421,6 @@ class WJPlayer {
 
     this.player.ima.startFromReadyCallback();
   }
-}
-
-/**
- * Merges objects.
- * @param  {Object} target object to merge properties to
- * @param  {Object} source object to merge properties from
- * @param  {Number} [depth] merging depth
- * @return {Object} the resulting object
- */
-function merge(target, source, depth) {
-  const forever = depth == null;
-  for (let p in source) {
-    if (source[p] != null && source[p].constructor === Object && (forever || depth > 0)) {
-      target[p] = merge(
-        target.hasOwnProperty(p) ? target[p] : {},
-        source[p],
-        forever ? null : depth - 1
-      );
-    } else {
-      target[p] = source[p];
-    }
-  }
-  return target;
 }
 
 export default wjplayer;
