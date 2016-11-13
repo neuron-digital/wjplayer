@@ -22,9 +22,11 @@
       <h1>
 <a id="wjplayer" class="anchor" href="#wjplayer" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>wjplayer</h1>
 
-<p>Video.js HLS bundle that supports VAST/VMAP ads, 360-degree videos, and more.</p>
+<p>Video.js bundle that supports HLS, VAST/VMAP, 360-degree videos, and more.</p>
 
-<strong><a href="examples">DEMO</a></strong>
+<h4>
+<a id="demo" class="anchor" href="#demo" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a href="https://go-promo.github.io/wjplayer/examples/">DEMO</a>
+</h4>
 
 <h2>
 <a id="whats-included" class="anchor" href="#whats-included" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>What's included</h2>
@@ -121,6 +123,19 @@ npm start</pre></div>
     type<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>video/ogg<span class="pl-pds">'</span></span>
   }]
 );</pre></div>
+
+<p><strong>HLS</strong></p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-k">var</span> player <span class="pl-k">=</span> <span class="pl-en">wjplayer</span>({
+  containerId<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>player-container<span class="pl-pds">'</span></span>,
+  sources<span class="pl-k">:</span> [{
+    src<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>path-to-video.m3u8<span class="pl-pds">'</span></span>,
+    type<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>application/x-mpegURL<span class="pl-pds">'</span></span>
+  }],
+  reloadSourceOnError<span class="pl-k">:</span> {
+    errorInterval<span class="pl-k">:</span> <span class="pl-c1">60</span>
+  }
+});</pre></div>
 
 <p><strong>Specify resolution and label of each source</strong></p>
 
@@ -290,6 +305,11 @@ Pass "anonymous" to avoid cross domain issue
 <li><p><strong>options.share.url</strong>: <code>String</code>, This is the URL that points to your custom web page
 which has your video and the meta tags for sharing.</p></li>
 <li><p><strong>options.share.embedCode</strong>: <code>String</code>, Iframe embed code for sharing the video.</p></li>
+<li><p><strong>options.reloadSourceOnError</strong>: <code>Object</code>,Will be passed to <code>reloadSourceOnError</code> plugin (part of videojs-contrib-hls), if available.</p></li>
+<li>
+<strong>options.reloadSourceOnError.errorInterval</strong>: <code>Number</code>, Will override the default minimum time between errors in seconds.</li>
+<li>
+<strong>options.reloadSourceOnError.getSource</strong>: <code>Function</code>, Function that can be used to provide a new source to load on error.</li>
 </ul>
 
 <p><strong>Returns</strong>: <code>Object</code>, the player object.</p>
@@ -474,6 +494,6 @@ which has your video and the meta tags for sharing.</p></li>
 
     </section>
 
-
+  
   </body>
 </html>
