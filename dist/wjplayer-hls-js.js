@@ -24339,7 +24339,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @private
 	     */
 	    var getClassRegexp_ = function(className){
-	      return new RegExp('\\b' + className + '\\b', 'gi');
+	      // Matches on
+	      // (beginning of string OR NOT word char)
+	      // classname
+	      // (negative lookahead word char OR end of string)
+	      return new RegExp('(^|[^A-Za-z-])' + className + '((?![A-Za-z-])|$)', 'gi');
 	    };
 	
 	    /**
@@ -24583,7 +24587,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          this.adsManager.setVolume(this.player.muted() ? 0 : this.player.volume());
 	          this.adsManager.start();
 	        } catch (adError) {
-	          this.onAdError_(adError);
+	          onAdError_(adError);
 	        }
 	      }
 	    }.bind(this);
@@ -24611,11 +24615,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @private
 	     */
 	    var onAdError_ = function(adErrorEvent) {
-	      window.console.log('Ad error: ' + adErrorEvent.getError());
+	      var errorMessage = adErrorEvent.getError !== undefined ? adErrorEvent.getError() : adErrorEvent.stack;
+	      window.console.log('Ad error: ' + errorMessage);
 	      this.vjsControls.show();
 	      this.adsManager.destroy();
 	      this.adContainerDiv.style.display = 'none';
-	      this.player.trigger({ type: 'adserror', data: { AdError: adErrorEvent.getError(), AdErrorEvent: adErrorEvent }});
+	      this.player.trigger({ type: 'adserror', data: { AdError: errorMessage, AdErrorEvent: adErrorEvent }});
 	    }.bind(this);
 	
 	    /**
@@ -24660,6 +24665,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	
 	      this.vjsControls.hide();
+	      showPlayButton();
 	      this.player.pause();
 	    }.bind(this);
 	
@@ -24820,18 +24826,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }.bind(this);
 	
 	    /**
+	     * Show pause and hide play button
+	     */
+	    var showPauseButton = function() {
+	      addClass_(this.playPauseDiv, 'ima-paused');
+	      removeClass_(this.playPauseDiv, 'ima-playing');
+	    }.bind(this);
+	
+	    /**
+	     * Show play and hide pause button
+	     */
+	    var showPlayButton = function() {
+	      addClass_(this.playPauseDiv, 'ima-playing');
+	      removeClass_(this.playPauseDiv, 'ima-paused');
+	    }.bind(this);
+	
+	    /**
 	     * Listener for clicks on the play/pause button during ad playback.
 	     * @private
 	     */
 	    var onAdPlayPauseClick_ = function() {
 	      if (this.adPlaying) {
-	        addClass_(this.playPauseDiv, 'ima-paused');
-	        removeClass_(this.playPauseDiv, 'ima-playing');
+	        showPauseButton();
 	        this.adsManager.pause();
 	        this.adPlaying = false;
 	      } else {
-	        addClass_(this.playPauseDiv, 'ima-playing');
-	        removeClass_(this.playPauseDiv, 'ima-paused');
+	        showPlayButton();
 	        this.adsManager.resume();
 	        this.adPlaying = true;
 	      }
@@ -24964,7 +24984,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.adsManager.setVolume(newVolume);
 	      }
 	      // Update UI
-	      if (this.newVolume == 0) {
+	      if (newVolume == 0) {
 	        this.adMuted = true;
 	        addClass_(this.muteDiv, 'ima-muted');
 	        removeClass_(this.muteDiv, 'ima-non-muted');
@@ -25162,8 +25182,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    this.pauseAd = function() {
 	      if (this.adsActive && this.adPlaying) {
-	        addClass_(this.playPauseDiv, 'ima-paused');
-	        removeClass_(this.playPauseDiv, 'ima-playing');
+	        showPauseButton();
 	        this.adsManager.pause();
 	        this.adPlaying = false;
 	      }
@@ -25174,8 +25193,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    this.resumeAd = function() {
 	      if (this.adsActive && !this.adPlaying) {
-	        addClass_(this.playPauseDiv, 'ima-playing');
-	        removeClass_(this.playPauseDiv, 'ima-paused');
+	        showPlayButton();
 	        this.adsManager.resume();
 	        this.adPlaying = true;
 	      }
@@ -25530,6 +25548,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.contentEndedListeners, this.contentAndAdsEndedListeners = [], [];
 	      this.contentComplete = true;
 	      this.player.off('ended', this.localContentEndedListener);
+	
+	      // Bug fix: https://github.com/googleads/videojs-ima/issues/306
+	      if (this.player.ads.adTimeoutTimeout) {
+	        clearTimeout(this.player.ads.adTimeoutTimeout);
+	      }
+	
 	      var intervalsToClear = [this.updateTimeIntervalHandle, this.seekCheckIntervalHandle,
 	        this.adTrackingTimer, this.resizeCheckIntervalHandle];
 	      for (var index in intervalsToClear) {
@@ -26762,13 +26786,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {String} options.share.embedCode
 	 *   Iframe embed code for sharing the video.
 	 *
-	 * @param {Object} options.reloadSourceOnError
-	 *   Will be passed to `reloadSourceOnError` plugin (part of videojs-contrib-hls), if available.
-	 * @param {Number} options.reloadSourceOnError.errorInterval
-	 *   Will override the default minimum time between errors in seconds.
-	 * @param {Function} options.reloadSourceOnError.getSource
-	 *   Function that can be used to provide a new source to load on error.
-	 *
 	 * @return {Object} the player object.
 	 */
 	function wjplayer(options) {
@@ -26799,8 +26816,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      stretch: false,
 	      skin: 'default',
 	      classes: [],
-	      enableResolutionSwitcher: false,
-	      reloadSourceOnError: {}
+	      enableResolutionSwitcher: false
 	    };
 	
 	    this.browser = {
@@ -26809,10 +26825,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    this.browser.IS_MOBILE = this.browser.IS_IOS || this.browser.IS_ANDROID;
 	
-	    this.options = videojs.mergeOptions(this.defaults, options);
+	    this.options = merge(this.defaults, options);
 	
 	    // will be passed to videojs
-	    this.options.videojs = videojs.mergeOptions({
+	    this.options.videojs = merge({
 	      controls: this.options.controls,
 	      preload: this.options.preload,
 	      loop: this.options.loop,
@@ -26845,7 +26861,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    if (this.options.ads && this.options.ads.adTagUrl && !this.browser.IS_IOS) {
 	      // will be passed to ima plugin
-	      this.options.ads = videojs.mergeOptions({
+	      this.options.ads = merge({
 	        id: this.options.playerId,
 	        locale: this.options.locale,
 	        showControlsForJSAds: false
@@ -26921,9 +26937,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      });
 	      if (typeof this.player.qualityPickerPlugin === 'function') {
 	        this.player.qualityPickerPlugin({});
-	      }
-	      if (typeof this.player.reloadSourceOnError === 'function') {
-	        this.player.reloadSourceOnError(this.options.reloadSourceOnError);
 	      }
 	    }
 	  }, {
@@ -27013,6 +27026,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  return WJPlayer;
 	}();
+	
+	/**
+	 * Merges objects.
+	 * @param  {Object} target object to merge properties to
+	 * @param  {Object} source object to merge properties from
+	 * @param  {Number} [depth] merging depth
+	 * @return {Object} the resulting object
+	 */
+	
+	
+	function merge(target, source, depth) {
+	  var forever = depth == null;
+	  for (var p in source) {
+	    if (source[p] != null && source[p].constructor === Object && (forever || depth > 0)) {
+	      target[p] = merge(target.hasOwnProperty(p) ? target[p] : {}, source[p], forever ? null : depth - 1);
+	    } else {
+	      target[p] = source[p];
+	    }
+	  }
+	  return target;
+	}
 	
 	exports.default = wjplayer;
 	module.exports = exports['default'];

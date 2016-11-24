@@ -89,11 +89,9 @@ var player = wjplayer({
   sources: [{
     src: 'path-to-video.m3u8',
     type: 'application/x-mpegURL'
-  }],
-  reloadSourceOnError: {
-    errorInterval: 60
-  }
+  }]
 });
+player.reloadSourceOnError(); // init `reloadSourceOnError` plugin (part of videjs-contrib-hls)
 ```
 
 **Specify resolution and label of each source**
@@ -298,10 +296,6 @@ Creates a new player and places it to container with the specified id.
   which has your video and the meta tags for sharing.
 
  - **options.share.embedCode**: `String`, Iframe embed code for sharing the video.
-
- - **options.reloadSourceOnError**: `Object`,Will be passed to `reloadSourceOnError` plugin (part of videojs-contrib-hls), if available.
- * **options.reloadSourceOnError.errorInterval**: `Number`, Will override the default minimum time between errors in seconds.
- * **options.reloadSourceOnError.getSource**: `Function`, Function that can be used to provide a new source to load on error.
 
 **Returns**: `Object`, the player object.
 

@@ -179,13 +179,6 @@ const google = window.google;
  * @param {String} options.share.embedCode
  *   Iframe embed code for sharing the video.
  *
- * @param {Object} options.reloadSourceOnError
- *   Will be passed to `reloadSourceOnError` plugin (part of videojs-contrib-hls), if available.
- * @param {Number} options.reloadSourceOnError.errorInterval
- *   Will override the default minimum time between errors in seconds.
- * @param {Function} options.reloadSourceOnError.getSource
- *   Function that can be used to provide a new source to load on error.
- *
  * @return {Object} the player object.
  */
 function wjplayer(options) {
@@ -214,8 +207,7 @@ class WJPlayer {
       stretch: false,
       skin: 'default',
       classes: [],
-      enableResolutionSwitcher: false,
-      reloadSourceOnError: {}
+      enableResolutionSwitcher: false
     };
 
     this.browser = {
@@ -224,10 +216,10 @@ class WJPlayer {
     };
     this.browser.IS_MOBILE = this.browser.IS_IOS || this.browser.IS_ANDROID;
 
-    this.options = videojs.mergeOptions(this.defaults, options);
+    this.options = merge(this.defaults, options);
 
     // will be passed to videojs
-    this.options.videojs = videojs.mergeOptions({
+    this.options.videojs = merge({
       controls: this.options.controls,
       preload: this.options.preload,
       loop: this.options.loop,
@@ -266,7 +258,7 @@ class WJPlayer {
 
     if (this.options.ads && this.options.ads.adTagUrl && !this.browser.IS_IOS) {
       // will be passed to ima plugin
-      this.options.ads = videojs.mergeOptions({
+      this.options.ads = merge({
         id: this.options.playerId,
         locale: this.options.locale,
         showControlsForJSAds: false
@@ -341,9 +333,6 @@ class WJPlayer {
     });
     if (typeof this.player.qualityPickerPlugin === 'function') {
       this.player.qualityPickerPlugin({});
-    }
-    if (typeof this.player.reloadSourceOnError === 'function') {
-      this.player.reloadSourceOnError(this.options.reloadSourceOnError);
     }
   }
 
@@ -421,6 +410,29 @@ class WJPlayer {
 
     this.player.ima.startFromReadyCallback();
   }
+}
+
+/**
+ * Merges objects.
+ * @param  {Object} target object to merge properties to
+ * @param  {Object} source object to merge properties from
+ * @param  {Number} [depth] merging depth
+ * @return {Object} the resulting object
+ */
+function merge(target, source, depth) {
+  const forever = depth == null;
+  for (let p in source) {
+    if (source[p] != null && source[p].constructor === Object && (forever || depth > 0)) {
+      target[p] = merge(
+        target.hasOwnProperty(p) ? target[p] : {},
+        source[p],
+        forever ? null : depth - 1
+      );
+    } else {
+      target[p] = source[p];
+    }
+  }
+  return target;
 }
 
 export default wjplayer;
