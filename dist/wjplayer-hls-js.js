@@ -24339,7 +24339,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @private
 	     */
 	    var getClassRegexp_ = function(className){
-	      return new RegExp('\\b' + className + '\\b', 'gi');
+	      // Matches on
+	      // (beginning of string OR NOT word char)
+	      // classname
+	      // (negative lookahead word char OR end of string)
+	      return new RegExp('(^|[^A-Za-z-])' + className + '((?![A-Za-z-])|$)', 'gi');
 	    };
 	
 	    /**
@@ -24583,7 +24587,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          this.adsManager.setVolume(this.player.muted() ? 0 : this.player.volume());
 	          this.adsManager.start();
 	        } catch (adError) {
-	          this.onAdError_(adError);
+	          onAdError_(adError);
 	        }
 	      }
 	    }.bind(this);
@@ -24611,11 +24615,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @private
 	     */
 	    var onAdError_ = function(adErrorEvent) {
-	      window.console.log('Ad error: ' + adErrorEvent.getError());
+	      var errorMessage = adErrorEvent.getError !== undefined ? adErrorEvent.getError() : adErrorEvent.stack;
+	      window.console.log('Ad error: ' + errorMessage);
 	      this.vjsControls.show();
 	      this.adsManager.destroy();
 	      this.adContainerDiv.style.display = 'none';
-	      this.player.trigger({ type: 'adserror', data: { AdError: adErrorEvent.getError(), AdErrorEvent: adErrorEvent }});
+	      this.player.trigger({ type: 'adserror', data: { AdError: errorMessage, AdErrorEvent: adErrorEvent }});
 	    }.bind(this);
 	
 	    /**
@@ -24660,6 +24665,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	
 	      this.vjsControls.hide();
+	      showPlayButton();
 	      this.player.pause();
 	    }.bind(this);
 	
@@ -24820,18 +24826,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }.bind(this);
 	
 	    /**
+	     * Show pause and hide play button
+	     */
+	    var showPauseButton = function() {
+	      addClass_(this.playPauseDiv, 'ima-paused');
+	      removeClass_(this.playPauseDiv, 'ima-playing');
+	    }.bind(this);
+	
+	    /**
+	     * Show play and hide pause button
+	     */
+	    var showPlayButton = function() {
+	      addClass_(this.playPauseDiv, 'ima-playing');
+	      removeClass_(this.playPauseDiv, 'ima-paused');
+	    }.bind(this);
+	
+	    /**
 	     * Listener for clicks on the play/pause button during ad playback.
 	     * @private
 	     */
 	    var onAdPlayPauseClick_ = function() {
 	      if (this.adPlaying) {
-	        addClass_(this.playPauseDiv, 'ima-paused');
-	        removeClass_(this.playPauseDiv, 'ima-playing');
+	        showPauseButton();
 	        this.adsManager.pause();
 	        this.adPlaying = false;
 	      } else {
-	        addClass_(this.playPauseDiv, 'ima-playing');
-	        removeClass_(this.playPauseDiv, 'ima-paused');
+	        showPlayButton();
 	        this.adsManager.resume();
 	        this.adPlaying = true;
 	      }
@@ -24964,7 +24984,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.adsManager.setVolume(newVolume);
 	      }
 	      // Update UI
-	      if (this.newVolume == 0) {
+	      if (newVolume == 0) {
 	        this.adMuted = true;
 	        addClass_(this.muteDiv, 'ima-muted');
 	        removeClass_(this.muteDiv, 'ima-non-muted');
@@ -25162,8 +25182,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    this.pauseAd = function() {
 	      if (this.adsActive && this.adPlaying) {
-	        addClass_(this.playPauseDiv, 'ima-paused');
-	        removeClass_(this.playPauseDiv, 'ima-playing');
+	        showPauseButton();
 	        this.adsManager.pause();
 	        this.adPlaying = false;
 	      }
@@ -25174,8 +25193,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    this.resumeAd = function() {
 	      if (this.adsActive && !this.adPlaying) {
-	        addClass_(this.playPauseDiv, 'ima-playing');
-	        removeClass_(this.playPauseDiv, 'ima-paused');
+	        showPlayButton();
 	        this.adsManager.resume();
 	        this.adPlaying = true;
 	      }
@@ -25530,6 +25548,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.contentEndedListeners, this.contentAndAdsEndedListeners = [], [];
 	      this.contentComplete = true;
 	      this.player.off('ended', this.localContentEndedListener);
+	
+	      // Bug fix: https://github.com/googleads/videojs-ima/issues/306
+	      if (this.player.ads.adTimeoutTimeout) {
+	        clearTimeout(this.player.ads.adTimeoutTimeout);
+	      }
+	
 	      var intervalsToClear = [this.updateTimeIntervalHandle, this.seekCheckIntervalHandle,
 	        this.adTrackingTimer, this.resizeCheckIntervalHandle];
 	      for (var index in intervalsToClear) {
@@ -25657,7 +25681,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 	
 	  videojs.plugin('ga', function(options) {
-	    var adend, adpause, adserror, adskip, adstart, adtimeout, autoLabel, dataSetupOptions, defaultsEventsToTrack, end, ended, error, eventCategory, eventLabel, eventsToTrack, firstplay, fullscreen, getCurrentTime, getCurrentValue, init, interval, isFinite, loaded, parsedOptions, pause, percentsAlreadyTracked, percentsPlayedInterval, play, playing, resize, secondsPlayed, secondsPlayedInterval, secondsPlayedMoments, seekEnd, seekStart, seeking, sendbeacon, skipZeroPauses, startTimeTracking, stopTimeTracking, timeupdate, trackReplaySeconds, trackSeconds, trackingTime, volumeChange,
+	    var adend, adpause, adserror, adskip, adstart, adtimeout, autoLabel, dataSetupOptions, defaultsEventsToTrack, end, ended, error, eventCategory, eventLabel, eventsToTrack, firstplay, fullscreen, getCurrentTime, getCurrentValue, init, interval, isFinite, loaded, parsedOptions, pause, percentsAlreadyTracked, percentsPlayedInterval, play, playing, resize, secondsPlayed, secondsPlayedInterval, secondsPlayedMoments, seekEnd, seekStart, seeking, sendbeacon, startTimeTracking, stopTimeTracking, timeupdate, trackReplaySeconds, trackSeconds, trackingTime, volumeChange,
 	      _this = this;
 	    if (options == null) {
 	      options = {};
@@ -25678,7 +25702,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    secondsPlayedInterval = options.secondsPlayedInterval || dataSetupOptions.secondsPlayedInterval || 60;
 	    secondsPlayedMoments = options.secondsPlayedMoments || dataSetupOptions.secondsPlayedMoments;
 	    trackReplaySeconds = options.trackReplaySeconds;
-	    skipZeroPauses = options.skipZeroPauses != null ? options.skipZeroPauses : videojs.ima != null;
 	    percentsAlreadyTracked = [];
 	    seekStart = seekEnd = 0;
 	    seeking = false;
@@ -25796,7 +25819,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      stopTimeTracking();
 	      currentTime = getCurrentValue();
 	      duration = Math.round(this.duration());
-	      if (currentTime !== duration && !seeking && (!skipZeroPauses || currentTime)) {
+	      if (currentTime !== duration && !seeking) {
 	        sendbeacon('pause', false, currentTime);
 	      }
 	    };
@@ -27152,6 +27175,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          startPosition: -1,
 	          debug: false,
 	          capLevelToPlayerSize: false,
+	          initialLiveManifestSize: 1,
 	          maxBufferLength: 30,
 	          maxBufferSize: 60 * 1000 * 1000,
 	          maxBufferHole: 0.5,
@@ -27190,14 +27214,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	          timelineController: _timelineController2.default,
 	          enableCEA708Captions: true,
 	          enableMP2TPassThrough: false,
-	          abrEwmaFastLive: 5,
+	          abrEwmaFastLive: 3,
 	          abrEwmaSlowLive: 9,
-	          abrEwmaFastVoD: 4,
-	          abrEwmaSlowVoD: 15,
+	          abrEwmaFastVoD: 3,
+	          abrEwmaSlowVoD: 9,
 	          abrEwmaDefaultEstimate: 5e5, // 500 kbps
-	          abrBandWidthFactor: 0.8,
+	          abrBandWidthFactor: 0.95,
 	          abrBandWidthUpFactor: 0.7,
-	          maxStarvationDelay: 2
+	          maxStarvationDelay: 4,
+	          maxLoadingDelay: 4
 	        };
 	      }
 	      return Hls.defaultConfig;
@@ -27723,6 +27748,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        retry = config.levelLoadingMaxRetry;
 	        timeout = config.levelLoadingTimeOut;
 	        retryDelay = config.levelLoadingRetryDelay;
+	        _logger.logger.log('(re)loading playlist for level ' + id1);
 	      }
 	      this.loader = typeof config.pLoader !== 'undefined' ? new config.pLoader(config) : new config.loader(config);
 	      this.loading = true;
@@ -28487,8 +28513,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  _createClass(FragmentLoader, [{
 	    key: 'destroy',
 	    value: function destroy() {
-	      if (this.loader) {
-	        this.loader.destroy();
+	      var loader = this.loader;
+	      if (loader) {
+	        loader.abort();
 	        this.loader = null;
 	      }
 	      _eventHandler2.default.prototype.destroy.call(this);
@@ -28496,43 +28523,46 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'onFragLoading',
 	    value: function onFragLoading(data) {
-	      var frag = data.frag;
-	      this.frag = frag;
-	      this.frag.loaded = 0;
-	      var config = this.hls.config;
+	      var frag = this.frag = data.frag,
+	          config = this.hls.config;
+	      frag.loaded = 0;
 	      frag.loader = this.loader = typeof config.fLoader !== 'undefined' ? new config.fLoader(config) : new config.loader(config);
-	      this.loader.load(frag.url, 'arraybuffer', this.loadsuccess.bind(this), this.loaderror.bind(this), this.loadtimeout.bind(this), config.fragLoadingTimeOut, 0, 0, this.loadprogress.bind(this), frag);
+	      frag.loader.load(frag.url, 'arraybuffer', this.loadsuccess.bind(this), this.loaderror.bind(this), this.loadtimeout.bind(this), config.fragLoadingTimeOut, 0, 0, this.loadprogress.bind(this), frag);
 	    }
 	  }, {
 	    key: 'loadsuccess',
 	    value: function loadsuccess(event, stats) {
-	      var payload = event.currentTarget.response;
+	      var payload = event.currentTarget.response,
+	          frag = this.frag;
 	      stats.length = payload.byteLength;
 	      // detach fragment loader on load success
-	      this.frag.loader = undefined;
-	      this.hls.trigger(_events2.default.FRAG_LOADED, { payload: payload, frag: this.frag, stats: stats });
+	      this.loader = frag.loader = undefined;
+	      this.hls.trigger(_events2.default.FRAG_LOADED, { payload: payload, frag: frag, stats: stats });
 	    }
 	  }, {
 	    key: 'loaderror',
 	    value: function loaderror(event) {
-	      if (this.loader) {
-	        this.loader.abort();
+	      var loader = this.loader;
+	      if (loader) {
+	        loader.abort();
 	      }
 	      this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.NETWORK_ERROR, details: _errors.ErrorDetails.FRAG_LOAD_ERROR, fatal: false, frag: this.frag, response: event });
 	    }
 	  }, {
 	    key: 'loadtimeout',
 	    value: function loadtimeout() {
-	      if (this.loader) {
-	        this.loader.abort();
+	      var loader = this.loader;
+	      if (loader) {
+	        loader.abort();
 	      }
 	      this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.NETWORK_ERROR, details: _errors.ErrorDetails.FRAG_LOAD_TIMEOUT, fatal: false, frag: this.frag });
 	    }
 	  }, {
 	    key: 'loadprogress',
 	    value: function loadprogress(event, stats) {
-	      this.frag.loaded = stats.loaded;
-	      this.hls.trigger(_events2.default.FRAG_LOAD_PROGRESS, { frag: this.frag, stats: stats });
+	      var frag = this.frag;
+	      frag.loaded = stats.loaded;
+	      this.hls.trigger(_events2.default.FRAG_LOAD_PROGRESS, { frag: frag, stats: stats });
 	    }
 	  }]);
 	
@@ -28591,7 +28621,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  function AbrController(hls) {
 	    _classCallCheck(this, AbrController);
 	
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(AbrController).call(this, hls, _events2.default.FRAG_LOADING, _events2.default.FRAG_LOADED, _events2.default.ERROR));
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(AbrController).call(this, hls, _events2.default.FRAG_LOADING, _events2.default.FRAG_LOADED, _events2.default.FRAG_BUFFERED, _events2.default.ERROR));
 	
 	    _this.lastLoadedFragLevel = 0;
 	    _this._autoLevelCapping = -1;
@@ -28652,7 +28682,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      // if loader has been destroyed or loading has been aborted, stop timer and return
 	      if (!frag.loader || frag.loader.stats && frag.loader.stats.aborted) {
-	        _logger.logger.warn('frag loader destroy or aborted, disarm abandonRulesCheck');
+	        _logger.logger.warn('frag loader destroy or aborted, disarm abandonRules');
 	        this.clearTimer();
 	        return;
 	      }
@@ -28684,7 +28714,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	              // 0.8 : consider only 80% of current bw to be conservative
 	              // 8 = bits per byte (bps/Bps)
 	              fragLevelNextLoadedDelay = frag.duration * levels[nextLoadLevel].bitrate / (8 * 0.8 * loadRate);
-	              _logger.logger.log('fragLoadedDelay/bufferStarvationDelay/fragLevelNextLoadedDelay[' + nextLoadLevel + '] :' + fragLoadedDelay.toFixed(1) + '/' + bufferStarvationDelay.toFixed(1) + '/' + fragLevelNextLoadedDelay.toFixed(1));
 	              if (fragLevelNextLoadedDelay < bufferStarvationDelay) {
 	                // we found a lower level that be rebuffering free with current estimated bw !
 	                break;
@@ -28695,16 +28724,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (fragLevelNextLoadedDelay < fragLoadedDelay) {
 	              // ensure nextLoadLevel is not negative
 	              nextLoadLevel = Math.max(0, nextLoadLevel);
+	              _logger.logger.warn('loading too slow, abort fragment loading and switch to level ' + nextLoadLevel + ':fragLoadedDelay[' + nextLoadLevel + ']<fragLoadedDelay[' + (frag.level - 1) + '];bufferStarvationDelay:' + fragLevelNextLoadedDelay.toFixed(1) + '<' + fragLoadedDelay.toFixed(1) + ':' + bufferStarvationDelay.toFixed(1));
 	              // force next load level in auto mode
 	              hls.nextLoadLevel = nextLoadLevel;
 	              // update bw estimate for this fragment before cancelling load (this will help reducing the bw)
 	              this.bwEstimator.sample(requestDelay, frag.loaded);
 	              // abort fragment loading ...
-	              _logger.logger.warn('loading too slow, abort fragment loading and switch to level ' + nextLoadLevel);
 	              var loader = frag.loader,
 	                  stats = loader.stats;
 	              //abort fragment loading
 	              loader.abort();
+	              // stop abandon rules timer
 	              this.clearTimer();
 	              hls.trigger(_events2.default.FRAG_LOAD_EMERGENCY_ABORTED, { frag: frag, stats: stats });
 	            }
@@ -28715,28 +28745,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'onFragLoaded',
 	    value: function onFragLoaded(data) {
+	      // stop monitoring bw once frag loaded
+	      this.clearTimer();
+	      // store level id after successful fragment load
+	      this.lastLoadedFragLevel = data.frag.level;
+	      // reset forced auto level value so that next level will be selected
+	      this._nextAutoLevel = -1;
+	      // if fragment has been loaded to perform a bitrate test,
+	      if (data.frag.bitrateTest) {
+	        var stats = data.stats;
+	        stats.tparsed = stats.tbuffered = stats.tload;
+	        this.onFragBuffered(data);
+	      }
+	    }
+	  }, {
+	    key: 'onFragBuffered',
+	    value: function onFragBuffered(data) {
 	      var stats = data.stats,
 	          frag = data.frag;
-	      // only update stats on first frag loading
+	      // only update stats on first frag buffering
 	      // if same frag is loaded multiple times, it might be in browser cache, and loaded quickly
 	      // and leading to wrong bw estimation
-	      if (stats.aborted === undefined && frag.loadCounter === 1) {
-	        var fragLoadingDurationMs = stats.tload - stats.trequest;
-	        this.bwEstimator.sample(fragLoadingDurationMs, stats.loaded);
+	      // on bitrate test, also only update stats once (if tload = tbuffered == on FRAG_LOADED)
+	      if (stats.aborted !== true && frag.loadCounter === 1 && (!frag.bitrateTest || stats.tload === stats.tbuffered)) {
+	        var fragLoadingProcessingMs = stats.tbuffered - stats.trequest;
+	        _logger.logger.log('latency/loading/parsing/append/kbps:' + Math.round(stats.tfirst - stats.trequest) + '/' + Math.round(stats.tload - stats.tfirst) + '/' + Math.round(stats.tparsed - stats.tload) + '/' + Math.round(stats.tbuffered - stats.tparsed) + '/' + Math.round(8 * stats.loaded / (stats.tbuffered - stats.trequest)));
+	        this.bwEstimator.sample(fragLoadingProcessingMs, stats.loaded);
 	        // if fragment has been loaded to perform a bitrate test, (hls.startLevel = -1), store bitrate test delay duration
 	        if (frag.bitrateTest) {
-	          this.bitrateTestDelay = fragLoadingDurationMs / 1000;
+	          this.bitrateTestDelay = fragLoadingProcessingMs / 1000;
 	        } else {
 	          this.bitrateTestDelay = 0;
 	        }
 	      }
-	
-	      // stop monitoring bw once frag loaded
-	      this.clearTimer();
-	      // store level id after successful fragment load
-	      this.lastLoadedFragLevel = frag.level;
-	      // reset forced auto level value so that next level will be selected
-	      this._nextAutoLevel = -1;
 	    }
 	  }, {
 	    key: 'onError',
@@ -28769,6 +28810,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var levelInfo = levels[i],
 	            levelDetails = levelInfo.details,
 	            avgDuration = levelDetails ? levelDetails.totalduration / levelDetails.fragments.length : currentFragDuration,
+	            live = levelDetails ? levelDetails.live : false,
 	            adjustedbw = void 0;
 	        // follow algorithm captured from stagefright :
 	        // https://android.googlesource.com/platform/frameworks/av/+/master/media/libstagefright/httplive/LiveSession.cpp
@@ -28787,8 +28829,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        _logger.logger.trace('level/adjustedbw/bitrate/avgDuration/maxFetchDuration/fetchDuration: ' + i + '/' + Math.round(adjustedbw) + '/' + bitrate + '/' + avgDuration + '/' + maxFetchDuration + '/' + fetchDuration);
 	        // if adjusted bw is greater than level bitrate AND
 	        if (adjustedbw > bitrate && (
-	        // fragment fetchDuration unknown or fragment fetchDuration less than max allowed fetch duration, then this level matches
-	        !fetchDuration || fetchDuration < maxFetchDuration)) {
+	        // fragment fetchDuration unknown OR live stream OR fragment fetchDuration less than max allowed fetch duration, then this level matches
+	        // we don't account for max Fetch Duration for live streams, this is to avoid switching down when near the edge of live sliding window ...
+	        !fetchDuration || live || fetchDuration < maxFetchDuration)) {
 	          // as we are looping from highest to lowest, this will return the best achievable quality level
 	          return i;
 	        }
@@ -28869,18 +28912,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	        _logger.logger.trace('rebuffering expected to happen, lets try to find a quality level minimizing the rebuffering');
 	        // not possible to get rid of rebuffering ... let's try to find level that will guarantee less than maxStarvationDelay of rebuffering
 	        // if no matching level found, logic will return 0
-	        var maxStarvationDelay = config.maxStarvationDelay;
+	        var maxStarvationDelay = config.maxStarvationDelay,
+	            bwFactor = config.abrBandWidthFactor,
+	            bwUpFactor = config.abrBandWidthUpFactor;
 	        if (bufferStarvationDelay === 0) {
 	          // in case buffer is empty, let's check if previous fragment was loaded to perform a bitrate test
 	          var bitrateTestDelay = this.bitrateTestDelay;
 	          if (bitrateTestDelay) {
-	            // if it is the case, then we need to decrease this bitrate test duration from our maxStarvationDelay.
-	            // rationale is that we need to account for this bitrate test duration
-	            maxStarvationDelay -= bitrateTestDelay;
+	            // if it is the case, then we need to adjust our max starvation delay using maxLoadingDelay config value
+	            // max video loading delay used in  automatic start level selection :
+	            // in that mode ABR controller will ensure that video loading time (ie the time to fetch the first fragment at lowest quality level +
+	            // the time to fetch the fragment at the appropriate quality level is less than ```maxLoadingDelay``` )
+	            maxStarvationDelay = config.maxLoadingDelay - bitrateTestDelay;
 	            _logger.logger.trace('bitrate test took ' + Math.round(1000 * bitrateTestDelay) + 'ms, set first fragment max fetchDuration to ' + Math.round(1000 * maxStarvationDelay) + ' ms');
+	            // don't use conservative factor on bitrate test
+	            bwFactor = bwUpFactor = 1;
 	          }
 	        }
-	        bestLevel = this.findBestLevel(currentLevel, currentFragDuration, avgbw, maxAutoLevel, bufferStarvationDelay + maxStarvationDelay, config.abrBandWidthFactor, config.abrBandWidthUpFactor, levels);
+	        bestLevel = this.findBestLevel(currentLevel, currentFragDuration, avgbw, maxAutoLevel, bufferStarvationDelay + maxStarvationDelay, bwFactor, bwUpFactor, levels);
 	        return Math.max(bestLevel, 0);
 	      }
 	    }
@@ -28915,6 +28964,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	
 	  _createClass(BufferHelper, null, [{
+	    key: "isBuffered",
+	    value: function isBuffered(media, position) {
+	      if (media) {
+	        var buffered = media.buffered;
+	        for (var i = 0; i < buffered.length; i++) {
+	          if (position >= buffered.start(i) && position <= buffered.end(i)) {
+	            return true;
+	          }
+	        }
+	      }
+	      return false;
+	    }
+	  }, {
 	    key: "bufferInfo",
 	    value: function bufferInfo(media, pos, maxHoleDuration) {
 	      if (media) {
@@ -29342,7 +29404,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          // use levelCodec as first priority
 	          var codec = track.levelCodec || track.codec;
 	          var mimeType = track.container + ';codecs=' + codec;
-	          _logger.logger.log('creating sourceBuffer with mimeType:' + mimeType);
+	          _logger.logger.log('creating sourceBuffer(' + mimeType + ')');
 	          var sb = sourceBuffer[trackName] = mediaSource.addSourceBuffer(mimeType);
 	          sb.addEventListener('updateend', this.onsbue);
 	          sb.addEventListener('error', this.onsbe);
@@ -29570,7 +29632,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	              */
 	              if (Math.min(flushEnd, bufEnd) - flushStart > 0.5) {
 	                this.flushBufferCounter++;
-	                _logger.logger.log('flush ' + type + ' [' + flushStart + ',' + flushEnd + '], of [' + bufStart + ',' + bufEnd + '], pos:' + this.media.currentTime);
+	                _logger.logger.log('flush ' + type + ' [' + flushStart.toFixed(3) + ',' + flushEnd.toFixed(3) + '], of [' + bufStart.toFixed(3) + ',' + bufEnd.toFixed(3) + '], pos:' + this.media.currentTime.toFixed(3));
 	                sb.remove(flushStart, flushEnd);
 	                return false;
 	              }
@@ -29795,15 +29857,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var State = {
 	  STOPPED: 'STOPPED',
-	  STARTING: 'STARTING',
 	  IDLE: 'IDLE',
-	  PAUSED: 'PAUSED',
 	  KEY_LOADING: 'KEY_LOADING',
 	  FRAG_LOADING: 'FRAG_LOADING',
 	  FRAG_LOADING_WAITING_RETRY: 'FRAG_LOADING_WAITING_RETRY',
 	  WAITING_LEVEL: 'WAITING_LEVEL',
 	  PARSING: 'PARSING',
 	  PARSED: 'PARSED',
+	  BUFFER_FLUSHING: 'BUFFER_FLUSHING',
 	  ENDED: 'ENDED',
 	  ERROR: 'ERROR'
 	};
@@ -29839,9 +29900,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: function startLoad(startPosition) {
 	      if (this.levels) {
 	        var media = this.media,
-	            lastCurrentTime = this.lastCurrentTime;
+	            lastCurrentTime = this.lastCurrentTime,
+	            hls = this.hls;
 	        this.stopLoad();
-	        this.demuxer = new _demuxer2.default(this.hls);
 	        if (!this.timer) {
 	          this.timer = setInterval(this.ontick, 100);
 	        }
@@ -29856,7 +29917,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } else {
 	          this.lastCurrentTime = this.startPosition ? this.startPosition : startPosition;
 	        }
-	        this.state = this.startFragRequested ? State.IDLE : State.STARTING;
+	        if (!this.startFragRequested) {
+	          // determine load level
+	          var startLevel = hls.startLevel;
+	          if (startLevel === -1) {
+	            // -1 : guess start Level by doing a bitrate test by loading first fragment of lowest quality level
+	            startLevel = 0;
+	            this.bitrateTest = true;
+	          }
+	          // set new level to playlist loader : this will trigger start level load
+	          // hls.nextLoadLevel remains until it is set to a new value or until a new frag is successfully loaded
+	          this.level = hls.nextLoadLevel = startLevel;
+	          this.loadedmetadata = false;
+	        }
+	        this.state = State.IDLE;
 	        this.nextLoadPosition = this.startPosition = this.lastCurrentTime;
 	        this.tick();
 	      } else {
@@ -29906,30 +29980,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	      //logger.log(this.state);
 	      switch (this.state) {
 	        case State.ERROR:
-	        //don't do anything in error state to avoid breaking further ...
-	        case State.PAUSED:
-	          //don't do anything in paused state either ...
+	          //don't do anything in error state to avoid breaking further ...
 	          break;
-	        case State.STARTING:
-	          // determine load level
-	          var startLevel = hls.startLevel;
-	          if (startLevel === -1) {
-	            // -1 : guess start Level by doing a bitrate test by loading first fragment of lowest quality level
-	            startLevel = 0;
-	            this.fragBitrateTest = true;
-	          }
-	          // set new level to playlist loader : this will trigger start level load
-	          // hls.nextLoadLevel remains until it is set to a new value or until a new frag is successfully loaded
-	          this.level = hls.nextLoadLevel = startLevel;
-	          this.state = State.WAITING_LEVEL;
-	          this.loadedmetadata = false;
+	        case State.BUFFER_FLUSHING:
+	          // in buffer flushing state, reset fragLoadError counter
+	          this.fragLoadError = 0;
 	          break;
 	        case State.IDLE:
-	          // if video not attached AND
+	          // if start level loaded AND video not attached AND
 	          // start fragment already requested OR start frag prefetch disable
 	          // exit loop
-	          // => if media not attached but start frag prefetch is enabled and start frag not requested yet, we will not exit loop
-	          if (!media && (this.startFragRequested || !config.startFragPrefetch)) {
+	          // => if start level loaded and media not attached but start frag prefetch is enabled and start frag not requested yet, we will not exit loop
+	          if (this.levelLastLoaded !== undefined && !media && (this.startFragRequested || !config.startFragPrefetch)) {
 	            break;
 	          }
 	          // determine next candidate fragment to be loaded, based on current position and
@@ -29946,10 +30008,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	              bufferLen = bufferInfo.len,
 	              bufferEnd = bufferInfo.end,
 	              fragPrevious = this.fragPrevious,
-	              maxBufLen;
+	              levelInfo = this.levels[level],
+	              levelBitrate = levelInfo.bitrate,
+	              maxBufLen = void 0;
 	          // compute max Buffer Length that we could get from this load level, based on level bitrate. don't buffer more than 60 MB and more than 30s
-	          if (this.levels[level].hasOwnProperty('bitrate')) {
-	            maxBufLen = Math.max(8 * config.maxBufferSize / this.levels[level].bitrate, config.maxBufferLength);
+	          if (levelBitrate) {
+	            maxBufLen = Math.max(8 * config.maxBufferSize / levelBitrate, config.maxBufferLength);
 	          } else {
 	            maxBufLen = config.maxBufferLength;
 	          }
@@ -29957,9 +30021,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	          // if buffer length is less than maxBufLen try to load a new fragment
 	          if (bufferLen < maxBufLen) {
 	            // set next load level : this will trigger a playlist load if needed
-	            hls.nextLoadLevel = level;
-	            this.level = level;
-	            levelDetails = this.levels[level].details;
+	            this.level = hls.nextLoadLevel = level;
+	            levelDetails = levelInfo.details;
 	            // if level info not retrieved yet, switch state and wait for level retrieval
 	            // if live playlist, ensure that new playlist has been refreshed to avoid loading/try to load
 	            // a useless and outdated fragment (that might even introduce load error if it is already out of the live playlist)
@@ -29995,6 +30058,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            // in case of live playlist we need to ensure that requested position is not located before playlist start
 	            if (levelDetails.live) {
+	
+	              if (fragLen < config.initialLiveManifestSize) {
+	                _logger.logger.warn('Can not start playback of a level, reason: not enough fragments ' + fragLen + ' < ' + config.initialLiveManifestSize);
+	                break;
+	              }
+	
 	              // check if requested position is within seekable boundaries :
 	              //logger.log(`start/pos/bufEnd/seeking:${start.toFixed(3)}/${pos.toFixed(3)}/${bufferEnd.toFixed(3)}/${media.seeking}`);
 	              var maxLatency = config.liveMaxLatencyDuration !== undefined ? config.liveMaxLatencyDuration : config.liveMaxLatencyDurationCount * levelDetails.targetduration;
@@ -30118,7 +30187,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this.state = State.KEY_LOADING;
 	                hls.trigger(_events2.default.KEY_LOADING, { frag: frag });
 	              } else {
-	                _logger.logger.log('Loading ' + frag.sn + ' of [' + levelDetails.startSN + ' ,' + levelDetails.endSN + '],level ' + level + ', currentTime:' + pos + ',bufferEnd:' + bufferEnd.toFixed(3));
+	                _logger.logger.log('Loading ' + frag.sn + ' of [' + levelDetails.startSN + ' ,' + levelDetails.endSN + '],level ' + level + ', currentTime:' + pos.toFixed(3) + ',bufferEnd:' + bufferEnd.toFixed(3));
 	                // ensure that we are not reloading the same fragments in loop ...
 	                if (this.fragLoadIdx !== undefined) {
 	                  this.fragLoadIdx++;
@@ -30140,7 +30209,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this.fragCurrent = frag;
 	                this.startFragRequested = true;
 	                frag.autoLevel = hls.autoLevelEnabled;
-	                frag.bitrateTest = this.fragBitrateTest;
+	                frag.bitrateTest = this.bitrateTest;
 	                hls.trigger(_events2.default.FRAG_LOADING, { frag: frag });
 	                this.state = State.FRAG_LOADING;
 	              }
@@ -30159,7 +30228,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          var retryDate = this.retryDate;
 	          // if current time is gt than retryDate, or if media seeking let's switch to IDLE state to retry loading
 	          if (!retryDate || now >= retryDate || isSeeking) {
-	            _logger.logger.log('mediaController: retryDate reached, switch back to IDLE state');
+	            _logger.logger.log('streamController: retryDate reached, switch back to IDLE state');
 	            this.state = State.IDLE;
 	          }
 	          break;
@@ -30203,20 +30272,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      return null;
 	    }
 	  }, {
-	    key: 'isBuffered',
-	    value: function isBuffered(position) {
-	      var media = this.media;
-	      if (media) {
-	        var buffered = media.buffered;
-	        for (var i = 0; i < buffered.length; i++) {
-	          if (position >= buffered.start(i) && position <= buffered.end(i)) {
-	            return true;
-	          }
-	        }
-	      }
-	      return false;
-	    }
-	  }, {
 	    key: '_checkFragmentChanged',
 	    value: function _checkFragmentChanged() {
 	      var rangeCurrent,
@@ -30233,9 +30288,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (currentTime > video.playbackRate * this.lastCurrentTime) {
 	          this.lastCurrentTime = currentTime;
 	        }
-	        if (this.isBuffered(currentTime)) {
+	        if (_bufferHelper2.default.isBuffered(video, currentTime)) {
 	          rangeCurrent = this.getBufferRange(currentTime);
-	        } else if (this.isBuffered(currentTime + 0.1)) {
+	        } else if (_bufferHelper2.default.isBuffered(video, currentTime + 0.1)) {
 	          /* ensure that FRAG_CHANGED event is triggered at startup,
 	            when first video frame is displayed and playback is paused.
 	            add a tolerance of 100ms, in case current position is not buffered,
@@ -30284,7 +30339,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.fragCurrent = null;
 	      // increase fragment load Index to avoid frag loop loading error after buffer flush
 	      this.fragLoadIdx += 2 * this.config.fragLoadingLoopThreshold;
-	      this.state = State.PAUSED;
+	      this.state = State.BUFFER_FLUSHING;
 	      // flush everything
 	      this.hls.trigger(_events2.default.BUFFER_FLUSHING, { startOffset: 0, endOffset: Number.POSITIVE_INFINITY });
 	    }
@@ -30327,7 +30382,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (currentRange && currentRange.start > 1) {
 	          // flush buffer preceding current fragment (flush until current fragment start offset)
 	          // minus 1s to avoid video freezing, that could happen if we flush keyframe of current video ...
-	          this.state = State.PAUSED;
+	          this.state = State.BUFFER_FLUSHING;
 	          this.hls.trigger(_events2.default.BUFFER_FLUSHING, { startOffset: 0, endOffset: currentRange.start - 1 });
 	        }
 	        if (!media.paused) {
@@ -30357,7 +30412,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	            this.fragCurrent = null;
 	            // flush position is the start position of this new buffer
-	            this.state = State.PAUSED;
+	            this.state = State.BUFFER_FLUSHING;
 	            this.hls.trigger(_events2.default.BUFFER_FLUSHING, { startOffset: nextRange.start, endOffset: Number.POSITIVE_INFINITY });
 	          }
 	        }
@@ -30413,10 +30468,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'onMediaSeeking',
 	    value: function onMediaSeeking() {
+	      var media = this.media,
+	          config = this.config;
 	      if (this.state === State.FRAG_LOADING) {
 	        // check if currently loaded fragment is inside buffer.
 	        //if outside, cancel fragment loading, otherwise do nothing
-	        if (_bufferHelper2.default.bufferInfo(this.media, this.media.currentTime, this.config.maxBufferHole).len === 0) {
+	        if (_bufferHelper2.default.bufferInfo(media, media.currentTime, config.maxBufferHole).len === 0) {
 	          _logger.logger.log('seeking outside of buffer while fragment load in progress, cancel fragment load');
 	          var fragCurrent = this.fragCurrent;
 	          if (fragCurrent) {
@@ -30433,12 +30490,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // switch to IDLE state to check for potential new fragment
 	        this.state = State.IDLE;
 	      }
-	      if (this.media) {
-	        this.lastCurrentTime = this.media.currentTime;
+	      if (media) {
+	        this.lastCurrentTime = media.currentTime;
 	      }
 	      // avoid reporting fragment loop loading error in case user is seeking several times on same position
 	      if (this.fragLoadIdx !== undefined) {
-	        this.fragLoadIdx += 2 * this.config.fragLoadingLoopThreshold;
+	        this.fragLoadIdx += 2 * config.fragLoadingLoopThreshold;
 	      }
 	      // tick to speed up processing
 	      this.tick();
@@ -30509,7 +30566,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      if (newDetails.live) {
 	        var curDetails = curLevel.details;
-	        if (curDetails) {
+	        if (curDetails && newDetails.fragments.length > 0) {
 	          // we already have details for that level, merge them
 	          _levelHelper2.default.mergeDetails(curDetails, newDetails);
 	          sliding = newDetails.fragments[0].start;
@@ -30570,10 +30627,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var fragCurrent = this.fragCurrent,
 	          fragLoaded = data.frag;
 	      if (this.state === State.FRAG_LOADING && fragCurrent && fragLoaded.level === fragCurrent.level && fragLoaded.sn === fragCurrent.sn) {
-	        var stats = data.stats;
-	        _logger.logger.log('Loaded  ' + fragCurrent.sn + ' of level ' + fragCurrent.level);
+	        var stats = data.stats,
+	            currentLevel = this.levels[fragCurrent.level],
+	            details = currentLevel.details;
+	        _logger.logger.log('Loaded  ' + fragCurrent.sn + ' of [' + details.startSN + ' ,' + details.endSN + '],level ' + fragCurrent.level);
 	        // reset frag bitrate test in any case after frag loaded event
-	        this.fragBitrateTest = false;
+	        this.bitrateTest = false;
 	        // if this frag was loaded to perform a bitrate test AND if hls.nextLoadLevel is greater than 0
 	        // then this means that we should be able to load a fragment at a higher quality level
 	        if (fragLoaded.bitrateTest === true && this.hls.nextLoadLevel) {
@@ -30587,9 +30646,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          this.state = State.PARSING;
 	          // transmux the MPEG-TS data to ISO-BMFF segments
 	          this.stats = stats;
-	          var currentLevel = this.levels[this.level],
-	              details = currentLevel.details,
-	              duration = details.totalduration,
+	          var duration = details.totalduration,
 	              start = fragCurrent.startDTS !== undefined && !isNaN(fragCurrent.startDTS) ? fragCurrent.startDTS : fragCurrent.start,
 	              level = fragCurrent.level,
 	              sn = fragCurrent.sn,
@@ -30608,11 +30665,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	          }
 	          this.pendingAppending = 0;
-	          _logger.logger.log('Demuxing ' + sn + ' of [' + details.startSN + ' ,' + details.endSN + '],level ' + level + ', cc ' + fragCurrent.cc);
+	          _logger.logger.log('Parsing ' + sn + ' of [' + details.startSN + ' ,' + details.endSN + '],level ' + level + ', cc ' + fragCurrent.cc);
 	          var demuxer = this.demuxer;
-	          if (demuxer) {
-	            demuxer.push(data.payload, audioCodec, currentLevel.videoCodec, start, fragCurrent.cc, level, sn, duration, fragCurrent.decryptdata);
+	          if (!demuxer) {
+	            demuxer = this.demuxer = new _demuxer2.default(this.hls);
 	          }
+	          demuxer.push(data.payload, audioCodec, currentLevel.videoCodec, start, fragCurrent.cc, level, sn, duration, fragCurrent.decryptdata);
 	        }
 	      }
 	      this.fragLoadError = 0;
@@ -30710,7 +30768,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var level = this.levels[this.level],
 	            frag = this.fragCurrent;
 	
-	        _logger.logger.log('parsed ' + data.type + ',PTS:[' + data.startPTS.toFixed(3) + ',' + data.endPTS.toFixed(3) + '],DTS:[' + data.startDTS.toFixed(3) + '/' + data.endDTS.toFixed(3) + '],nb:' + data.nb + ',dropped:' + (data.dropped || 0));
+	        _logger.logger.log('Parsed ' + data.type + ',PTS:[' + data.startPTS.toFixed(3) + ',' + data.endPTS.toFixed(3) + '],DTS:[' + data.startDTS.toFixed(3) + '/' + data.endDTS.toFixed(3) + '],nb:' + data.nb + ',dropped:' + (data.dropped || 0));
 	
 	        var drift = _levelHelper2.default.updateFragPTSDTS(level.details, frag.sn, data.startPTS, data.endPTS, data.startDTS, data.endDTS),
 	            hls = this.hls;
@@ -30783,11 +30841,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var media = this.media,
 	
 	      // 0.4 : tolerance needed as some browsers stalls playback before reaching buffered end
-	      mediaBuffered = media && this.isBuffered(media.currentTime) && this.isBuffered(media.currentTime + 0.4),
+	      mediaBuffered = media && _bufferHelper2.default.isBuffered(media, media.currentTime) && _bufferHelper2.default.isBuffered(media, media.currentTime + 0.4),
 	          frag = data.frag || this.fragCurrent;
 	      switch (data.details) {
 	        case _errors.ErrorDetails.FRAG_LOAD_ERROR:
 	        case _errors.ErrorDetails.FRAG_LOAD_TIMEOUT:
+	        case _errors.ErrorDetails.KEY_LOAD_ERROR:
+	        case _errors.ErrorDetails.KEY_LOAD_TIMEOUT:
 	          if (!data.fatal) {
 	            var loadError = this.fragLoadError;
 	            if (loadError) {
@@ -30795,19 +30855,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	            } else {
 	              loadError = 1;
 	            }
-	            // keep retrying / don't raise fatal network error if current position is buffered
-	            if (loadError <= this.config.fragLoadingMaxRetry || mediaBuffered) {
+	            // keep retrying / don't raise fatal network error if current position is buffered or if in automode with current level not 0
+	            if (loadError <= this.config.fragLoadingMaxRetry || mediaBuffered || frag.autoLevel && frag.level) {
 	              this.fragLoadError = loadError;
 	              // reset load counter to avoid frag loop loading error
 	              frag.loadCounter = 0;
 	              // exponential backoff capped to 64s
 	              var delay = Math.min(Math.pow(2, loadError - 1) * this.config.fragLoadingRetryDelay, 64000);
-	              _logger.logger.warn('mediaController: frag loading failed, retry in ' + delay + ' ms');
+	              _logger.logger.warn('streamController: frag loading failed, retry in ' + delay + ' ms');
 	              this.retryDate = performance.now() + delay;
 	              // retry loading state
 	              this.state = State.FRAG_LOADING_WAITING_RETRY;
 	            } else {
-	              _logger.logger.error('mediaController: ' + data.details + ' reaches max retry, redispatch as fatal ...');
+	              _logger.logger.error('streamController: ' + data.details + ' reaches max retry, redispatch as fatal ...');
 	              // redispatch same error but with fatal set to true
 	              data.fatal = true;
 	              this.hls.trigger(_events2.default.ERROR, data);
@@ -30821,7 +30881,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (mediaBuffered) {
 	              // try to reduce max buffer length : rationale is that we could get
 	              // frag loop loading error because of buffer eviction
-	              this._reduceMaxMaxBufferLength(frag.duration);
+	              this._reduceMaxBufferLength(frag.duration);
 	              this.state = State.IDLE;
 	            } else {
 	              // buffer empty. report as fatal if in manual mode or if lowest level.
@@ -30837,19 +30897,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	          break;
 	        case _errors.ErrorDetails.LEVEL_LOAD_ERROR:
 	        case _errors.ErrorDetails.LEVEL_LOAD_TIMEOUT:
-	        case _errors.ErrorDetails.KEY_LOAD_ERROR:
-	        case _errors.ErrorDetails.KEY_LOAD_TIMEOUT:
-	          //  when in ERROR state, don't switch back to IDLE state in case a non-fatal error is received
 	          if (this.state !== State.ERROR) {
-	            // if fatal error, stop processing, otherwise move to IDLE to retry loading
-	            this.state = data.fatal ? State.ERROR : State.IDLE;
-	            _logger.logger.warn('mediaController: ' + data.details + ' while loading frag,switch to ' + this.state + ' state ...');
+	            if (data.fatal) {
+	              // if fatal error, stop processing
+	              this.state = State.ERROR;
+	              _logger.logger.warn('streamController: ' + data.details + ',switch to ' + this.state + ' state ...');
+	            } else {
+	              // in cas of non fatal error while waiting level load to be completed, switch back to IDLE
+	              if (this.state === State.WAITING_LEVEL) {
+	                this.state = State.IDLE;
+	              }
+	            }
 	          }
 	          break;
 	        case _errors.ErrorDetails.BUFFER_FULL_ERROR:
 	          // only reduce max buf len if in appending state
 	          if (this.state === State.PARSING || this.state === State.PARSED) {
-	            this._reduceMaxMaxBufferLength(frag.duration);
+	            this._reduceMaxBufferLength(frag.duration);
 	            this.state = State.IDLE;
 	          }
 	          break;
@@ -30858,14 +30922,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    }
 	  }, {
-	    key: '_reduceMaxMaxBufferLength',
-	    value: function _reduceMaxMaxBufferLength(minLength) {
-	      if (this.config.maxMaxBufferLength >= minLength) {
+	    key: '_reduceMaxBufferLength',
+	    value: function _reduceMaxBufferLength(minLength) {
+	      var config = this.config;
+	      if (config.maxMaxBufferLength >= minLength) {
 	        // reduce max buffer length as it might be too high. we do this to avoid loop flushing ...
-	        this.config.maxMaxBufferLength /= 2;
-	        _logger.logger.warn('reduce max buffer length to ' + this.config.maxMaxBufferLength + 's and switch to IDLE state');
+	        config.maxMaxBufferLength /= 2;
+	        _logger.logger.warn('reduce max buffer length to ' + config.maxMaxBufferLength + 's and switch to IDLE state');
 	        // increase fragment load Index to avoid frag loop loading error after buffer flush
-	        this.fragLoadIdx += 2 * this.config.fragLoadingLoopThreshold;
+	        this.fragLoadIdx += 2 * config.fragLoadingLoopThreshold;
 	      }
 	    }
 	  }, {
@@ -30891,9 +30956,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	              // if startPosition not buffered, let's seek to buffered.start(0)
 	              if (startPosition < bufferStart || startPosition > bufferEnd) {
 	                startPosition = bufferStart;
-	                _logger.logger.log('target start position not buffered, seek to buffered.start(0) ' + bufferStart);
+	                _logger.logger.log('target start position not buffered, seek to buffered.start(0) ' + bufferStart.toFixed(3));
 	              }
-	              _logger.logger.log('adjust currentTime from ' + currentTime + ' to ' + startPosition);
+	              _logger.logger.log('adjust currentTime from ' + currentTime.toFixed(3) + ' to ' + startPosition.toFixed(3));
 	              media.currentTime = startPosition;
 	            }
 	          }
@@ -30905,11 +30970,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	              // not playing if nothing buffered
 	          jumpThreshold = 0.4,
 	              // tolerance needed as some browsers stalls playback before reaching buffered range end
-	          playheadMoving = currentTime > media.playbackRate * this.lastCurrentTime;
+	          playheadMoving = currentTime > media.playbackRate * this.lastCurrentTime,
+	              config = this.config;
 	
 	          if (this.stalled && playheadMoving) {
 	            this.stalled = false;
-	            _logger.logger.log('playback not stuck anymore @' + currentTime);
+	            _logger.logger.log('playback not stuck anymore @' + currentTime.toFixed(3));
 	          }
 	          // check buffer upfront
 	          // if less than jumpThreshold second is buffered, let's check in more details
@@ -30922,11 +30988,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	              // playhead not moving AND media expected to play
 	              if (!this.stalled) {
 	                this.seekHoleNudgeDuration = 0;
-	                _logger.logger.log('playback seems stuck @' + currentTime);
+	                _logger.logger.log('playback seems stuck @' + currentTime.toFixed(3));
 	                this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.MEDIA_ERROR, details: _errors.ErrorDetails.BUFFER_STALLED_ERROR, fatal: false });
 	                this.stalled = true;
 	              } else {
-	                this.seekHoleNudgeDuration += this.config.seekHoleNudgeDuration;
+	                this.seekHoleNudgeDuration += config.seekHoleNudgeDuration;
 	              }
 	            }
 	            // if we are below threshold, try to jump to start of next buffer range if close
@@ -30934,10 +31000,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	              // no buffer available @ currentTime, check if next buffer is close (within a config.maxSeekHole second range)
 	              var nextBufferStart = bufferInfo.nextStart,
 	                  delta = nextBufferStart - currentTime;
-	              if (nextBufferStart && delta < this.config.maxSeekHole && delta > 0) {
+	              if (nextBufferStart && delta < config.maxSeekHole && delta > 0) {
 	                // next buffer is close ! adjust currentTime to nextBufferStart
 	                // this will ensure effective video decoding
-	                _logger.logger.log('adjust currentTime from ' + media.currentTime + ' to next buffered @ ' + nextBufferStart + ' + nudge ' + this.seekHoleNudgeDuration);
+	                _logger.logger.log('adjust currentTime from ' + media.currentTime.toFixed(3) + ' to next buffered @ ' + nextBufferStart.toFixed(3) + ' + nudge ' + this.seekHoleNudgeDuration);
 	                var hole = nextBufferStart + this.seekHoleNudgeDuration - media.currentTime;
 	                media.currentTime = nextBufferStart + this.seekHoleNudgeDuration;
 	                this.hls.trigger(_events2.default.ERROR, { type: _errors.ErrorTypes.MEDIA_ERROR, details: _errors.ErrorDetails.BUFFER_SEEK_OVER_HOLE, fatal: false, hole: hole });
@@ -30965,7 +31031,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          i;
 	      for (i = 0; i < this.bufferRange.length; i++) {
 	        range = this.bufferRange[i];
-	        if (this.isBuffered((range.start + range.end) / 2)) {
+	        if (_bufferHelper2.default.isBuffered(this.media, (range.start + range.end) / 2)) {
 	          newRange.push(range);
 	        }
 	      }
@@ -30991,7 +31057,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var log = '',
 	          len = r.length;
 	      for (var i = 0; i < len; i++) {
-	        log += '[' + r.start(i) + ',' + r.end(i) + ']';
+	        log += '[' + r.start(i).toFixed(3) + ',' + r.end(i).toFixed(3) + ']';
 	      }
 	      return log;
 	    }
@@ -31080,9 +31146,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    if (hls.config.enableWorker && typeof Worker !== 'undefined') {
 	      _logger.logger.log('demuxing in webworker');
+	      var w = void 0;
 	      try {
 	        var work = __webpack_require__(199);
-	        var w = this.w = work(_demuxerWorker2.default);
+	        w = this.w = work(_demuxerWorker2.default);
 	        this.onwmsg = this.onWorkerMessage.bind(this);
 	        w.addEventListener('message', this.onwmsg);
 	        w.onerror = function (event) {
@@ -31091,6 +31158,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        w.postMessage({ cmd: 'init', typeSupported: typeSupported });
 	      } catch (err) {
 	        _logger.logger.error('error while initializing DemuxerWorker, fallback on DemuxerInline');
+	        if (w) {
+	          // revoke the Object URL that was used to create demuxer worker, so as not to leak it
+	          URL.revokeObjectURL(w.objectURL);
+	        }
 	        this.demuxer = new _demuxerInline2.default(hls, typeSupported);
 	      }
 	    } else {
@@ -31161,6 +31232,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	          obj.tracks = data.tracks;
 	          obj.unique = data.unique;
 	          this.hls.trigger(_events2.default.FRAG_PARSING_INIT_SEGMENT, obj);
+	          break;
+	        case 'init':
+	          // revoke the Object URL that was used to create demuxer worker, so as not to leak it
+	          URL.revokeObjectURL(this.w.objectURL);
 	          break;
 	        case _events2.default.FRAG_PARSING_DATA:
 	          this.hls.trigger(_events2.default.FRAG_PARSING_DATA, {
@@ -34048,6 +34123,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    switch (data.cmd) {
 	      case 'init':
 	        self.demuxer = new _demuxerInline2.default(observer, data.typeSupported);
+	        self.postMessage({ event: 'init' });
 	        break;
 	      case 'demux':
 	        self.demuxer.push(new Uint8Array(data.data), data.audioCodec, data.videoCodec, data.timeOffset, data.cc, data.level, data.sn, data.duration);
@@ -34946,19 +35022,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var stringify = JSON.stringify;
 	
-	module.exports = function (fn) {
-	    var keys = [];
+	module.exports = function (fn, options) {
 	    var wkey;
 	    var cacheKeys = Object.keys(cache);
-	    
+	
 	    for (var i = 0, l = cacheKeys.length; i < l; i++) {
 	        var key = cacheKeys[i];
-	        if (cache[key].exports === fn) {
+	        var exp = cache[key].exports;
+	        // Using babel as a transpiler to use esmodule, the export will always
+	        // be an object with the default export as a property of it. To ensure
+	        // the existing api and babel esmodule exports are both supported we
+	        // check for both
+	        if (exp === fn || exp && exp.default === fn) {
 	            wkey = key;
 	            break;
 	        }
 	    }
-	    
+	
 	    if (!wkey) {
 	        wkey = Math.floor(Math.pow(16, 8) * Math.random()).toString(16);
 	        var wcache = {};
@@ -34972,15 +35052,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	        ];
 	    }
 	    var skey = Math.floor(Math.pow(16, 8) * Math.random()).toString(16);
-	    
+	
 	    var scache = {}; scache[wkey] = wkey;
 	    sources[skey] = [
-	        Function(['require'],'require(' + stringify(wkey) + ')(self)'),
+	        Function(['require'], (
+	            // try to call default if defined to also support babel esmodule
+	            // exports
+	            'var f = require(' + stringify(wkey) + ');' +
+	            '(f.default ? f.default : f)(self);'
+	        )),
 	        scache
 	    ];
-	    
+	
+	    var workerSources = {};
+	    resolveSources(skey);
+	
+	    function resolveSources(key) {
+	        workerSources[key] = true;
+	
+	        for (var depPath in sources[key][1]) {
+	            var depKey = sources[key][1][depPath];
+	            if (!workerSources[depKey]) {
+	                resolveSources(depKey);
+	            }
+	        }
+	    }
+	
 	    var src = '(' + bundleFn + ')({'
-	        + Object.keys(sources).map(function (key) {
+	        + Object.keys(workerSources).map(function (key) {
 	            return stringify(key) + ':['
 	                + sources[key][0]
 	                + ',' + stringify(sources[key][1]) + ']'
@@ -34988,12 +35087,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }).join(',')
 	        + '},{},[' + stringify(skey) + '])'
 	    ;
-	    
+	
 	    var URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
-	    
-	    return new Worker(URL.createObjectURL(
-	        new Blob([src], { type: 'text/javascript' })
-	    ));
+	
+	    var blob = new Blob([src], { type: 'text/javascript' });
+	    if (options && options.bare) { return blob; }
+	    var workerUrl = URL.createObjectURL(blob);
+	    var worker = new Worker(workerUrl);
+	    worker.objectURL = workerUrl;
+	    return worker;
 	};
 
 
@@ -35233,6 +35335,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _errors = __webpack_require__(170);
 	
+	var _bufferHelper = __webpack_require__(178);
+	
+	var _bufferHelper2 = _interopRequireDefault(_bufferHelper);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -35368,15 +35474,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	          clearTimeout(this.timer);
 	          this.timer = null;
 	        }
-	        this._level = newLevel;
-	        _logger.logger.log('switching to level ' + newLevel);
+	        if (this._level !== newLevel) {
+	          _logger.logger.log('switching to level ' + newLevel);
+	          this._level = newLevel;
+	        }
 	        this.hls.trigger(_events2.default.LEVEL_SWITCH, { level: newLevel });
 	        var level = levels[newLevel],
 	            levelDetails = level.details;
 	        // check if we need to load playlist for this level. don't reload live playlist more than once per second
 	        if (!levelDetails || levelDetails.live === true && performance.now() - levelDetails.tload > 1000) {
 	          // level not retrieved yet, or live playlist we need to (re)load it
-	          _logger.logger.log('(re)loading playlist for level ' + newLevel);
 	          var urlId = level.urlId;
 	          this.hls.trigger(_events2.default.LEVEL_LOADING, { url: level.url[urlId], level: newLevel, id: urlId });
 	        }
@@ -35436,18 +35543,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	              // reset this._level so that another call to set level() will retrigger a frag load
 	              this._level = undefined;
 	            }
-	            // fragment errors are all handled  by streamController
-	          } else if (details !== _errors.ErrorDetails.FRAG_LOAD_ERROR && details !== _errors.ErrorDetails.FRAG_LOAD_TIMEOUT && details !== _errors.ErrorDetails.FRAG_LOOP_LOADING_ERROR) {
-	              _logger.logger.error('cannot recover ' + details + ' error');
-	              this._level = undefined;
-	              // stopping live reloading timer if any
-	              if (this.timer) {
-	                clearTimeout(this.timer);
-	                this.timer = null;
+	            // other errors are handled by stream controller
+	          } else if (details === _errors.ErrorDetails.LEVEL_LOAD_ERROR || details === _errors.ErrorDetails.LEVEL_LOAD_TIMEOUT) {
+	              var _hls = this.hls,
+	                  media = _hls.media,
+	
+	              // 0.4 : tolerance needed as some browsers stalls playback before reaching buffered end
+	              mediaBuffered = media && _bufferHelper2.default.isBuffered(media, media.currentTime) && _bufferHelper2.default.isBuffered(media, media.currentTime + 0.4);
+	              if (mediaBuffered) {
+	                var retryDelay = _hls.config.levelLoadingRetryDelay;
+	                _logger.logger.warn('level controller,' + details + ', but media buffered, retry in ' + retryDelay + 'ms');
+	                this.timer = setTimeout(this.ontick, retryDelay);
+	              } else {
+	                _logger.logger.error('cannot recover ' + details + ' error');
+	                this._level = undefined;
+	                // stopping live reloading timer if any
+	                if (this.timer) {
+	                  clearTimeout(this.timer);
+	                  this.timer = null;
+	                }
+	                // redispatch same error but with fatal set to true
+	                data.fatal = true;
+	                _hls.trigger(_events2.default.ERROR, data);
 	              }
-	              // redispatch same error but with fatal set to true
-	              data.fatal = true;
-	              hls.trigger(_events2.default.ERROR, data);
 	            }
 	        }
 	      }
@@ -36404,7 +36522,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            _hls.on(Hls.Events.LEVEL_LOADED, function(event, data) { _duration = data.details.live ? Infinity : data.details.totalduration; });
 	
 	            _hls.attachMedia(_video);
-	            tech._hls = _hls;
 	        }
 	
 	        this.duration = function () {

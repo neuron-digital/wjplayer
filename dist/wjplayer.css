@@ -1322,7 +1322,7 @@ video::-webkit-media-text-track-display {
  * limitations under the License.
  */
 
-#ima-ad-container {
+.ima-ad-container {
   top: 0px;
   position: absolute;
   display: block;
@@ -1346,10 +1346,11 @@ video::-webkit-media-text-track-display {
   margin-top: -40px;
 }
 
-#ima-controls-div {
+.ima-controls-div {
   bottom:0px;
   height: 37px;
   position: absolute;
+  overflow: hidden;
   display: none;
   opacity: 1;
   background-color: rgba(7, 20, 30, .7);
@@ -1381,27 +1382,27 @@ video::-webkit-media-text-track-display {
     endColorstr='#07141E',GradientType=0 ); /* IE6-9 */
 }
 
-#ima-countdown-div {
+.ima-countdown-div {
   height: 10px;
   color: #FFFFFF;
   text-shadow: 0 0 0.2em #000;
   cursor: default;
 }
 
-#ima-seek-bar-div {
+.ima-seek-bar-div {
   top: 12px;
   height: 3px;
   position: absolute;
   background: rgba(255, 255, 255, .4);
 }
 
-#ima-progress-div {
+.ima-progress-div {
   width: 0px;
   height: 3px;
   background-color: #ECC546;
 }
 
-#ima-play-pause-div, #ima-mute-div, #ima-slider-div, #ima-fullscreen-div {
+.ima-play-pause-div, .ima-mute-div, .ima-slider-div, .ima-fullscreen-div {
   width: 35px;
   height: 20px;
   top: 11px;
@@ -1415,12 +1416,12 @@ video::-webkit-media-text-track-display {
   cursor: pointer;
 }
 
-#ima-mute-div {
+.ima-mute-div {
   left: auto;
   right: 85px;
 }
 
-#ima-slider-div {
+.ima-slider-div {
   left: auto;
   right: 35px;
   width: 50px;
@@ -1429,13 +1430,13 @@ video::-webkit-media-text-track-display {
   background-color: #555555;
 }
 
-#ima-slider-level-div {
+.ima-slider-level-div {
   width: 100%;
   height: 10px;
   background-color: #ECC546;
 }
 
-#ima-fullscreen-div {
+.ima-fullscreen-div {
   left: auto;
   right: 0px;
 }
@@ -1474,44 +1475,6 @@ video::-webkit-media-text-track-display {
 
 .ima-non-fullscreen:hover:before, .ima-fullscreen:hover:before {
   text-shadow: 0 0 1em #fff;
-}
-
-.vjs-resolution-button {
-  color: #ccc;
-  font-family: VideoJS;
-}
-
-.vjs-resolution-button .vjs-resolution-button-staticlabel:before {
-  content: '\f110';
-  font-size: 1.8em;
-  line-height: 1.67;
-}
-
-.vjs-resolution-button .vjs-resolution-button-label {
-    font-size: 1em;
-    line-height: 3em;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    text-align: center;
-    box-sizing: inherit;
-		font-family: Arial, Helvetica, sans-serif;
-}
-
-.vjs-resolution-button ul.vjs-menu-content {
-  width: 4em !important;
-}
-
-.vjs-resolution-button .vjs-menu {
-  left: 0;
-}
-
-.vjs-resolution-button .vjs-menu li {
-  text-transform: none;
-	font-size: 1em;
-	font-family: Arial, Helvetica, sans-serif;
 }
 
 /*! videojs-social - v0.0.0 - 2014-5-1
@@ -1794,7 +1757,7 @@ ul.vjs-share-options li a {
 
 /**
  * videojs-download-button
- * @version 0.1.0
+ * @version 0.0.1
  * @copyright 2016 Mikhail Khazov mikhail.khazov@gmail.com
  * @license MIT
  */

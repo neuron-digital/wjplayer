@@ -11,8 +11,6 @@ const gutil = require('gulp-util');
 const del = require('del');
 
 const paths = {
-  NPM: './node_modules',
-  BOWER: './bower_components',
   DIST: './dist',
   DIST_SKINS: './dist/skins',
   DIST_FONTS: './dist/font',
@@ -35,54 +33,54 @@ let includesCss360 = [];
 const includes = {
   js: {
     core: [
-      paths.BOWER + '/video.js/dist/video.js',
-      paths.BOWER + '/videojs5-hlsjs-source-handler/dist/videojs5-hlsjs-source-handler.js',
+      'node_modules/video.js/dist/video.js',
+      'node_modules/videojs5-hlsjs-source-handler/lib/videojs5-hlsjs-source-handler.js',
       paths.SRC_JS
     ],
     ads: [
-      paths.BOWER + '/videojs-contrib-ads/src/videojs.ads.js',
-      paths.BOWER + '/videojs-ima/src/videojs.ima.js'
+      'node_modules/videojs-contrib-ads/src/videojs.ads.js',
+      'node_modules/videojs-ima/src/videojs.ima.js'
     ],
     switcher: [
-      paths.BOWER + '/vjs-resolution-switcher/lib/videojs-resolution-switcher.js'
+      'node_modules/vjs-resolution-switcher/lib/videojs-resolution-switcher.js'
     ],
     share: [
-      paths.BOWER + '/videojs-social/videojs-social.js'
+      'node_modules/videojs-social/videojs-social.js'
     ],
     download: [
-      paths.BOWER  + '/videojs-download-button/dist/videojs-download-button.js'
+      'node_modules/videojs-download-button/dist/videojs-download-button.js'
     ],
     ga: [
-      paths.NPM + '/videojs-ga/dist/videojs.ga.js'
+      'node_modules/videojs-ga/dist/videojs.ga.js'
     ],
     360: [
-      paths.BOWER + '/three.js/three.js',
-      paths.BOWER + '/videojs-panorama/dist/videojs-panorama.v5.js'
+      'node_modules/three/build/three.js',
+      'node_modules/videojs-panorama/dist/videojs-panorama.v5.js'
     ]
   },
   css: {
     core: [
-      paths.BOWER + '/video.js/dist/video-js.css'
+      'node_modules/video.js/dist/video-js.css'
     ],
     ads: [
-      paths.BOWER + '/videojs-ima/src/videojs.ima.css'
+      'node_modules/videojs-ima/src/videojs.ima.css'
     ],
     switcher: [
-      paths.BOWER + '/vjs-resolution-switcher/lib/videojs-resolution-switcher.css'
+      'node_modules/vjs-resolution-switcher/lib/videojs-resolution-switcher.css'
     ],
     share: [
-      paths.BOWER + '/videojs-social/videojs-social.css'
+      'node_modules/videojs-social/videojs-social.css'
     ],
     download: [
-      paths.BOWER  + '/videojs-download-button/dist/videojs-download-button.css'
+      'node_modules/videojs-download-button/dist/videojs-download-button.css'
     ],
     ga: [],
     360: [
-      paths.BOWER + '/videojs-panorama/dist/videojs-panorama.css'
+      'node_modules/videojs-panorama/dist/videojs-panorama.css'
     ]
   },
-  fonts: paths.BOWER + '/video.js/dist/font/*',
-  swf: paths.BOWER + '/video.js/dist/video-js.swf'
+  fonts: 'node_modules/video.js/dist/font/*',
+  swf: 'node_modules/video.js/dist/video-js.swf'
 };
 
 deps.forEach(function(inc) {
@@ -96,7 +94,7 @@ deps360.forEach(function(inc) {
 });
 
 gulp.task('default', () => {
-  runSequence('build', 'fonts', 'swf');
+  runSequence('scripts-360', 'styles', 'fonts', 'swf');
 });
 
 // Open in browser for testing

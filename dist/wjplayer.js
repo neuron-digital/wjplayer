@@ -24341,7 +24341,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @private
 	     */
 	    var getClassRegexp_ = function(className){
-	      return new RegExp('\\b' + className + '\\b', 'gi');
+	      // Matches on
+	      // (beginning of string OR NOT word char)
+	      // classname
+	      // (negative lookahead word char OR end of string)
+	      return new RegExp('(^|[^A-Za-z-])' + className + '((?![A-Za-z-])|$)', 'gi');
 	    };
 	
 	    /**
@@ -24585,7 +24589,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          this.adsManager.setVolume(this.player.muted() ? 0 : this.player.volume());
 	          this.adsManager.start();
 	        } catch (adError) {
-	          this.onAdError_(adError);
+	          onAdError_(adError);
 	        }
 	      }
 	    }.bind(this);
@@ -24613,11 +24617,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @private
 	     */
 	    var onAdError_ = function(adErrorEvent) {
-	      window.console.log('Ad error: ' + adErrorEvent.getError());
+	      var errorMessage = adErrorEvent.getError !== undefined ? adErrorEvent.getError() : adErrorEvent.stack;
+	      window.console.log('Ad error: ' + errorMessage);
 	      this.vjsControls.show();
 	      this.adsManager.destroy();
 	      this.adContainerDiv.style.display = 'none';
-	      this.player.trigger({ type: 'adserror', data: { AdError: adErrorEvent.getError(), AdErrorEvent: adErrorEvent }});
+	      this.player.trigger({ type: 'adserror', data: { AdError: errorMessage, AdErrorEvent: adErrorEvent }});
 	    }.bind(this);
 	
 	    /**
@@ -24662,6 +24667,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	
 	      this.vjsControls.hide();
+	      showPlayButton();
 	      this.player.pause();
 	    }.bind(this);
 	
@@ -24822,18 +24828,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }.bind(this);
 	
 	    /**
+	     * Show pause and hide play button
+	     */
+	    var showPauseButton = function() {
+	      addClass_(this.playPauseDiv, 'ima-paused');
+	      removeClass_(this.playPauseDiv, 'ima-playing');
+	    }.bind(this);
+	
+	    /**
+	     * Show play and hide pause button
+	     */
+	    var showPlayButton = function() {
+	      addClass_(this.playPauseDiv, 'ima-playing');
+	      removeClass_(this.playPauseDiv, 'ima-paused');
+	    }.bind(this);
+	
+	    /**
 	     * Listener for clicks on the play/pause button during ad playback.
 	     * @private
 	     */
 	    var onAdPlayPauseClick_ = function() {
 	      if (this.adPlaying) {
-	        addClass_(this.playPauseDiv, 'ima-paused');
-	        removeClass_(this.playPauseDiv, 'ima-playing');
+	        showPauseButton();
 	        this.adsManager.pause();
 	        this.adPlaying = false;
 	      } else {
-	        addClass_(this.playPauseDiv, 'ima-playing');
-	        removeClass_(this.playPauseDiv, 'ima-paused');
+	        showPlayButton();
 	        this.adsManager.resume();
 	        this.adPlaying = true;
 	      }
@@ -24966,7 +24986,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.adsManager.setVolume(newVolume);
 	      }
 	      // Update UI
-	      if (this.newVolume == 0) {
+	      if (newVolume == 0) {
 	        this.adMuted = true;
 	        addClass_(this.muteDiv, 'ima-muted');
 	        removeClass_(this.muteDiv, 'ima-non-muted');
@@ -25164,8 +25184,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    this.pauseAd = function() {
 	      if (this.adsActive && this.adPlaying) {
-	        addClass_(this.playPauseDiv, 'ima-paused');
-	        removeClass_(this.playPauseDiv, 'ima-playing');
+	        showPauseButton();
 	        this.adsManager.pause();
 	        this.adPlaying = false;
 	      }
@@ -25176,8 +25195,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    this.resumeAd = function() {
 	      if (this.adsActive && !this.adPlaying) {
-	        addClass_(this.playPauseDiv, 'ima-playing');
-	        removeClass_(this.playPauseDiv, 'ima-paused');
+	        showPlayButton();
 	        this.adsManager.resume();
 	        this.adPlaying = true;
 	      }
@@ -25532,6 +25550,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.contentEndedListeners, this.contentAndAdsEndedListeners = [], [];
 	      this.contentComplete = true;
 	      this.player.off('ended', this.localContentEndedListener);
+	
+	      // Bug fix: https://github.com/googleads/videojs-ima/issues/306
+	      if (this.player.ads.adTimeoutTimeout) {
+	        clearTimeout(this.player.ads.adTimeoutTimeout);
+	      }
+	
 	      var intervalsToClear = [this.updateTimeIntervalHandle, this.seekCheckIntervalHandle,
 	        this.adTrackingTimer, this.resizeCheckIntervalHandle];
 	      for (var index in intervalsToClear) {
@@ -25659,7 +25683,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 	
 	  videojs.plugin('ga', function(options) {
-	    var adend, adpause, adserror, adskip, adstart, adtimeout, autoLabel, dataSetupOptions, defaultsEventsToTrack, end, ended, error, eventCategory, eventLabel, eventsToTrack, firstplay, fullscreen, getCurrentTime, getCurrentValue, init, interval, isFinite, loaded, parsedOptions, pause, percentsAlreadyTracked, percentsPlayedInterval, play, playing, resize, secondsPlayed, secondsPlayedInterval, secondsPlayedMoments, seekEnd, seekStart, seeking, sendbeacon, skipZeroPauses, startTimeTracking, stopTimeTracking, timeupdate, trackReplaySeconds, trackSeconds, trackingTime, volumeChange,
+	    var adend, adpause, adserror, adskip, adstart, adtimeout, autoLabel, dataSetupOptions, defaultsEventsToTrack, end, ended, error, eventCategory, eventLabel, eventsToTrack, firstplay, fullscreen, getCurrentTime, getCurrentValue, init, interval, isFinite, loaded, parsedOptions, pause, percentsAlreadyTracked, percentsPlayedInterval, play, playing, resize, secondsPlayed, secondsPlayedInterval, secondsPlayedMoments, seekEnd, seekStart, seeking, sendbeacon, startTimeTracking, stopTimeTracking, timeupdate, trackReplaySeconds, trackSeconds, trackingTime, volumeChange,
 	      _this = this;
 	    if (options == null) {
 	      options = {};
@@ -25680,7 +25704,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    secondsPlayedInterval = options.secondsPlayedInterval || dataSetupOptions.secondsPlayedInterval || 60;
 	    secondsPlayedMoments = options.secondsPlayedMoments || dataSetupOptions.secondsPlayedMoments;
 	    trackReplaySeconds = options.trackReplaySeconds;
-	    skipZeroPauses = options.skipZeroPauses != null ? options.skipZeroPauses : videojs.ima != null;
 	    percentsAlreadyTracked = [];
 	    seekStart = seekEnd = 0;
 	    seeking = false;
@@ -25798,7 +25821,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      stopTimeTracking();
 	      currentTime = getCurrentValue();
 	      duration = Math.round(this.duration());
-	      if (currentTime !== duration && !seeking && (!skipZeroPauses || currentTime)) {
+	      if (currentTime !== duration && !seeking) {
 	        sendbeacon('pause', false, currentTime);
 	      }
 	    };
@@ -26572,7 +26595,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var require;var require;/* WEBPACK VAR INJECTION */(function(global) {/**
 	 * videojs-contrib-hls
-	 * @version 3.6.10
+	 * @version 3.6.13
 	 * @copyright 2016 Brightcove, Inc
 	 * @license Apache-2.0
 	 */
@@ -29568,6 +29591,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @private
 	   */
 	  var setSource = function setSource(sourceObj) {
+	    if (sourceObj === null || sourceObj === undefined) {
+	      return;
+	    }
 	    seekTo = player.duration() !== Infinity && player.currentTime() || 0;
 	
 	    player.one('loadedmetadata', loadedMetadataHandler);
@@ -29747,6 +29773,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	/**
 	 * @file resolve-url.js
 	 */
+	
 	'use strict';
 	
 	Object.defineProperty(exports, '__esModule', {
@@ -29755,52 +29782,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _globalDocument = require('global/document');
+	var _urlToolkit = require('url-toolkit');
 	
-	var _globalDocument2 = _interopRequireDefault(_globalDocument);
+	var _urlToolkit2 = _interopRequireDefault(_urlToolkit);
 	
-	/**
-	 * Constructs a new URI by interpreting a path relative to another
-	 * URI.
-	 *
-	 * @see http://stackoverflow.com/questions/470832/getting-an-absolute-url-from-a-relative-one-ie6-issue
-	 * @param {String} basePath a relative or absolute URI
-	 * @param {String} path a path part to combine with the base
-	 * @return {String} a URI that is equivalent to composing `base`
-	 * with `path`
-	 */
-	var resolveUrl = function resolveUrl(basePath, path) {
-	  // use the base element to get the browser to handle URI resolution
-	  var oldBase = _globalDocument2['default'].querySelector('base');
-	  var docHead = _globalDocument2['default'].querySelector('head');
-	  var a = _globalDocument2['default'].createElement('a');
-	  var base = oldBase;
-	  var oldHref = undefined;
-	  var result = undefined;
+	var _globalWindow = require('global/window');
 	
-	  // prep the document
-	  if (oldBase) {
-	    oldHref = oldBase.href;
-	  } else {
-	    base = docHead.appendChild(_globalDocument2['default'].createElement('base'));
+	var _globalWindow2 = _interopRequireDefault(_globalWindow);
+	
+	var resolveUrl = function resolveUrl(baseURL, relativeURL) {
+	  // return early if we don't need to resolve
+	  if (/^[a-z]+:/i.test(relativeURL)) {
+	    return relativeURL;
 	  }
 	
-	  base.href = basePath;
-	  a.href = path;
-	  result = a.href;
-	
-	  // clean up
-	  if (oldBase) {
-	    oldBase.href = oldHref;
-	  } else {
-	    docHead.removeChild(base);
+	  // if the base URL is relative then combine with the current location
+	  if (!/\/\//i.test(baseURL)) {
+	    baseURL = _urlToolkit2['default'].buildAbsoluteURL(_globalWindow2['default'].location.href, baseURL);
 	  }
-	  return result;
+	
+	  return _urlToolkit2['default'].buildAbsoluteURL(baseURL, relativeURL);
 	};
 	
 	exports['default'] = resolveUrl;
 	module.exports = exports['default'];
-	},{"global/document":25}],12:[function(require,module,exports){
+	},{"global/window":26,"url-toolkit":85}],12:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file segment-loader.js
@@ -29984,6 +29990,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // public properties
 	    this.state = 'INIT';
 	    this.bandwidth = settings.bandwidth;
+	    this.throughput = { rate: 0, count: 0 };
 	    this.roundTrip = NaN;
 	    this.resetStats_();
 	
@@ -30594,6 +30601,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (request === this.xhr_.segmentXhr) {
 	        // the segment request is no longer outstanding
 	        this.xhr_.segmentXhr = null;
+	        segmentInfo.startOfAppend = Date.now();
 	
 	        // calculate the download bandwidth based on segment request
 	        this.roundTrip = request.roundTripTime;
@@ -30741,6 +30749,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        })();
 	      }
 	
+	      segmentInfo.byteLength = segmentInfo.bytes.byteLength;
+	
 	      this.sourceUpdater_.appendBuffer(segmentInfo.bytes, this.handleUpdateEnd_.bind(this));
 	    }
 	
@@ -30758,6 +30768,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var currentTime = this.currentTime_();
 	
 	      this.pendingSegment_ = null;
+	      this.recordThroughput_(segmentInfo);
 	
 	      // add segment metadata if it we have gained information during the
 	      // last append
@@ -30845,6 +30856,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	
 	      return timelineUpdated;
+	    }
+	
+	    /**
+	     * Records the current throughput of the decrypt, transmux, and append
+	     * portion of the semgment pipeline. `throughput.rate` is a the cumulative
+	     * moving average of the throughput. `throughput.count` is the number of
+	     * data points in the average.
+	     *
+	     * @private
+	     * @param {Object} segmentInfo the object returned by loadSegment
+	     */
+	  }, {
+	    key: 'recordThroughput_',
+	    value: function recordThroughput_(segmentInfo) {
+	      var rate = this.throughput.rate;
+	      // Add one to the time to ensure that we don't accidentally attempt to divide
+	      // by zero in the case where the throughput is ridiculously high
+	      var segmentProcessingTime = Date.now() - segmentInfo.startOfAppend + 1;
+	      // Multiply by 8000 to convert from bytes/millisecond to bits/second
+	      var segmentProcessingThroughput = Math.floor(segmentInfo.byteLength / segmentProcessingTime * 8 * 1000);
+	
+	      // This is just a cumulative moving average calculation:
+	      //   newAvg = oldAvg + (sample - oldAvg) / (sampleCount + 1)
+	      this.throughput.rate += (segmentProcessingThroughput - rate) / ++this.throughput.count;
 	    }
 	
 	    /**
@@ -31281,7 +31316,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    var request = (0, _videoJs.xhr)(options, function (error, response) {
 	      if (!error && request.response) {
-	        request.responseTime = new Date().getTime();
+	        request.responseTime = Date.now();
 	        request.roundTripTime = request.responseTime - request.requestTime;
 	        request.bytesReceived = request.response.byteLength || request.response.length;
 	        if (!request.bandwidth) {
@@ -31308,7 +31343,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      callback(error, request);
 	    });
 	
-	    request.requestTime = new Date().getTime();
+	    request.requestTime = Date.now();
 	    return request;
 	  };
 	
@@ -39747,6 +39782,105 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Stream;
 	
 	},{}],85:[function(require,module,exports){
+	/* jshint ignore:start */
+	(function(root) { 
+	/* jshint ignore:end */
+	  var URLToolkit = {
+	    // build an absolute URL from a relative one using the provided baseURL
+	    // if relativeURL is an absolute URL it will be returned as is.
+	    buildAbsoluteURL: function(baseURL, relativeURL) {
+	      // remove any remaining space and CRLF
+	      relativeURL = relativeURL.trim();
+	      if (/^[a-z]+:/i.test(relativeURL)) {
+	        // complete url, not relative
+	        return relativeURL;
+	      }
+	
+	      var relativeURLQuery = null;
+	      var relativeURLHash = null;
+	
+	      var relativeURLHashSplit = /^([^#]*)(.*)$/.exec(relativeURL);
+	      if (relativeURLHashSplit) {
+	        relativeURLHash = relativeURLHashSplit[2];
+	        relativeURL = relativeURLHashSplit[1];
+	      }
+	      var relativeURLQuerySplit = /^([^\?]*)(.*)$/.exec(relativeURL);
+	      if (relativeURLQuerySplit) {
+	        relativeURLQuery = relativeURLQuerySplit[2];
+	        relativeURL = relativeURLQuerySplit[1];
+	      }
+	
+	      var baseURLHashSplit = /^([^#]*)(.*)$/.exec(baseURL);
+	      if (baseURLHashSplit) {
+	        baseURL = baseURLHashSplit[1];
+	      }
+	      var baseURLQuerySplit = /^([^\?]*)(.*)$/.exec(baseURL);
+	      if (baseURLQuerySplit) {
+	        baseURL = baseURLQuerySplit[1];
+	      }
+	
+	      var baseURLDomainSplit = /^(([a-z]+:)?\/\/[a-z0-9\.\-_~]+(:[0-9]+)?)?(\/.*)$/i.exec(baseURL);
+	      if (!baseURLDomainSplit) {
+	        throw new Error('Error trying to parse base URL.');
+	      }
+	      
+	      // e.g. 'http:', 'https:', ''
+	      var baseURLProtocol = baseURLDomainSplit[2] || '';
+	      // e.g. 'http://example.com', '//example.com', ''
+	      var baseURLProtocolDomain = baseURLDomainSplit[1] || '';
+	      // e.g. '/a/b/c/playlist.m3u8'
+	      var baseURLPath = baseURLDomainSplit[4];
+	
+	      var builtURL = null;
+	      if (/^\/\//.test(relativeURL)) {
+	        // relative url starts wth '//' so copy protocol (which may be '' if baseUrl didn't provide one)
+	        builtURL = baseURLProtocol+'//'+URLToolkit.buildAbsolutePath('', relativeURL.substring(2));
+	      }
+	      else if (/^\//.test(relativeURL)) {
+	        // relative url starts with '/' so start from root of domain
+	        builtURL = baseURLProtocolDomain+'/'+URLToolkit.buildAbsolutePath('', relativeURL.substring(1));
+	      }
+	      else {
+	        builtURL = URLToolkit.buildAbsolutePath(baseURLProtocolDomain+baseURLPath, relativeURL);
+	      }
+	
+	      // put the query and hash parts back
+	      if (relativeURLQuery) {
+	        builtURL += relativeURLQuery;
+	      }
+	      if (relativeURLHash) {
+	        builtURL += relativeURLHash;
+	      }
+	      return builtURL;
+	    },
+	
+	    // build an absolute path using the provided basePath
+	    // adapted from https://developer.mozilla.org/en-US/docs/Web/API/document/cookie#Using_relative_URLs_in_the_path_parameter
+	    // this does not handle the case where relativePath is "/" or "//". These cases should be handled outside this.
+	    buildAbsolutePath: function(basePath, relativePath) {
+	      var sRelPath = relativePath;
+	      var nUpLn, sDir = '', sPath = basePath.replace(/[^\/]*$/, sRelPath.replace(/(\/|^)(?:\.?\/+)+/g, '$1'));
+	      for (var nEnd, nStart = 0; nEnd = sPath.indexOf('/../', nStart), nEnd > -1; nStart = nEnd + nUpLn) {
+	        nUpLn = /^\/(?:\.\.\/)*/.exec(sPath.slice(nEnd))[0].length;
+	        sDir = (sDir + sPath.substring(nStart, nEnd)).replace(new RegExp('(?:\\\/+[^\\\/]*){0,' + ((nUpLn - 1) / 3) + '}$'), '/');
+	      }
+	      return sDir + sPath.substr(nStart);
+	    }
+	  };
+	
+	/* jshint ignore:start */
+	  if(typeof exports === 'object' && typeof module === 'object')
+	    module.exports = URLToolkit;
+	  else if(typeof define === 'function' && define.amd)
+	    define([], function() { return URLToolkit; });
+	  else if(typeof exports === 'object')
+	    exports["URLToolkit"] = URLToolkit;
+	  else
+	    root["URLToolkit"] = URLToolkit;
+	})(this);
+	/* jshint ignore:end */
+	
+	},{}],86:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file add-text-track-data.js
@@ -39873,7 +40007,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"global/window":26}],86:[function(require,module,exports){
+	},{"global/window":26}],87:[function(require,module,exports){
 	/**
 	 * @file codec-utils.js
 	 */
@@ -39941,7 +40075,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  isVideoCodec: isVideoCodec
 	};
 	module.exports = exports['default'];
-	},{}],87:[function(require,module,exports){
+	},{}],88:[function(require,module,exports){
 	/**
 	 * @file create-text-tracks-if-necessary.js
 	 */
@@ -39973,33 +40107,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	exports['default'] = createTextTracksIfNecessary;
 	module.exports = exports['default'];
-	},{}],88:[function(require,module,exports){
+	},{}],89:[function(require,module,exports){
 	/**
 	 * @file flash-constants.js
 	 */
 	/**
 	 * The maximum size in bytes for append operations to the video.js
 	 * SWF. Calling through to Flash blocks and can be expensive so
-	 * tuning this parameter may improve playback on slower
-	 * systems. There are two factors to consider:
-	 * - Each interaction with the SWF must be quick or you risk dropping
-	 * video frames. To maintain 60fps for the rest of the page, each append
-	 * must not  take longer than 16ms. Given the likelihood that the page
-	 * will be executing more javascript than just playback, you probably
-	 * want to aim for less than 8ms. We aim for just 4ms.
-	 * - Bigger appends significantly increase throughput. The total number of
-	 * bytes over time delivered to the SWF must exceed the video bitrate or
-	 * playback will stall.
-	 *
-	 * We adaptively tune the size of appends to give the best throughput
-	 * possible given the performance of the system. To do that we try to append
-	 * as much as possible in TIME_PER_TICK and while tuning the size of appends
-	 * dynamically so that we only append about 4-times in that 4ms span.
-	 *
-	 * The reason we try to keep the number of appends around four is due to
-	 * externalities such as Flash load and garbage collection that are highly
-	 * variable and having 4 iterations allows us to exit the loop early if
-	 * an iteration takes longer than expected.
+	 * we chunk data and pass through 4KB at a time, yielding to the
+	 * browser between chunks. This gives a theoretical maximum rate of
+	 * 1MB/s into Flash. Any higher and we begin to drop frames and UI
+	 * responsiveness suffers.
 	 *
 	 * @private
 	 */
@@ -40009,17 +40127,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  value: true
 	});
 	var flashConstants = {
-	  TIME_BETWEEN_TICKS: Math.floor(1000 / 500),
-	  TIME_PER_TICK: Math.floor(1000 / 100),
-	  // 1kb
-	  BYTES_PER_CHUNK: 4 * 1024,
-	  MIN_CHUNK: 4096,
-	  MAX_CHUNK: 4 * 1024 * 1024
+	  // times in milliseconds
+	  TIME_BETWEEN_CHUNKS: 4,
+	  BYTES_PER_CHUNK: 4096
 	};
 	
 	exports["default"] = flashConstants;
 	module.exports = exports["default"];
-	},{}],89:[function(require,module,exports){
+	},{}],90:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file flash-media-source.js
@@ -40227,7 +40342,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./codec-utils":86,"./flash-constants":88,"./flash-source-buffer":90,"global/document":25}],90:[function(require,module,exports){
+	},{"./codec-utils":87,"./flash-constants":89,"./flash-source-buffer":91,"global/document":25}],91:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file flash-source-buffer.js
@@ -40284,7 +40399,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var scheduleTick = function scheduleTick(func) {
 	  // Chrome doesn't invoke requestAnimationFrame callbacks
 	  // in background tabs, so use setTimeout.
-	  _globalWindow2['default'].setTimeout(func, _flashConstants2['default'].TIME_BETWEEN_TICKS);
+	  _globalWindow2['default'].setTimeout(func, _flashConstants2['default'].TIME_BETWEEN_CHUNKS);
 	};
 	
 	/**
@@ -40518,15 +40633,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'processBuffer_',
 	    value: function processBuffer_() {
-	      var chunk = undefined;
-	      var i = undefined;
-	      var length = undefined;
-	      var binary = undefined;
-	      var b64str = undefined;
-	      var startByte = 0;
-	      var appendIterations = 0;
-	      var startTime = +new Date();
-	      var appendTime = undefined;
+	      var chunkSize = _flashConstants2['default'].BYTES_PER_CHUNK;
 	
 	      if (!this.buffer_.length) {
 	        if (this.updating !== false) {
@@ -40537,49 +40644,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return;
 	      }
 	
-	      do {
-	        appendIterations++;
-	        // concatenate appends up to the max append size
-	        chunk = this.buffer_[0].subarray(startByte, startByte + this.chunkSize_);
+	      // concatenate appends up to the max append size
+	      var chunk = this.buffer_[0].subarray(0, chunkSize);
 	
-	        // requeue any bytes that won't make it this round
-	        if (chunk.byteLength < this.chunkSize_ || this.buffer_[0].byteLength === startByte + this.chunkSize_) {
-	          startByte = 0;
-	          this.buffer_.shift();
-	        } else {
-	          startByte += this.chunkSize_;
-	        }
-	
-	        this.bufferSize_ -= chunk.byteLength;
-	
-	        // base64 encode the bytes
-	        binary = '';
-	        length = chunk.byteLength;
-	        for (i = 0; i < length; i++) {
-	          binary += String.fromCharCode(chunk[i]);
-	        }
-	        b64str = _globalWindow2['default'].btoa(binary);
-	
-	        // bypass normal ExternalInterface calls and pass xml directly
-	        // IE can be slow by default
-	        this.mediaSource_.swfObj.CallFunction('<invoke name="vjs_appendBuffer"' + 'returntype="javascript"><arguments><string>' + b64str + '</string></arguments></invoke>');
-	        appendTime = new Date() - startTime;
-	      } while (this.buffer_.length && appendTime < _flashConstants2['default'].TIME_PER_TICK);
-	
-	      if (this.buffer_.length && startByte) {
-	        this.buffer_[0] = this.buffer_[0].subarray(startByte);
+	      // requeue any bytes that won't make it this round
+	      if (chunk.byteLength < chunkSize || this.buffer_[0].byteLength === chunkSize) {
+	        this.buffer_.shift();
+	      } else {
+	        this.buffer_[0] = this.buffer_[0].subarray(chunkSize);
 	      }
 	
-	      if (appendTime >= _flashConstants2['default'].TIME_PER_TICK) {
-	        // We want to target 4 iterations per time-slot so that gives us
-	        // room to adjust to changes in Flash load and other externalities
-	        // such as garbage collection while still maximizing throughput
-	        this.chunkSize_ = Math.floor(this.chunkSize_ * (appendIterations / 4));
-	      }
+	      this.bufferSize_ -= chunk.byteLength;
 	
-	      // We also make sure that the chunk-size doesn't drop below 1KB or
-	      // go above 1MB as a sanity check
-	      this.chunkSize_ = Math.max(_flashConstants2['default'].MIN_CHUNK, Math.min(this.chunkSize_, _flashConstants2['default'].MAX_CHUNK));
+	      // base64 encode the bytes
+	      var binary = '';
+	      var length = chunk.byteLength;
+	
+	      for (var i = 0; i < length; i++) {
+	        binary += String.fromCharCode(chunk[i]);
+	      }
+	      var b64str = _globalWindow2['default'].btoa(binary);
+	
+	      // bypass normal ExternalInterface calls and pass xml directly
+	      // IE can be slow by default
+	      this.mediaSource_.swfObj.CallFunction('<invoke name="vjs_appendBuffer"' + 'returntype="javascript"><arguments><string>' + b64str + '</string></arguments></invoke>');
 	
 	      // schedule another append if necessary
 	      if (this.bufferSize_ !== 0) {
@@ -40692,7 +40780,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports['default'] = FlashSourceBuffer;
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./add-text-track-data":85,"./create-text-tracks-if-necessary":87,"./flash-constants":88,"./remove-cues-from-track":92,"global/window":26,"mux.js/lib/flv":72}],91:[function(require,module,exports){
+	},{"./add-text-track-data":86,"./create-text-tracks-if-necessary":88,"./flash-constants":89,"./remove-cues-from-track":93,"global/window":26,"mux.js/lib/flv":72}],92:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file html-media-source.js
@@ -41040,7 +41128,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports['default'] = HtmlMediaSource;
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./add-text-track-data":85,"./codec-utils":86,"./virtual-source-buffer":95,"global/document":25,"global/window":26}],92:[function(require,module,exports){
+	},{"./add-text-track-data":86,"./codec-utils":87,"./virtual-source-buffer":96,"global/document":25,"global/window":26}],93:[function(require,module,exports){
 	/**
 	 * @file remove-cues-from-track.js
 	 */
@@ -41080,7 +41168,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	exports["default"] = removeCuesFromTrack;
 	module.exports = exports["default"];
-	},{}],93:[function(require,module,exports){
+	},{}],94:[function(require,module,exports){
 	/**
 	 * @file transmuxer-worker.js
 	 */
@@ -41279,7 +41367,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	module.exports = exports['default'];
-	},{"global/window":26,"mux.js/lib/mp4":79}],94:[function(require,module,exports){
+	},{"global/window":26,"mux.js/lib/mp4":79}],95:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file videojs-contrib-media-sources.js
@@ -41437,7 +41525,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	_videoJs2['default'].MediaSource = MediaSource;
 	_videoJs2['default'].URL = URL;
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./flash-media-source":89,"./html-media-source":91,"global/window":26}],95:[function(require,module,exports){
+	},{"./flash-media-source":90,"./html-media-source":92,"global/window":26}],96:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file virtual-source-buffer.js
@@ -42006,7 +42094,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports['default'] = VirtualSourceBuffer;
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./add-text-track-data":85,"./codec-utils":86,"./create-text-tracks-if-necessary":87,"./remove-cues-from-track":92,"./transmuxer-worker":93,"webworkify":96}],96:[function(require,module,exports){
+	},{"./add-text-track-data":86,"./codec-utils":87,"./create-text-tracks-if-necessary":88,"./remove-cues-from-track":93,"./transmuxer-worker":94,"webworkify":97}],97:[function(require,module,exports){
 	var bundleFn = arguments[3];
 	var sources = arguments[4];
 	var cache = arguments[5];
@@ -42063,7 +42151,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    ));
 	};
 	
-	},{}],97:[function(require,module,exports){
+	},{}],98:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file videojs-contrib-hls.js
@@ -42236,7 +42324,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    effectiveBitrate = variant.attributes.BANDWIDTH * BANDWIDTH_VARIANCE;
 	
-	    if (effectiveBitrate < this.bandwidth) {
+	    if (effectiveBitrate < this.systemBandwidth) {
 	      bandwidthPlaylists.push(variant);
 	
 	      // since the playlists are sorted in ascending order by
@@ -42516,12 +42604,55 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.masterPlaylistController_.selectPlaylist = selectPlaylist.bind(this);
 	          }
 	        },
+	        throughput: {
+	          get: function get() {
+	            return this.masterPlaylistController_.mainSegmentLoader_.throughput.rate;
+	          },
+	          set: function set(throughput) {
+	            this.masterPlaylistController_.mainSegmentLoader_.throughput.rate = throughput;
+	            // By setting `count` to 1 the throughput value becomes the starting value
+	            // for the cumulative average
+	            this.masterPlaylistController_.mainSegmentLoader_.throughput.count = 1;
+	          }
+	        },
 	        bandwidth: {
 	          get: function get() {
 	            return this.masterPlaylistController_.mainSegmentLoader_.bandwidth;
 	          },
 	          set: function set(bandwidth) {
 	            this.masterPlaylistController_.mainSegmentLoader_.bandwidth = bandwidth;
+	            // setting the bandwidth manually resets the throughput counter
+	            // `count` is set to zero that current value of `rate` isn't included
+	            // in the cumulative average
+	            this.masterPlaylistController_.mainSegmentLoader_.throughput = { rate: 0, count: 0 };
+	          }
+	        },
+	        /**
+	         * `systemBandwidth` is a combination of two serial processes bit-rates. The first
+	         * is the network bitrate provided by `bandwidth` and the second is the bitrate of
+	         * the entire process after that - decryption, transmuxing, and appending - provided
+	         * by `throughput`.
+	         *
+	         * Since the two process are serial, the overall system bandwidth is given by:
+	         *   sysBandwidth = 1 / (1 / bandwidth + 1 / throughput)
+	         */
+	        systemBandwidth: {
+	          get: function get() {
+	            var invBandwidth = 1 / (this.bandwidth || 1);
+	            var invThroughput = undefined;
+	
+	            if (this.throughput > 0) {
+	              invThroughput = 1 / this.throughput;
+	            } else {
+	              invThroughput = 0;
+	            }
+	
+	            var systemBitrate = Math.floor(1 / (invBandwidth + invThroughput));
+	
+	            return systemBitrate;
+	          },
+	          set: function set() {
+	            _videoJs2['default'].log.error('The "systemBandwidth" property is read-only');
 	          }
 	        }
 	      });
@@ -42575,7 +42706,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // the bandwidth of the primary segment loader is our best
 	      // estimate of overall bandwidth
 	      this.on(this.masterPlaylistController_, 'progress', function () {
-	        this.bandwidth = this.masterPlaylistController_.mainSegmentLoader_.bandwidth;
 	        this.tech_.trigger('progress');
 	      });
 	
@@ -42793,7 +42923,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  HlsSourceHandler: HlsSourceHandler
 	};
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./bin-utils":2,"./config":3,"./master-playlist-controller":4,"./playback-watcher":5,"./playlist":7,"./playlist-loader":6,"./reload-source-on-error":9,"./rendition-mixin":10,"./xhr":15,"aes-decrypter":19,"global/document":25,"global/window":26,"m3u8-parser":63,"videojs-contrib-media-sources":94}]},{},[97])(97)
+	},{"./bin-utils":2,"./config":3,"./master-playlist-controller":4,"./playback-watcher":5,"./playlist":7,"./playlist-loader":6,"./reload-source-on-error":9,"./rendition-mixin":10,"./xhr":15,"aes-decrypter":19,"global/document":25,"global/window":26,"m3u8-parser":63,"videojs-contrib-media-sources":95}]},{},[98])(98)
 	});
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
