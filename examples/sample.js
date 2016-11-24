@@ -16,7 +16,7 @@
       debug: true,
       adLabel: 'Test Advertisement',
       contribAdsSettings: {
-        timeout: 1000
+        prerollTimeout: 500
       },
       adTagUrl: adTagUrl
         ? adTagUrl

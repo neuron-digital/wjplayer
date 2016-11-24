@@ -1770,6 +1770,9 @@ ul.vjs-share-options li a {
   position: absolute;
   z-index: 1; }
 
+.video-js .vjs-ad-loading > video {
+  opacity: 0; }
+
 .video-js.vjs-stretch {
   position: absolute;
   top: -50%;

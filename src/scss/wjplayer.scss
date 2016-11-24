@@ -8,6 +8,10 @@
 
 .video-js {
 
+  .vjs-ad-loading > video {
+    opacity: 0;
+  }
+
   &.vjs-stretch {
     position: absolute;
     top: -50%;
