@@ -8,7 +8,7 @@
 
 .video-js {
 
-  .vjs-ad-loading > video {
+  &.vjs-ad-loading > video {
     opacity: 0;
   }
 
