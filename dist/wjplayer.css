@@ -1477,6 +1477,44 @@ video::-webkit-media-text-track-display {
   text-shadow: 0 0 1em #fff;
 }
 
+.vjs-resolution-button {
+  color: #ccc;
+  font-family: VideoJS;
+}
+
+.vjs-resolution-button .vjs-resolution-button-staticlabel:before {
+  content: '\f110';
+  font-size: 1.8em;
+  line-height: 1.67;
+}
+
+.vjs-resolution-button .vjs-resolution-button-label {
+    font-size: 1em;
+    line-height: 3em;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    box-sizing: inherit;
+		font-family: Arial, Helvetica, sans-serif;
+}
+
+.vjs-resolution-button ul.vjs-menu-content {
+  width: 4em !important;
+}
+
+.vjs-resolution-button .vjs-menu {
+  left: 0;
+}
+
+.vjs-resolution-button .vjs-menu li {
+  text-transform: none;
+	font-size: 1em;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
 /*! videojs-social - v0.0.0 - 2014-5-1
  * Copyright (c) 2014 Brightcove */
 

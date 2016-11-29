@@ -42,7 +42,7 @@ const includes = {
       'node_modules/videojs-ima/src/videojs.ima.js'
     ],
     switcher: [
-      'node_modules/vjs-resolution-switcher/lib/videojs-resolution-switcher.js'
+      'node_modules/videojs-resolution-switcher/lib/videojs-resolution-switcher.js'
     ],
     share: [
       'node_modules/videojs-social/videojs-social.js'
@@ -66,7 +66,7 @@ const includes = {
       'node_modules/videojs-ima/src/videojs.ima.css'
     ],
     switcher: [
-      'node_modules/vjs-resolution-switcher/lib/videojs-resolution-switcher.css'
+      'node_modules/videojs-resolution-switcher/lib/videojs-resolution-switcher.css'
     ],
     share: [
       'node_modules/videojs-social/videojs-social.css'
