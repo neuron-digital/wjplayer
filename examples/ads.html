@@ -3,7 +3,7 @@
 
 <head>
   <meta charset=utf-8 />
-  <title>Video.js Ads</title>
+  <title>wjplayer ads demo (using videojs-ima)</title>
   <link href="../dist/wjplayer.css" rel="stylesheet">
   <link href="../dist/skins/nmd.css" rel="stylesheet">
   <link rel="stylesheet" href="sample.css">
@@ -33,13 +33,20 @@
 
     <div><a href="https://developers.google.com/interactive-media-ads/docs/sdks/html5/tags">
   IMA Sample Tags</a></div><br>
+    <select id="tagSelect">
+     <option selected value="https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpreonly&cmsid=496&vid=short_onecue&correlator=">
+      VMAP Pre-roll
+    </option>
+    <option value="https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpostonly&cmsid=496&vid=short_onecue&correlator=">
+     VMAP Post-roll
+    </option>
+     <option value="https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpost&cmsid=496&vid=short_onecue&correlator=">
+      VMAP Pre-, Mid-, and Post-rolls, Single Ads
+    </option>
+    </select><br>
     <div id="input-container">
-      <label for="tag">
-        Tag (
-          <span id="sampleTag" class="sampleTagLink">Sample</span>
-        ):&nbsp;
-      </label>      <input type="text" size="75" id="tagInput">
-      <button id="sampleTagApply">Apply</button>
+      <input type="text" size="120" id="tagInput">
+      <button id="applyButton">Apply</button>
     </div>
 
     <div id="player-container"></div>
@@ -50,13 +57,26 @@
       };
 
       var tagInput = document.getElementById('tagInput');
-      var applyBtn = document.getElementById('sampleTagApply');
-      var sampleTagLinks = document.getElementsByClassName('sampleTagLink');
+      var tagSelect = document.getElementById('tagSelect');
+      var applyBtn = document.getElementById('applyButton');
 
-      tagInput.value = tags.sampleTag;
+      tagInput.value = tagSelect.value;
+
+      tagSelect.addEventListener('change', function(e) {
+        tagInput.value = e.target.value;
+        window.ads.adTagUrl = tagInput.value;
+        init();
+      });
 
       applyBtn.addEventListener('click', function() {
         window.ads.adTagUrl = tagInput.value;
+        init();
+      });
+
+      function init() {
+        if (window.player) {
+          window.player.dispose();
+        }
 
         window.player = wjplayer({
           containerId: 'player-container',
@@ -83,16 +103,7 @@
           trackReplaySeconds: true,
           debug: true
         });
-
-        this.setAttribute('disabled', true);
-        this.innerText = 'Applied';
-      });
-
-      [].slice.call(sampleTagLinks).forEach(function(link) {
-        link.addEventListener('click', function(e) {
-          tagInput.value = tags[e.target.id];
-        });
-      });
+      }
     </script>
 </body>
 
