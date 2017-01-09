@@ -170,7 +170,7 @@ gulp.task('server', () => {
     server: {
       baseDir: './'
     },
-    port: 3000,
+    port: 3030,
     https: true,
     open: true,
     notify: false
