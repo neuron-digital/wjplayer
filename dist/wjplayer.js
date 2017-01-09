@@ -47575,7 +47575,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      };
 	    }
 	
-	    if (this.options.ads && this.options.ads.adTagUrl && !this.browser.IS_IOS) {
+	    if (this.options.ads && this.options.ads.adTagUrl) {
 	      // will be passed to ima plugin
 	      this.options.ads = videojs.mergeOptions({
 	        id: this.options.playerId,
@@ -47642,13 +47642,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // Start playback
 	        if (_this.options.autoplay && !_this.browser.IS_MOBILE) {
 	          _this.play();
-	        } else if (_this.placeholder) {
-	          _this.placeholder.addEventListener('click', _this.play.bind(_this));
-	          // not always works
-	          // var startEvent = this.browser.IS_MOBILE ? 'touchstart' : 'click';
-	          // this.player.one(startEvent, this.play.bind(this));
 	        } else {
-	          _this.initAds();
+	          // not always works
+	          var startEvent = _this.browser.IS_MOBILE ? 'touchend' : 'click';
+	          _this.player.one(startEvent, _this.play.bind(_this));
 	        }
 	      });
 	      if (typeof this.player.qualityPickerPlugin === 'function') {
@@ -47665,12 +47662,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      if (this.options.stretch) {
 	        classes.push('vjs-stretch');
-	      }
-	
-	      if (this.options.ads && this.browser.IS_MOBILE) {
-	        this.placeholder = document.createElement('div');
-	        this.placeholder.id = 'player-placeholder';
-	        this.container.appendChild(this.placeholder);
 	      }
 	
 	      var dumbPlayer = document.createElement(this.options.playerType);
@@ -47700,43 +47691,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.initAds();
 	      this.player.play();
 	      this.options.autoplay && this.player.autoplay(true);
-	
-	      if (this.placeholder) {
-	        this.container.removeChild(this.placeholder);
-	      }
 	    }
 	  }, {
 	    key: 'initAds',
 	    value: function initAds() {
-	      var _this2 = this;
-	
 	      if (!this.options.ads || !this.options.ads.adTagUrl || !this.player.ima) {
 	        return;
 	      }
 	
-	      this.player.ima(this.options.ads, this.adsManagerLoadedCallback.bind(this));
+	      this.player.ima(this.options.ads);
 	      this.player.ima.initializeAdDisplayContainer();
 	      this.player.ima.requestAds();
-	      this.imaContainer = document.getElementById(this.options.ads.id + '_ima-ad-container');
-	      this.imaContainer.style.display = 'none';
-	
-	      if (!this.placeholder) {
-	        this.imaContainer.addEventListener('click', function () {
-	          _this2.player.play();
-	        });
-	      }
-	    }
-	  }, {
-	    key: 'adsManagerLoadedCallback',
-	    value: function adsManagerLoadedCallback() {
-	      var _this3 = this;
-	
-	      this.player.ima.addEventListener(google.ima.AdEvent.Type.ALL_ADS_COMPLETED, function () {
-	        _this3.imaContainer.style.display = 'none';
-	        _this3.player.removeClass('vjs-ad-playing');
-	      });
-	
-	      this.player.ima.startFromReadyCallback();
 	    }
 	  }]);
 	

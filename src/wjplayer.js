@@ -256,7 +256,7 @@ class WJPlayer {
       };
     }
 
-    if (this.options.ads && this.options.ads.adTagUrl && !this.browser.IS_IOS) {
+    if (this.options.ads && this.options.ads.adTagUrl) {
       // will be passed to ima plugin
       this.options.ads = videojs.mergeOptions({
         id: this.options.playerId,
@@ -322,13 +322,9 @@ class WJPlayer {
       // Start playback
       if (this.options.autoplay && !this.browser.IS_MOBILE) {
         this.play();
-      } else if (this.placeholder) {
-        this.placeholder.addEventListener('click', this.play.bind(this));
-        // not always works
-        // var startEvent = this.browser.IS_MOBILE ? 'touchstart' : 'click';
-        // this.player.one(startEvent, this.play.bind(this));
       } else {
-        this.initAds();
+        var startEvent = this.browser.IS_MOBILE ? 'touchend' : 'click';
+        this.player.one(startEvent, this.play.bind(this));
       }
     });
     if (typeof this.player.qualityPickerPlugin === 'function') {
@@ -344,12 +340,6 @@ class WJPlayer {
 
     if (this.options.stretch) {
       classes.push('vjs-stretch');
-    }
-
-    if (this.options.ads && this.browser.IS_MOBILE) {
-      this.placeholder = document.createElement('div');
-      this.placeholder.id = 'player-placeholder';
-      this.container.appendChild(this.placeholder);
     }
 
     const dumbPlayer = document.createElement(this.options.playerType);
@@ -378,10 +368,6 @@ class WJPlayer {
     this.initAds();
     this.player.play();
     this.options.autoplay && this.player.autoplay(true);
-
-    if (this.placeholder) {
-      this.container.removeChild(this.placeholder);
-    }
   }
 
   initAds() {
@@ -389,26 +375,9 @@ class WJPlayer {
       return;
     }
 
-    this.player.ima(this.options.ads, this.adsManagerLoadedCallback.bind(this));
+    this.player.ima(this.options.ads);
     this.player.ima.initializeAdDisplayContainer();
     this.player.ima.requestAds();
-    this.imaContainer = document.getElementById(this.options.ads.id + '_ima-ad-container');
-    this.imaContainer.style.display = 'none';
-
-    if (!this.placeholder) {
-      this.imaContainer.addEventListener('click', () => {
-        this.player.play();
-      });
-    }
-  }
-
-  adsManagerLoadedCallback() {
-    this.player.ima.addEventListener(google.ima.AdEvent.Type.ALL_ADS_COMPLETED, () => {
-      this.imaContainer.style.display = 'none';
-      this.player.removeClass('vjs-ad-playing');
-    });
-
-    this.player.ima.startFromReadyCallback();
   }
 }
 
