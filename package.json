@@ -31,7 +31,7 @@
     "videojs-quality-picker": "0.0.3",
     "videojs-resolution-switcher": "github:go-promo/videojs-resolution-switcher#hls",
     "videojs-social": "github:go-promo/videojs-social#no-socials",
-    "videojs5-hlsjs-source-handler": "streamroot/videojs5-hlsjs-source-handler",
+    "videojs5-hlsjs-source-handler": "github:go-promo/videojs5-hlsjs-source-handler#hls6",
     "webpack": "1.13.2"
   },
   "name": "wjplayer",
