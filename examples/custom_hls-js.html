@@ -103,9 +103,19 @@
       autoplay: true,
       muted: true,
       sources: [{
-        src: 'https://embed.life.ru/playlist/e2edb01fb1d61d965328785310e3f617/index.m3u8',
+        src: 'https://embed.life.ru/playlist/185142e5f273e565511ebe3a8494cf95/index.m3u8',
         type: 'application/x-mpegURL'
       }],
+      videojs: {
+        html5: {
+          hlsjsConfig: {
+            loadLevel: 2,
+            nextLevel: 2,
+            startLevel: 2,
+            abrEwmaDefaultEstimate: 500000000
+          }
+        }
+      },
       ads: window.ads
     };
     window.player = wjplayer(options);
