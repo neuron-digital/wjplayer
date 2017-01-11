@@ -452,8 +452,8 @@ body.vjs-full-window {
   text-align: center;
   text-transform: lowercase; }
 
-.vjs-menu li:focus,
-.vjs-menu li:hover {
+.vjs-menu li.vjs-menu-item:focus,
+.vjs-menu li.vjs-menu-item:hover {
   outline: 0;
   background-color: #73859f;
   background-color: rgba(115, 133, 159, 0.5); }
