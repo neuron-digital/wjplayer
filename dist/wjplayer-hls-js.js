@@ -29295,7 +29295,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (_this.options.autoplay && !_this.browser.IS_MOBILE) {
 	          _this.play();
 	        } else {
-	          // not always works
 	          var startEvent = _this.browser.IS_MOBILE ? 'touchend' : 'click';
 	          _this.player.one(startEvent, _this.play.bind(_this));
 	        }
@@ -42642,10 +42641,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        function load(source) {
 	            _hls.loadSource(source.src);
+	
+	            if (!_hls.config.autoStartLoad) {
+	                _startLoadOnPlay();
+	            }
 	        }
 	
 	        function switchQuality(qualityId, trackType) {
 	            _hls.nextLevel = qualityId;
+	        }
+	
+	        // call _hls.startLoad on video play request
+	        function _startLoadOnPlay() {
+	            var checkStartLoad = function(e) {
+	                e.target.removeEventListener(e.type, checkStartLoad);
+	                // if the manifest parsed, call _hls.startLoad immediately, otherwise wait until the manifest is parsed
+	                if (typeof _hls.streamController.levels !== 'undefined') {
+	                    _hls.startLoad(_hls.config.startPosition);
+	                } else {
+	                    var startLoad = function() {
+	                        _hls.off(Hls.Events.MANIFEST_PARSED, startLoad);
+	                        _hls.startLoad(_hls.config.startPosition);
+	                    };
+	                    _hls.on(Hls.Events.MANIFEST_PARSED, startLoad);
+	                }
+	            };
+	            _video.addEventListener('play', checkStartLoad);
 	        }
 	
 	        function _handleMediaError() {

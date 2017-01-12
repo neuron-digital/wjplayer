@@ -47643,7 +47643,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (_this.options.autoplay && !_this.browser.IS_MOBILE) {
 	          _this.play();
 	        } else {
-	          // not always works
 	          var startEvent = _this.browser.IS_MOBILE ? 'touchend' : 'click';
 	          _this.player.one(startEvent, _this.play.bind(_this));
 	        }
