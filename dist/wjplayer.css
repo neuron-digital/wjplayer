@@ -401,6 +401,9 @@ body.vjs-full-window {
 .vjs-error .vjs-big-play-button {
   display: none; }
 
+.vjs-has-started.vjs-paused.vjs-show-big-play-button-on-pause .vjs-big-play-button {
+  display: block; }
+
 .video-js button {
   background: none;
   border: none;
@@ -930,9 +933,6 @@ body.vjs-full-window {
 
 .vjs-audio.vjs-has-started .vjs-poster {
   display: block; }
-
-.vjs-controls-disabled .vjs-poster {
-  display: none; }
 
 .vjs-using-native-controls .vjs-poster {
   display: none; }
