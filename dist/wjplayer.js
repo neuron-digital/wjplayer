@@ -30393,8 +30393,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var require;var require;/* WEBPACK VAR INJECTION */(function(global) {/**
 	 * videojs-contrib-hls
-	 * @version 4.0.2
-	 * @copyright 2016 Brightcove, Inc
+	 * @version 5.1.1
+	 * @copyright 2017 Brightcove, Inc
 	 * @license Apache-2.0
 	 */
 	(function(f){if(true){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.videojsContribHls = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return require(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
@@ -30510,7 +30510,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  findAdCue: findAdCue
 	};
 	module.exports = exports['default'];
-	},{"global/window":27}],2:[function(require,module,exports){
+	},{"global/window":28}],2:[function(require,module,exports){
 	/**
 	 * @file bin-utils.js
 	 */
@@ -30549,6 +30549,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	/**
+	 * Creates an object for sending to a web worker modifying properties that are TypedArrays
+	 * into a new object with seperated properties for the buffer, byteOffset, and byteLength.
+	 *
+	 * @param {Object} message
+	 *        Object of properties and values to send to the web worker
+	 * @return {Object}
+	 *         Modified message with TypedArray values expanded
+	 * @function createTransferableMessage
+	 */
+	var createTransferableMessage = function createTransferableMessage(message) {
+	  var transferable = {};
+	
+	  Object.keys(message).forEach(function (key) {
+	    var value = message[key];
+	
+	    if (ArrayBuffer.isView(value)) {
+	      transferable[key] = {
+	        bytes: value.buffer,
+	        byteOffset: value.byteOffset,
+	        byteLength: value.byteLength
+	      };
+	    } else {
+	      transferable[key] = value;
+	    }
+	  });
+	
+	  return transferable;
+	};
+	
+	/**
 	 * utils to help dump binary data to the console
 	 */
 	var utils = {
@@ -30577,7 +30607,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      result += textRange(ranges, i) + ' ';
 	    }
 	    return result;
-	  }
+	  },
+	  createTransferableMessage: createTransferableMessage
 	};
 	
 	exports['default'] = utils;
@@ -30593,6 +30624,54 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	module.exports = exports["default"];
 	},{}],4:[function(require,module,exports){
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	var _globalWindow = require('global/window');
+	
+	var _globalWindow2 = _interopRequireDefault(_globalWindow);
+	
+	var _aesDecrypter = require('aes-decrypter');
+	
+	var _binUtils = require('./bin-utils');
+	
+	/**
+	 * Our web worker interface so that things can talk to aes-decrypter
+	 * that will be running in a web worker. the scope is passed to this by
+	 * webworkify.
+	 *
+	 * @param {Object} self
+	 *        the scope for the web worker
+	 */
+	var Worker = function Worker(self) {
+	  self.onmessage = function (event) {
+	    var data = event.data;
+	    var encrypted = new Uint8Array(data.encrypted.bytes, data.encrypted.byteOffset, data.encrypted.byteLength);
+	    var key = new Uint32Array(data.key.bytes, data.key.byteOffset, data.key.byteLength / 4);
+	    var iv = new Uint32Array(data.iv.bytes, data.iv.byteOffset, data.iv.byteLength / 4);
+	
+	    /* eslint-disable no-new, handle-callback-err */
+	    new _aesDecrypter.Decrypter(encrypted, key, iv, function (err, bytes) {
+	      _globalWindow2['default'].postMessage((0, _binUtils.createTransferableMessage)({
+	        source: data.source,
+	        decrypted: bytes
+	      }), [bytes.buffer]);
+	    });
+	    /* eslint-enable */
+	  };
+	};
+	
+	exports['default'] = function (self) {
+	  return new Worker(self);
+	};
+	
+	module.exports = exports['default'];
+	},{"./bin-utils":2,"aes-decrypter":21,"global/window":28}],5:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file master-playlist-controller.js
@@ -30636,6 +30715,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _syncController = require('./sync-controller');
 	
 	var _syncController2 = _interopRequireDefault(_syncController);
+	
+	var _videojsContribMediaSourcesEs5CodecUtils = require('videojs-contrib-media-sources/es5/codec-utils');
+	
+	var _webworkify = require('webworkify');
+	
+	var _webworkify2 = _interopRequireDefault(_webworkify);
+	
+	var _decrypterWorker = require('./decrypter-worker');
+	
+	var _decrypterWorker2 = _interopRequireDefault(_decrypterWorker);
 	
 	// 5 minute blacklist
 	var BLACKLIST_DURATION = 5 * 60 * 1000;
@@ -30700,6 +30789,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return result;
 	};
 	
+	/**
+	 * Replace codecs in the codec string with the old apple-style `avc1.<dd>.<dd>` to the
+	 * standard `avc1.<hhhhhh>`.
+	 *
+	 * @param codecString {String} the codec string
+	 * @return {String} the codec string with old apple-style codecs replaced
+	 *
+	 * @private
+	 */
+	var mapLegacyAvcCodecs_ = function mapLegacyAvcCodecs_(codecString) {
+	  return codecString.replace(/avc1\.(\d+)\.(\d+)/i, function (match) {
+	    return (0, _videojsContribMediaSourcesEs5CodecUtils.translateLegacyCodecs)([match])[0];
+	  });
+	};
+	
+	exports.mapLegacyAvcCodecs_ = mapLegacyAvcCodecs_;
 	/**
 	 * Calculates the MIME type strings for a working configuration of
 	 * SourceBuffers to play variant streams in a master playlist. If
@@ -30819,7 +30924,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (this.useCueTags_) {
 	      this.cueTagsTrack_ = this.tech_.addTextTrack('metadata', 'ad-cues');
 	      this.cueTagsTrack_.inBandMetadataTrackDispatchType = '';
-	      this.tech_.textTracks().addTrack_(this.cueTagsTrack_);
 	    }
 	
 	    this.audioTracks_ = [];
@@ -30844,6 +30948,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    this.syncController_ = new _syncController2['default']();
 	
+	    this.decrypter_ = (0, _webworkify2['default'])(_decrypterWorker2['default']);
+	
 	    var segmentLoaderOptions = {
 	      hls: this.hls_,
 	      mediaSource: this.mediaSource,
@@ -30861,7 +30967,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return _this.hasPlayed_();
 	      },
 	      bandwidth: bandwidth,
-	      syncController: this.syncController_
+	      syncController: this.syncController_,
+	      decrypter: this.decrypter_,
+	      loaderType: 'main'
 	    };
 	
 	    // setup playlist loaders
@@ -30873,7 +30981,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // combined audio/video or just video when alternate audio track is selected
 	    this.mainSegmentLoader_ = new _segmentLoader2['default'](segmentLoaderOptions);
 	    // alternate audio track
+	    segmentLoaderOptions.loaderType = 'audio';
 	    this.audioSegmentLoader_ = new _segmentLoader2['default'](segmentLoaderOptions);
+	
+	    this.decrypter_.onmessage = function (event) {
+	      if (event.data.source === 'main') {
+	        _this.mainSegmentLoader_.handleDecrypted_(event.data);
+	      } else if (event.data.source === 'audio') {
+	        _this.audiosegmentloader_.handleDecrypted_(event.data);
+	      }
+	    };
+	
 	    this.setupSegmentLoaderListeners_();
 	
 	    this.masterPlaylistLoader_.start();
@@ -31616,6 +31734,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'dispose',
 	    value: function dispose() {
+	      this.decrypter_.terminate();
 	      this.masterPlaylistLoader_.dispose();
 	      this.mainSegmentLoader_.dispose();
 	
@@ -31700,27 +31819,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var master = this.masterPlaylistLoader_.master;
 	      var codecCount = 2;
 	      var videoCodec = null;
-	      var audioProfile = null;
 	      var codecs = undefined;
 	
 	      if (media.attributes && media.attributes.CODECS) {
 	        codecs = parseCodecs(media.attributes.CODECS);
 	        videoCodec = codecs.videoCodec;
-	        audioProfile = codecs.audioProfile;
 	        codecCount = codecs.codecCount;
 	      }
 	      master.playlists.forEach(function (variant) {
 	        var variantCodecs = {
 	          codecCount: 2,
-	          videoCodec: null,
-	          audioProfile: null
+	          videoCodec: null
 	        };
 	
 	        if (variant.attributes && variant.attributes.CODECS) {
 	          var codecString = variant.attributes.CODECS;
 	
 	          variantCodecs = parseCodecs(codecString);
-	          if (window.MediaSource && window.MediaSource.isTypeSupported && !window.MediaSource.isTypeSupported('video/mp4; codecs="' + codecString + '"')) {
+	
+	          if (window.MediaSource && window.MediaSource.isTypeSupported && !window.MediaSource.isTypeSupported('video/mp4; codecs="' + mapLegacyAvcCodecs_(codecString) + '"')) {
 	            variant.excludeUntil = Infinity;
 	          }
 	        }
@@ -31734,11 +31851,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // if h.264 is specified on the current playlist, some flavor of
 	        // it must be specified on all compatible variants
 	        if (variantCodecs.videoCodec !== videoCodec) {
-	          variant.excludeUntil = Infinity;
-	        }
-	        // HE-AAC ("mp4a.40.5") is incompatible with all other versions of
-	        // AAC audio in Chrome 46. Don't mix the two.
-	        if (variantCodecs.audioProfile === '5' && audioProfile !== '5' || audioProfile === '5' && variantCodecs.audioProfile !== '5') {
 	          variant.excludeUntil = Infinity;
 	        }
 	      });
@@ -31762,7 +31874,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	exports.MasterPlaylistController = MasterPlaylistController;
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./ad-cue-tags":1,"./playlist-loader":6,"./ranges":8,"./segment-loader":12,"./sync-controller":15}],5:[function(require,module,exports){
+	},{"./ad-cue-tags":1,"./decrypter-worker":4,"./playlist-loader":7,"./ranges":9,"./segment-loader":13,"./sync-controller":16,"videojs-contrib-media-sources/es5/codec-utils":60,"webworkify":70}],6:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file playback-watcher.js
@@ -31929,6 +32041,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.cancelTimer_();
 	        this.tech_.setCurrentTime(livePoint);
 	
+	        // live window resyncs may be useful for monitoring QoS
+	        this.tech_.trigger('liveresync');
 	        return;
 	      }
 	
@@ -31942,6 +32056,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // (only suffering ~3 seconds of frozen video and a pause in audio playback).
 	        this.cancelTimer_();
 	        this.tech_.setCurrentTime(currentTime);
+	
+	        // video underflow may be useful for monitoring QoS
+	        this.tech_.trigger('videounderflow');
 	        return;
 	      }
 	
@@ -32067,7 +32184,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports['default'] = PlaybackWatcher;
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./ranges":8}],6:[function(require,module,exports){
+	},{"./ranges":9}],7:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file playlist-loader.js
@@ -32089,6 +32206,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _resolveUrl2 = _interopRequireDefault(_resolveUrl);
 	
 	var _videoJs = (typeof window !== "undefined" ? window['videojs'] : typeof global !== "undefined" ? global['videojs'] : null);
+	
+	var _playlistJs = require('./playlist.js');
 	
 	var _stream = require('./stream');
 	
@@ -32315,9 +32434,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @return {Number} number of eneabled playlists
 	   */
 	  loader.enabledPlaylists_ = function () {
-	    return loader.master.playlists.filter(function (element, index, array) {
-	      return !element.excludeUntil || element.excludeUntil <= Date.now();
-	    }).length;
+	    return loader.master.playlists.filter(_playlistJs.isEnabled).length;
 	  };
 	
 	  /**
@@ -32335,7 +32452,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var currentBandwidth = loader.media().attributes.BANDWIDTH || 0;
 	
 	    return !(loader.master.playlists.filter(function (playlist) {
-	      var enabled = typeof playlist.excludeUntil === 'undefined' || playlist.excludeUntil <= Date.now();
+	      var enabled = (0, _playlistJs.isEnabled)(playlist);
 	
 	      if (!enabled) {
 	        return false;
@@ -32620,7 +32737,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports['default'] = PlaylistLoader;
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./resolve-url":11,"./stream":14,"global/window":27,"m3u8-parser":64}],7:[function(require,module,exports){
+	},{"./playlist.js":8,"./resolve-url":12,"./stream":15,"global/window":28,"m3u8-parser":29}],8:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file playlist.js
@@ -33092,14 +33209,42 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	exports.getMediaInfoForTime_ = getMediaInfoForTime_;
+	/**
+	 * Check whether the playlist is blacklisted or not.
+	 *
+	 * @param {Object} playlist the media playlist object
+	 * @return {boolean} whether the playlist is blacklisted or not
+	 * @function isBlacklisted
+	 */
+	var isBlacklisted = function isBlacklisted(playlist) {
+	  return playlist.excludeUntil && playlist.excludeUntil > Date.now();
+	};
+	
+	exports.isBlacklisted = isBlacklisted;
+	/**
+	 * Check whether the playlist is enabled or not.
+	 *
+	 * @param {Object} playlist the media playlist object
+	 * @return {boolean} whether the playlist is enabled or not
+	 * @function isEnabled
+	 */
+	var isEnabled = function isEnabled(playlist) {
+	  var blacklisted = isBlacklisted(playlist);
+	
+	  return !playlist.disabled && !blacklisted;
+	};
+	
+	exports.isEnabled = isEnabled;
 	Playlist.duration = duration;
 	Playlist.seekable = seekable;
 	Playlist.getMediaInfoForTime_ = getMediaInfoForTime_;
+	Playlist.isEnabled = isEnabled;
+	Playlist.isBlacklisted = isBlacklisted;
 	
 	// exports
 	exports['default'] = Playlist;
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"global/window":27}],8:[function(require,module,exports){
+	},{"global/window":28}],9:[function(require,module,exports){
 	(function (global){
 	/**
 	 * ranges
@@ -33430,7 +33575,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{}],9:[function(require,module,exports){
+	},{}],10:[function(require,module,exports){
 	(function (global){
 	'use strict';
 	
@@ -33561,7 +33706,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports['default'] = reloadSourceOnError;
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{}],10:[function(require,module,exports){
+	},{}],11:[function(require,module,exports){
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	
+	var _playlistJs = require('./playlist.js');
+	
 	/**
 	 * Enable/disable playlist function. It is intended to have the first two
 	 * arguments partially-applied in order to create the final per-playlist
@@ -33575,28 +33730,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * or if undefined returns the current enabled-state for the playlist
 	 * @return {Boolean} The current enabled-state of the playlist
 	 */
-	'use strict';
-	
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-	
-	var enableFunction = function enableFunction(playlist, changePlaylistFn, enable) {
-	  var currentlyEnabled = typeof playlist.excludeUntil === 'undefined' || playlist.excludeUntil <= Date.now();
+	var enableFunction = function enableFunction(loader, playlistUri, changePlaylistFn, enable) {
+	  var playlist = loader.master.playlists[playlistUri];
+	  var blacklisted = (0, _playlistJs.isBlacklisted)(playlist);
+	  var currentlyEnabled = (0, _playlistJs.isEnabled)(playlist);
 	
 	  if (typeof enable === 'undefined') {
 	    return currentlyEnabled;
 	  }
 	
-	  if (enable !== currentlyEnabled) {
-	    if (enable) {
-	      delete playlist.excludeUntil;
-	    } else {
-	      playlist.excludeUntil = Infinity;
-	    }
+	  if (enable) {
+	    delete playlist.disabled;
+	  } else {
+	    playlist.disabled = true;
+	  }
 	
+	  if (enable !== currentlyEnabled && !blacklisted) {
 	    // Ensure the outside world knows about our changes
 	    changePlaylistFn();
 	  }
@@ -33639,7 +33788,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  // Partially-apply the enableFunction to create a playlist-
 	  // specific variant
-	  this.enabled = enableFunction.bind(this, playlist, fastChangeFunction);
+	  this.enabled = enableFunction.bind(this, hlsHandler.playlists, playlist.uri, fastChangeFunction);
 	}
 	
 	/**
@@ -33655,15 +33804,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  // Add a single API-specific function to the HlsHandler instance
 	  hlsHandler.representations = function () {
-	    return playlists.master.playlists.map(function (e, i) {
-	      return new Representation(hlsHandler, e, i);
+	    return playlists.master.playlists.filter(function (media) {
+	      return !(0, _playlistJs.isBlacklisted)(media);
+	    }).map(function (e, i) {
+	      return new Representation(hlsHandler, e, e.uri);
 	    });
 	  };
 	};
 	
 	exports['default'] = renditionSelectionMixin;
 	module.exports = exports['default'];
-	},{}],11:[function(require,module,exports){
+	},{"./playlist.js":8}],12:[function(require,module,exports){
 	/**
 	 * @file resolve-url.js
 	 */
@@ -33700,7 +33851,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	exports['default'] = resolveUrl;
 	module.exports = exports['default'];
-	},{"global/window":27,"url-toolkit":90}],12:[function(require,module,exports){
+	},{"global/window":28,"url-toolkit":57}],13:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file segment-loader.js
@@ -33731,8 +33882,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _sourceUpdater2 = _interopRequireDefault(_sourceUpdater);
 	
-	var _aesDecrypter = require('aes-decrypter');
-	
 	var _config = require('./config');
 	
 	var _config2 = _interopRequireDefault(_config);
@@ -33740,6 +33889,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _globalWindow = require('global/window');
 	
 	var _globalWindow2 = _interopRequireDefault(_globalWindow);
+	
+	var _binUtils = require('./bin-utils');
 	
 	// in ms
 	var CHECK_BUFFER_DELAY = 500;
@@ -33866,6 +34017,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.setCurrentTime_ = settings.setCurrentTime;
 	    this.mediaSource_ = settings.mediaSource;
 	    this.hls_ = settings.hls;
+	    this.loaderType_ = settings.loaderType;
 	
 	    // private instance variables
 	    this.checkBufferTimeout_ = null;
@@ -33880,6 +34032,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // Fragmented mp4 playback
 	    this.activeInitSegmentId_ = null;
 	    this.initSegments_ = {};
+	
+	    this.decrypter_ = settings.decrypter;
 	
 	    // Manages the tracking and generation of sync-points, mappings
 	    // between a time in the display time and a segment index within
@@ -33948,7 +34102,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // next segment
 	      if (!this.paused()) {
 	        this.state = 'READY';
-	        this.fillBuffer_();
+	        this.monitorBuffer_();
 	      }
 	    }
 	
@@ -33999,7 +34153,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	
 	      this.state = 'READY';
-	      this.fillBuffer_();
 	    }
 	
 	    /**
@@ -34019,24 +34172,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var oldPlaylist = this.playlist_;
 	      var segmentInfo = this.pendingSegment_;
 	
-	      if (this.mediaIndex !== null) {
-	        // We reloaded the same playlist so we are in a live scenario
-	        // and we will likely need to adjust the mediaIndex
-	        if (oldPlaylist && oldPlaylist.uri === newPlaylist.uri) {
-	          var mediaSequenceDiff = newPlaylist.mediaSequence - oldPlaylist.mediaSequence;
+	      this.playlist_ = newPlaylist;
+	      this.xhrOptions_ = options;
 	
-	          this.mediaIndex -= mediaSequenceDiff;
-	
-	          if (segmentInfo && !segmentInfo.isSyncRequest) {
-	            segmentInfo.mediaIndex -= mediaSequenceDiff;
-	          }
-	
-	          this.syncController_.saveExpiredSegmentInfo(oldPlaylist, newPlaylist);
-	        } else {
-	          // We must "resync" the fetcher when we switch renditions
-	          this.resyncLoader();
-	        }
-	      } else if (!this.hasPlayed_()) {
+	      // when we haven't started playing yet, the start of a live playlist
+	      // is always our zero-time so force a sync update each time the playlist
+	      // is refreshed from the server
+	      if (!this.hasPlayed_()) {
 	        newPlaylist.syncInfo = {
 	          mediaSequence: newPlaylist.mediaSequence,
 	          time: 0
@@ -34044,14 +34186,51 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.trigger('syncinfoupdate');
 	      }
 	
-	      this.playlist_ = newPlaylist;
-	      this.xhrOptions_ = options;
-	
 	      // if we were unpaused but waiting for a playlist, start
 	      // buffering now
 	      if (this.mimeType_ && this.state === 'INIT' && !this.paused()) {
 	        return this.init_();
 	      }
+	
+	      if (!oldPlaylist || oldPlaylist.uri !== newPlaylist.uri) {
+	        if (this.mediaIndex !== null) {
+	          // we must "resync" the segment loader when we switch renditions and
+	          // the segment loader is already synced to the previous rendition
+	          this.resyncLoader();
+	        }
+	
+	        // the rest of this function depends on `oldPlaylist` being defined
+	        return;
+	      }
+	
+	      // we reloaded the same playlist so we are in a live scenario
+	      // and we will likely need to adjust the mediaIndex
+	      var mediaSequenceDiff = newPlaylist.mediaSequence - oldPlaylist.mediaSequence;
+	
+	      log('mediaSequenceDiff', mediaSequenceDiff);
+	
+	      // update the mediaIndex on the SegmentLoader
+	      // this is important because we can abort a request and this value must be
+	      // equal to the last appended mediaIndex
+	      if (this.mediaIndex !== null) {
+	        this.mediaIndex -= mediaSequenceDiff;
+	      }
+	
+	      // update the mediaIndex on the SegmentInfo object
+	      // this is important because we will update this.mediaIndex with this value
+	      // in `handleUpdateEnd_` after the segment has been successfully appended
+	      if (segmentInfo) {
+	        segmentInfo.mediaIndex -= mediaSequenceDiff;
+	
+	        // we need to update the referenced segment so that timing information is
+	        // saved for the new playlist's segment, however, if the segment fell off the
+	        // playlist, we can leave the old reference and just lose the timing info
+	        if (segmentInfo.mediaIndex >= 0) {
+	          segmentInfo.segment = newPlaylist.segments[segmentInfo.mediaIndex];
+	        }
+	      }
+	
+	      this.syncController_.saveExpiredSegmentInfo(oldPlaylist, newPlaylist);
 	    }
 	
 	    /**
@@ -34103,14 +34282,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    /**
-	     * As long as the SegmentLoader is in the READY state, periodically
-	     * invoke fillBuffer_().
+	     * (re-)schedule monitorBufferTick_ to run as soon as possible
 	     *
 	     * @private
 	     */
 	  }, {
 	    key: 'monitorBuffer_',
 	    value: function monitorBuffer_() {
+	      if (this.checkBufferTimeout_) {
+	        _globalWindow2['default'].clearTimeout(this.checkBufferTimeout_);
+	      }
+	
+	      this.checkBufferTimeout_ = _globalWindow2['default'].setTimeout(this.monitorBufferTick_.bind(this), 1);
+	    }
+	
+	    /**
+	     * As long as the SegmentLoader is in the READY state, periodically
+	     * invoke fillBuffer_().
+	     *
+	     * @private
+	     */
+	  }, {
+	    key: 'monitorBufferTick_',
+	    value: function monitorBufferTick_() {
 	      if (this.state === 'READY') {
 	        this.fillBuffer_();
 	      }
@@ -34119,7 +34313,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        _globalWindow2['default'].clearTimeout(this.checkBufferTimeout_);
 	      }
 	
-	      this.checkBufferTimeout_ = _globalWindow2['default'].setTimeout(this.monitorBuffer_.bind(this), CHECK_BUFFER_DELAY);
+	      this.checkBufferTimeout_ = _globalWindow2['default'].setTimeout(this.monitorBufferTick_.bind(this), CHECK_BUFFER_DELAY);
 	    }
 	
 	    /**
@@ -34271,7 +34465,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // The timeline that the segment is in
 	        timeline: segment.timeline,
 	        // The expected duration of the segment in seconds
-	        duration: segment.duration
+	        duration: segment.duration,
+	        // retain the segment in case the playlist updates while doing an async process
+	        segment: segment
 	      };
 	    }
 	
@@ -34304,12 +34500,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.state = 'READY';
 	      this.sourceUpdater_ = new _sourceUpdater2['default'](this.mediaSource_, this.mimeType_);
 	      this.resetEverything();
-	      return this.fillBuffer_();
+	      return this.monitorBuffer_();
 	    }
 	
 	    /**
-	     * fill the buffer with segements unless the
-	     * sourceBuffers are currently updating
+	     * fill the buffer with segements unless the sourceBuffers are
+	     * currently updating
+	     *
+	     * Note: this function should only ever be called by monitorBuffer_
+	     * and never directly
 	     *
 	     * @private
 	     */
@@ -34399,6 +34598,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'loadSegment_',
 	    value: function loadSegment_(segmentInfo) {
+	      var _this3 = this;
+	
 	      var segment = undefined;
 	      var keyXhr = undefined;
 	      var initSegmentXhr = undefined;
@@ -34411,7 +34612,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.sourceUpdater_.remove(0, removeToTime);
 	      }
 	
-	      segment = segmentInfo.playlist.segments[segmentInfo.mediaIndex];
+	      segment = segmentInfo.segment;
 	
 	      // optionally, request the decryption key
 	      if (segment.key) {
@@ -34442,6 +34643,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      });
 	
 	      segmentXhr = this.hls_.xhr(segmentRequestOptions, this.handleResponse_.bind(this));
+	      segmentXhr.addEventListener('progress', function (event) {
+	        _this3.trigger(event);
+	      });
 	
 	      this.xhr_ = {
 	        keyXhr: keyXhr,
@@ -34490,7 +34694,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	
 	      segmentInfo = this.pendingSegment_;
-	      segment = segmentInfo.playlist.segments[segmentInfo.mediaIndex];
+	      segment = segmentInfo.segment;
 	
 	      // if a request times out, reset bandwidth tracking
 	      if (request.timedout) {
@@ -34644,21 +34848,40 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.state = 'DECRYPTING';
 	
 	      var segmentInfo = this.pendingSegment_;
-	      var segment = segmentInfo.playlist.segments[segmentInfo.mediaIndex];
+	      var segment = segmentInfo.segment;
 	
 	      if (segment.key) {
 	        // this is an encrypted segment
 	        // incrementally decrypt the segment
-	        /* eslint-disable no-new, handle-callback-err */
-	        new _aesDecrypter.Decrypter(segmentInfo.encryptedBytes, segment.key.bytes, segment.key.iv, (function (err, bytes) {
-	          // err always null
-	          segmentInfo.bytes = bytes;
-	          this.handleSegment_();
-	        }).bind(this));
-	        /* eslint-enable */
+	        this.decrypter_.postMessage((0, _binUtils.createTransferableMessage)({
+	          source: this.loaderType_,
+	          encrypted: segmentInfo.encryptedBytes,
+	          key: segment.key.bytes,
+	          iv: segment.key.iv
+	        }), [segmentInfo.encryptedBytes.buffer, segment.key.bytes.buffer]);
 	      } else {
-	          this.handleSegment_();
-	        }
+	        this.handleSegment_();
+	      }
+	    }
+	
+	    /**
+	     * Handles response from the decrypter and attaches the decrypted bytes to the pending
+	     * segment
+	     *
+	     * @param {Object} data
+	     *        Response from decrypter
+	     * @method handleDecrypted_
+	     */
+	  }, {
+	    key: 'handleDecrypted_',
+	    value: function handleDecrypted_(data) {
+	      var segmentInfo = this.pendingSegment_;
+	      var decrypted = data.decrypted;
+	
+	      if (segmentInfo) {
+	        segmentInfo.bytes = new Uint8Array(decrypted.bytes, decrypted.byteOffset, decrypted.byteLength);
+	      }
+	      this.handleSegment_();
 	    }
 	
 	    /**
@@ -34669,7 +34892,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'handleSegment_',
 	    value: function handleSegment_() {
-	      var _this3 = this;
+	      var _this4 = this;
 	
 	      if (!this.pendingSegment_) {
 	        this.state = 'READY';
@@ -34679,7 +34902,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.state = 'APPENDING';
 	
 	      var segmentInfo = this.pendingSegment_;
-	      var segment = segmentInfo.playlist.segments[segmentInfo.mediaIndex];
+	      var segment = segmentInfo.segment;
 	
 	      this.syncController_.probeSegmentInfo(segmentInfo);
 	
@@ -34699,11 +34922,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        (function () {
 	          var initId = initSegmentId(segment.map);
 	
-	          if (!_this3.activeInitSegmentId_ || _this3.activeInitSegmentId_ !== initId) {
-	            var initSegment = _this3.initSegments_[initId];
+	          if (!_this4.activeInitSegmentId_ || _this4.activeInitSegmentId_ !== initId) {
+	            var initSegment = _this4.initSegments_[initId];
 	
-	            _this3.sourceUpdater_.appendBuffer(initSegment.bytes, function () {
-	              _this3.activeInitSegmentId_ = initId;
+	            _this4.sourceUpdater_.appendBuffer(initSegment.bytes, function () {
+	              _this4.activeInitSegmentId_ = initId;
 	            });
 	          }
 	        })();
@@ -34732,7 +34955,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (!this.pendingSegment_) {
 	        this.state = 'READY';
 	        if (!this.paused()) {
-	          this.fillBuffer_();
+	          this.monitorBuffer_();
 	        }
 	        return;
 	      }
@@ -34741,22 +34964,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      this.pendingSegment_ = null;
 	      this.recordThroughput_(segmentInfo);
+	      this.mediaIndex = segmentInfo.mediaIndex;
+	      this.fetchAtBuffer_ = true;
 	
-	      log('handleUpdateEnd_');
-	
-	      if (!segmentInfo.isSyncRequest) {
-	        this.mediaIndex = segmentInfo.mediaIndex;
-	        this.fetchAtBuffer_ = true;
-	      }
-	
-	      var currentMediaIndex = segmentInfo.mediaIndex;
-	
-	      currentMediaIndex += segmentInfo.playlist.mediaSequence - this.playlist_.mediaSequence;
+	      log('handleUpdateEnd_', this.mediaIndex);
 	
 	      // any time an update finishes and the last segment is in the
 	      // buffer, end the stream. this ensures the "ended" event will
 	      // fire if playback reaches that point.
-	      var isEndOfStream = detectEndOfStream(segmentInfo.playlist, this.mediaSource_, currentMediaIndex + 1);
+	      var isEndOfStream = detectEndOfStream(segmentInfo.playlist, this.mediaSource_, this.mediaIndex + 1);
 	
 	      if (isEndOfStream) {
 	        this.mediaSource_.endOfStream();
@@ -34766,7 +34982,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.trigger('progress');
 	
 	      if (!this.paused()) {
-	        this.fillBuffer_();
+	        this.monitorBuffer_();
 	      }
 	    }
 	
@@ -34801,7 +35017,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports['default'] = SegmentLoader;
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./config":3,"./playlist":7,"./source-updater":13,"aes-decrypter":20,"global/window":27}],13:[function(require,module,exports){
+	},{"./bin-utils":2,"./config":3,"./playlist":8,"./source-updater":14,"global/window":28}],14:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file source-updater.js
@@ -35030,7 +35246,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports['default'] = SourceUpdater;
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{}],14:[function(require,module,exports){
+	},{}],15:[function(require,module,exports){
 	/**
 	 * @file stream.js
 	 */
@@ -35161,7 +35377,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	exports['default'] = Stream;
 	module.exports = exports['default'];
-	},{}],15:[function(require,module,exports){
+	},{}],16:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file sync-controller.js
@@ -35417,7 +35633,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'probeSegmentInfo',
 	    value: function probeSegmentInfo(segmentInfo) {
-	      var segment = segmentInfo.playlist.segments[segmentInfo.mediaIndex];
+	      var segment = segmentInfo.segment;
 	      var timingInfo = undefined;
 	
 	      if (segment.map) {
@@ -35444,7 +35660,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'probeMp4Segment_',
 	    value: function probeMp4Segment_(segmentInfo) {
-	      var segment = segmentInfo.playlist.segments[segmentInfo.mediaIndex];
+	      var segment = segmentInfo.segment;
 	      var timescales = _muxJsLibMp4Probe2['default'].timescale(segment.map.bytes);
 	      var startTime = _muxJsLibMp4Probe2['default'].startTime(timescales, segmentInfo.bytes);
 	
@@ -35504,7 +35720,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'calculateSegmentTimeMapping_',
 	    value: function calculateSegmentTimeMapping_(segmentInfo, timingInfo) {
-	      var segment = segmentInfo.playlist.segments[segmentInfo.mediaIndex];
+	      var segment = segmentInfo.segment;
 	      var mappingObj = this.timelines[segmentInfo.timeline];
 	
 	      if (segmentInfo.timestampOffset !== null) {
@@ -35540,7 +35756,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    key: 'saveDiscontinuitySyncInfo_',
 	    value: function saveDiscontinuitySyncInfo_(segmentInfo) {
 	      var playlist = segmentInfo.playlist;
-	      var segment = playlist.segments[segmentInfo.mediaIndex];
+	      var segment = segmentInfo.segment;
 	
 	      // If the current segment is a discontinuity then we know exactly where
 	      // the start of the range and it's accuracy is 0 (greater accuracy values
@@ -35575,7 +35791,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	exports['default'] = SyncController;
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./playlist":7,"mux.js/lib/mp4/probe":85,"mux.js/lib/tools/ts-inspector.js":87}],16:[function(require,module,exports){
+	},{"./playlist":8,"mux.js/lib/mp4/probe":51,"mux.js/lib/tools/ts-inspector.js":53}],17:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file xhr.js
@@ -35652,7 +35868,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports['default'] = xhrFactory;
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{}],17:[function(require,module,exports){
+	},{}],18:[function(require,module,exports){
 	/**
 	 * @file aes.js
 	 *
@@ -35898,7 +36114,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	exports['default'] = AES;
 	module.exports = exports['default'];
-	},{}],18:[function(require,module,exports){
+	},{}],19:[function(require,module,exports){
 	/**
 	 * @file async-stream.js
 	 */
@@ -35979,7 +36195,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	exports['default'] = AsyncStream;
 	module.exports = exports['default'];
-	},{"./stream":21}],19:[function(require,module,exports){
+	},{"./stream":22}],20:[function(require,module,exports){
 	/**
 	 * @file decrypter.js
 	 *
@@ -36163,7 +36379,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  Decrypter: Decrypter,
 	  decrypt: decrypt
 	};
-	},{"./aes":17,"./async-stream":18,"pkcs7":23}],20:[function(require,module,exports){
+	},{"./aes":18,"./async-stream":19,"pkcs7":24}],21:[function(require,module,exports){
 	/**
 	 * @file index.js
 	 *
@@ -36194,9 +36410,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  AsyncStream: _asyncStream2['default']
 	};
 	module.exports = exports['default'];
-	},{"./async-stream":18,"./decrypter":19}],21:[function(require,module,exports){
-	arguments[4][14][0].apply(exports,arguments)
-	},{"dup":14}],22:[function(require,module,exports){
+	},{"./async-stream":19,"./decrypter":20}],22:[function(require,module,exports){
+	arguments[4][15][0].apply(exports,arguments)
+	},{"dup":15}],23:[function(require,module,exports){
 	/*
 	 * pkcs7.pad
 	 * https://github.com/brightcove/pkcs7
@@ -36282,7 +36498,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  [1]
 	];
 	
-	},{}],23:[function(require,module,exports){
+	},{}],24:[function(require,module,exports){
 	/*
 	 * pkcs7
 	 * https://github.com/brightcove/pkcs7
@@ -36296,7 +36512,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.pad = require('./pad.js');
 	exports.unpad = require('./unpad.js');
 	
-	},{"./pad.js":22,"./unpad.js":24}],24:[function(require,module,exports){
+	},{"./pad.js":23,"./unpad.js":25}],25:[function(require,module,exports){
 	/*
 	 * pkcs7.unpad
 	 * https://github.com/brightcove/pkcs7
@@ -36317,9 +36533,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return padded.subarray(0, padded.byteLength - padded[padded.byteLength - 1]);
 	};
 	
-	},{}],25:[function(require,module,exports){
-	
 	},{}],26:[function(require,module,exports){
+	
+	},{}],27:[function(require,module,exports){
 	(function (global){
 	var topLevel = typeof global !== 'undefined' ? global :
 	    typeof window !== 'undefined' ? window : {}
@@ -36338,7 +36554,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"min-document":25}],27:[function(require,module,exports){
+	},{"min-document":26}],28:[function(require,module,exports){
 	(function (global){
 	if (typeof window !== "undefined") {
 	    module.exports = window;
@@ -36351,1479 +36567,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{}],28:[function(require,module,exports){
-	/** Used as the `TypeError` message for "Functions" methods. */
-	var FUNC_ERROR_TEXT = 'Expected a function';
-	
-	/* Native method references for those with the same name as other `lodash` methods. */
-	var nativeMax = Math.max;
-	
-	/**
-	 * Creates a function that invokes `func` with the `this` binding of the
-	 * created function and arguments from `start` and beyond provided as an array.
-	 *
-	 * **Note:** This method is based on the [rest parameter](https://developer.mozilla.org/Web/JavaScript/Reference/Functions/rest_parameters).
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Function
-	 * @param {Function} func The function to apply a rest parameter to.
-	 * @param {number} [start=func.length-1] The start position of the rest parameter.
-	 * @returns {Function} Returns the new function.
-	 * @example
-	 *
-	 * var say = _.restParam(function(what, names) {
-	 *   return what + ' ' + _.initial(names).join(', ') +
-	 *     (_.size(names) > 1 ? ', & ' : '') + _.last(names);
-	 * });
-	 *
-	 * say('hello', 'fred', 'barney', 'pebbles');
-	 * // => 'hello fred, barney, & pebbles'
-	 */
-	function restParam(func, start) {
-	  if (typeof func != 'function') {
-	    throw new TypeError(FUNC_ERROR_TEXT);
-	  }
-	  start = nativeMax(start === undefined ? (func.length - 1) : (+start || 0), 0);
-	  return function() {
-	    var args = arguments,
-	        index = -1,
-	        length = nativeMax(args.length - start, 0),
-	        rest = Array(length);
-	
-	    while (++index < length) {
-	      rest[index] = args[start + index];
-	    }
-	    switch (start) {
-	      case 0: return func.call(this, rest);
-	      case 1: return func.call(this, args[0], rest);
-	      case 2: return func.call(this, args[0], args[1], rest);
-	    }
-	    var otherArgs = Array(start + 1);
-	    index = -1;
-	    while (++index < start) {
-	      otherArgs[index] = args[index];
-	    }
-	    otherArgs[start] = rest;
-	    return func.apply(this, otherArgs);
-	  };
-	}
-	
-	module.exports = restParam;
-	
 	},{}],29:[function(require,module,exports){
-	/**
-	 * Copies the values of `source` to `array`.
-	 *
-	 * @private
-	 * @param {Array} source The array to copy values from.
-	 * @param {Array} [array=[]] The array to copy values to.
-	 * @returns {Array} Returns `array`.
-	 */
-	function arrayCopy(source, array) {
-	  var index = -1,
-	      length = source.length;
-	
-	  array || (array = Array(length));
-	  while (++index < length) {
-	    array[index] = source[index];
-	  }
-	  return array;
-	}
-	
-	module.exports = arrayCopy;
-	
-	},{}],30:[function(require,module,exports){
-	/**
-	 * A specialized version of `_.forEach` for arrays without support for callback
-	 * shorthands and `this` binding.
-	 *
-	 * @private
-	 * @param {Array} array The array to iterate over.
-	 * @param {Function} iteratee The function invoked per iteration.
-	 * @returns {Array} Returns `array`.
-	 */
-	function arrayEach(array, iteratee) {
-	  var index = -1,
-	      length = array.length;
-	
-	  while (++index < length) {
-	    if (iteratee(array[index], index, array) === false) {
-	      break;
-	    }
-	  }
-	  return array;
-	}
-	
-	module.exports = arrayEach;
-	
-	},{}],31:[function(require,module,exports){
-	/**
-	 * Copies properties of `source` to `object`.
-	 *
-	 * @private
-	 * @param {Object} source The object to copy properties from.
-	 * @param {Array} props The property names to copy.
-	 * @param {Object} [object={}] The object to copy properties to.
-	 * @returns {Object} Returns `object`.
-	 */
-	function baseCopy(source, props, object) {
-	  object || (object = {});
-	
-	  var index = -1,
-	      length = props.length;
-	
-	  while (++index < length) {
-	    var key = props[index];
-	    object[key] = source[key];
-	  }
-	  return object;
-	}
-	
-	module.exports = baseCopy;
-	
-	},{}],32:[function(require,module,exports){
-	var createBaseFor = require('./createBaseFor');
-	
-	/**
-	 * The base implementation of `baseForIn` and `baseForOwn` which iterates
-	 * over `object` properties returned by `keysFunc` invoking `iteratee` for
-	 * each property. Iteratee functions may exit iteration early by explicitly
-	 * returning `false`.
-	 *
-	 * @private
-	 * @param {Object} object The object to iterate over.
-	 * @param {Function} iteratee The function invoked per iteration.
-	 * @param {Function} keysFunc The function to get the keys of `object`.
-	 * @returns {Object} Returns `object`.
-	 */
-	var baseFor = createBaseFor();
-	
-	module.exports = baseFor;
-	
-	},{"./createBaseFor":39}],33:[function(require,module,exports){
-	var baseFor = require('./baseFor'),
-	    keysIn = require('../object/keysIn');
-	
-	/**
-	 * The base implementation of `_.forIn` without support for callback
-	 * shorthands and `this` binding.
-	 *
-	 * @private
-	 * @param {Object} object The object to iterate over.
-	 * @param {Function} iteratee The function invoked per iteration.
-	 * @returns {Object} Returns `object`.
-	 */
-	function baseForIn(object, iteratee) {
-	  return baseFor(object, iteratee, keysIn);
-	}
-	
-	module.exports = baseForIn;
-	
-	},{"../object/keysIn":60,"./baseFor":32}],34:[function(require,module,exports){
-	var arrayEach = require('./arrayEach'),
-	    baseMergeDeep = require('./baseMergeDeep'),
-	    isArray = require('../lang/isArray'),
-	    isArrayLike = require('./isArrayLike'),
-	    isObject = require('../lang/isObject'),
-	    isObjectLike = require('./isObjectLike'),
-	    isTypedArray = require('../lang/isTypedArray'),
-	    keys = require('../object/keys');
-	
-	/**
-	 * The base implementation of `_.merge` without support for argument juggling,
-	 * multiple sources, and `this` binding `customizer` functions.
-	 *
-	 * @private
-	 * @param {Object} object The destination object.
-	 * @param {Object} source The source object.
-	 * @param {Function} [customizer] The function to customize merged values.
-	 * @param {Array} [stackA=[]] Tracks traversed source objects.
-	 * @param {Array} [stackB=[]] Associates values with source counterparts.
-	 * @returns {Object} Returns `object`.
-	 */
-	function baseMerge(object, source, customizer, stackA, stackB) {
-	  if (!isObject(object)) {
-	    return object;
-	  }
-	  var isSrcArr = isArrayLike(source) && (isArray(source) || isTypedArray(source)),
-	      props = isSrcArr ? undefined : keys(source);
-	
-	  arrayEach(props || source, function(srcValue, key) {
-	    if (props) {
-	      key = srcValue;
-	      srcValue = source[key];
-	    }
-	    if (isObjectLike(srcValue)) {
-	      stackA || (stackA = []);
-	      stackB || (stackB = []);
-	      baseMergeDeep(object, source, key, baseMerge, customizer, stackA, stackB);
-	    }
-	    else {
-	      var value = object[key],
-	          result = customizer ? customizer(value, srcValue, key, object, source) : undefined,
-	          isCommon = result === undefined;
-	
-	      if (isCommon) {
-	        result = srcValue;
-	      }
-	      if ((result !== undefined || (isSrcArr && !(key in object))) &&
-	          (isCommon || (result === result ? (result !== value) : (value === value)))) {
-	        object[key] = result;
-	      }
-	    }
-	  });
-	  return object;
-	}
-	
-	module.exports = baseMerge;
-	
-	},{"../lang/isArray":51,"../lang/isObject":54,"../lang/isTypedArray":57,"../object/keys":59,"./arrayEach":30,"./baseMergeDeep":35,"./isArrayLike":42,"./isObjectLike":47}],35:[function(require,module,exports){
-	var arrayCopy = require('./arrayCopy'),
-	    isArguments = require('../lang/isArguments'),
-	    isArray = require('../lang/isArray'),
-	    isArrayLike = require('./isArrayLike'),
-	    isPlainObject = require('../lang/isPlainObject'),
-	    isTypedArray = require('../lang/isTypedArray'),
-	    toPlainObject = require('../lang/toPlainObject');
-	
-	/**
-	 * A specialized version of `baseMerge` for arrays and objects which performs
-	 * deep merges and tracks traversed objects enabling objects with circular
-	 * references to be merged.
-	 *
-	 * @private
-	 * @param {Object} object The destination object.
-	 * @param {Object} source The source object.
-	 * @param {string} key The key of the value to merge.
-	 * @param {Function} mergeFunc The function to merge values.
-	 * @param {Function} [customizer] The function to customize merged values.
-	 * @param {Array} [stackA=[]] Tracks traversed source objects.
-	 * @param {Array} [stackB=[]] Associates values with source counterparts.
-	 * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
-	 */
-	function baseMergeDeep(object, source, key, mergeFunc, customizer, stackA, stackB) {
-	  var length = stackA.length,
-	      srcValue = source[key];
-	
-	  while (length--) {
-	    if (stackA[length] == srcValue) {
-	      object[key] = stackB[length];
-	      return;
-	    }
-	  }
-	  var value = object[key],
-	      result = customizer ? customizer(value, srcValue, key, object, source) : undefined,
-	      isCommon = result === undefined;
-	
-	  if (isCommon) {
-	    result = srcValue;
-	    if (isArrayLike(srcValue) && (isArray(srcValue) || isTypedArray(srcValue))) {
-	      result = isArray(value)
-	        ? value
-	        : (isArrayLike(value) ? arrayCopy(value) : []);
-	    }
-	    else if (isPlainObject(srcValue) || isArguments(srcValue)) {
-	      result = isArguments(value)
-	        ? toPlainObject(value)
-	        : (isPlainObject(value) ? value : {});
-	    }
-	    else {
-	      isCommon = false;
-	    }
-	  }
-	  // Add the source value to the stack of traversed objects and associate
-	  // it with its merged value.
-	  stackA.push(srcValue);
-	  stackB.push(result);
-	
-	  if (isCommon) {
-	    // Recursively merge objects and arrays (susceptible to call stack limits).
-	    object[key] = mergeFunc(result, srcValue, customizer, stackA, stackB);
-	  } else if (result === result ? (result !== value) : (value === value)) {
-	    object[key] = result;
-	  }
-	}
-	
-	module.exports = baseMergeDeep;
-	
-	},{"../lang/isArguments":50,"../lang/isArray":51,"../lang/isPlainObject":55,"../lang/isTypedArray":57,"../lang/toPlainObject":58,"./arrayCopy":29,"./isArrayLike":42}],36:[function(require,module,exports){
-	var toObject = require('./toObject');
-	
-	/**
-	 * The base implementation of `_.property` without support for deep paths.
-	 *
-	 * @private
-	 * @param {string} key The key of the property to get.
-	 * @returns {Function} Returns the new function.
-	 */
-	function baseProperty(key) {
-	  return function(object) {
-	    return object == null ? undefined : toObject(object)[key];
-	  };
-	}
-	
-	module.exports = baseProperty;
-	
-	},{"./toObject":49}],37:[function(require,module,exports){
-	var identity = require('../utility/identity');
-	
-	/**
-	 * A specialized version of `baseCallback` which only supports `this` binding
-	 * and specifying the number of arguments to provide to `func`.
-	 *
-	 * @private
-	 * @param {Function} func The function to bind.
-	 * @param {*} thisArg The `this` binding of `func`.
-	 * @param {number} [argCount] The number of arguments to provide to `func`.
-	 * @returns {Function} Returns the callback.
-	 */
-	function bindCallback(func, thisArg, argCount) {
-	  if (typeof func != 'function') {
-	    return identity;
-	  }
-	  if (thisArg === undefined) {
-	    return func;
-	  }
-	  switch (argCount) {
-	    case 1: return function(value) {
-	      return func.call(thisArg, value);
-	    };
-	    case 3: return function(value, index, collection) {
-	      return func.call(thisArg, value, index, collection);
-	    };
-	    case 4: return function(accumulator, value, index, collection) {
-	      return func.call(thisArg, accumulator, value, index, collection);
-	    };
-	    case 5: return function(value, other, key, object, source) {
-	      return func.call(thisArg, value, other, key, object, source);
-	    };
-	  }
-	  return function() {
-	    return func.apply(thisArg, arguments);
-	  };
-	}
-	
-	module.exports = bindCallback;
-	
-	},{"../utility/identity":63}],38:[function(require,module,exports){
-	var bindCallback = require('./bindCallback'),
-	    isIterateeCall = require('./isIterateeCall'),
-	    restParam = require('../function/restParam');
-	
-	/**
-	 * Creates a `_.assign`, `_.defaults`, or `_.merge` function.
-	 *
-	 * @private
-	 * @param {Function} assigner The function to assign values.
-	 * @returns {Function} Returns the new assigner function.
-	 */
-	function createAssigner(assigner) {
-	  return restParam(function(object, sources) {
-	    var index = -1,
-	        length = object == null ? 0 : sources.length,
-	        customizer = length > 2 ? sources[length - 2] : undefined,
-	        guard = length > 2 ? sources[2] : undefined,
-	        thisArg = length > 1 ? sources[length - 1] : undefined;
-	
-	    if (typeof customizer == 'function') {
-	      customizer = bindCallback(customizer, thisArg, 5);
-	      length -= 2;
-	    } else {
-	      customizer = typeof thisArg == 'function' ? thisArg : undefined;
-	      length -= (customizer ? 1 : 0);
-	    }
-	    if (guard && isIterateeCall(sources[0], sources[1], guard)) {
-	      customizer = length < 3 ? undefined : customizer;
-	      length = 1;
-	    }
-	    while (++index < length) {
-	      var source = sources[index];
-	      if (source) {
-	        assigner(object, source, customizer);
-	      }
-	    }
-	    return object;
-	  });
-	}
-	
-	module.exports = createAssigner;
-	
-	},{"../function/restParam":28,"./bindCallback":37,"./isIterateeCall":45}],39:[function(require,module,exports){
-	var toObject = require('./toObject');
-	
-	/**
-	 * Creates a base function for `_.forIn` or `_.forInRight`.
-	 *
-	 * @private
-	 * @param {boolean} [fromRight] Specify iterating from right to left.
-	 * @returns {Function} Returns the new base function.
-	 */
-	function createBaseFor(fromRight) {
-	  return function(object, iteratee, keysFunc) {
-	    var iterable = toObject(object),
-	        props = keysFunc(object),
-	        length = props.length,
-	        index = fromRight ? length : -1;
-	
-	    while ((fromRight ? index-- : ++index < length)) {
-	      var key = props[index];
-	      if (iteratee(iterable[key], key, iterable) === false) {
-	        break;
-	      }
-	    }
-	    return object;
-	  };
-	}
-	
-	module.exports = createBaseFor;
-	
-	},{"./toObject":49}],40:[function(require,module,exports){
-	var baseProperty = require('./baseProperty');
-	
-	/**
-	 * Gets the "length" property value of `object`.
-	 *
-	 * **Note:** This function is used to avoid a [JIT bug](https://bugs.webkit.org/show_bug.cgi?id=142792)
-	 * that affects Safari on at least iOS 8.1-8.3 ARM64.
-	 *
-	 * @private
-	 * @param {Object} object The object to query.
-	 * @returns {*} Returns the "length" value.
-	 */
-	var getLength = baseProperty('length');
-	
-	module.exports = getLength;
-	
-	},{"./baseProperty":36}],41:[function(require,module,exports){
-	var isNative = require('../lang/isNative');
-	
-	/**
-	 * Gets the native function at `key` of `object`.
-	 *
-	 * @private
-	 * @param {Object} object The object to query.
-	 * @param {string} key The key of the method to get.
-	 * @returns {*} Returns the function if it's native, else `undefined`.
-	 */
-	function getNative(object, key) {
-	  var value = object == null ? undefined : object[key];
-	  return isNative(value) ? value : undefined;
-	}
-	
-	module.exports = getNative;
-	
-	},{"../lang/isNative":53}],42:[function(require,module,exports){
-	var getLength = require('./getLength'),
-	    isLength = require('./isLength');
-	
-	/**
-	 * Checks if `value` is array-like.
-	 *
-	 * @private
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is array-like, else `false`.
-	 */
-	function isArrayLike(value) {
-	  return value != null && isLength(getLength(value));
-	}
-	
-	module.exports = isArrayLike;
-	
-	},{"./getLength":40,"./isLength":46}],43:[function(require,module,exports){
-	/**
-	 * Checks if `value` is a host object in IE < 9.
-	 *
-	 * @private
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is a host object, else `false`.
-	 */
-	var isHostObject = (function() {
-	  try {
-	    Object({ 'toString': 0 } + '');
-	  } catch(e) {
-	    return function() { return false; };
-	  }
-	  return function(value) {
-	    // IE < 9 presents many host objects as `Object` objects that can coerce
-	    // to strings despite having improperly defined `toString` methods.
-	    return typeof value.toString != 'function' && typeof (value + '') == 'string';
-	  };
-	}());
-	
-	module.exports = isHostObject;
-	
-	},{}],44:[function(require,module,exports){
-	/** Used to detect unsigned integer values. */
-	var reIsUint = /^\d+$/;
-	
-	/**
-	 * Used as the [maximum length](http://ecma-international.org/ecma-262/6.0/#sec-number.max_safe_integer)
-	 * of an array-like value.
-	 */
-	var MAX_SAFE_INTEGER = 9007199254740991;
-	
-	/**
-	 * Checks if `value` is a valid array-like index.
-	 *
-	 * @private
-	 * @param {*} value The value to check.
-	 * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
-	 * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
-	 */
-	function isIndex(value, length) {
-	  value = (typeof value == 'number' || reIsUint.test(value)) ? +value : -1;
-	  length = length == null ? MAX_SAFE_INTEGER : length;
-	  return value > -1 && value % 1 == 0 && value < length;
-	}
-	
-	module.exports = isIndex;
-	
-	},{}],45:[function(require,module,exports){
-	var isArrayLike = require('./isArrayLike'),
-	    isIndex = require('./isIndex'),
-	    isObject = require('../lang/isObject');
-	
-	/**
-	 * Checks if the provided arguments are from an iteratee call.
-	 *
-	 * @private
-	 * @param {*} value The potential iteratee value argument.
-	 * @param {*} index The potential iteratee index or key argument.
-	 * @param {*} object The potential iteratee object argument.
-	 * @returns {boolean} Returns `true` if the arguments are from an iteratee call, else `false`.
-	 */
-	function isIterateeCall(value, index, object) {
-	  if (!isObject(object)) {
-	    return false;
-	  }
-	  var type = typeof index;
-	  if (type == 'number'
-	      ? (isArrayLike(object) && isIndex(index, object.length))
-	      : (type == 'string' && index in object)) {
-	    var other = object[index];
-	    return value === value ? (value === other) : (other !== other);
-	  }
-	  return false;
-	}
-	
-	module.exports = isIterateeCall;
-	
-	},{"../lang/isObject":54,"./isArrayLike":42,"./isIndex":44}],46:[function(require,module,exports){
-	/**
-	 * Used as the [maximum length](http://ecma-international.org/ecma-262/6.0/#sec-number.max_safe_integer)
-	 * of an array-like value.
-	 */
-	var MAX_SAFE_INTEGER = 9007199254740991;
-	
-	/**
-	 * Checks if `value` is a valid array-like length.
-	 *
-	 * **Note:** This function is based on [`ToLength`](http://ecma-international.org/ecma-262/6.0/#sec-tolength).
-	 *
-	 * @private
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
-	 */
-	function isLength(value) {
-	  return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
-	}
-	
-	module.exports = isLength;
-	
-	},{}],47:[function(require,module,exports){
-	/**
-	 * Checks if `value` is object-like.
-	 *
-	 * @private
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
-	 */
-	function isObjectLike(value) {
-	  return !!value && typeof value == 'object';
-	}
-	
-	module.exports = isObjectLike;
-	
-	},{}],48:[function(require,module,exports){
-	var isArguments = require('../lang/isArguments'),
-	    isArray = require('../lang/isArray'),
-	    isIndex = require('./isIndex'),
-	    isLength = require('./isLength'),
-	    isString = require('../lang/isString'),
-	    keysIn = require('../object/keysIn');
-	
-	/** Used for native method references. */
-	var objectProto = Object.prototype;
-	
-	/** Used to check objects for own properties. */
-	var hasOwnProperty = objectProto.hasOwnProperty;
-	
-	/**
-	 * A fallback implementation of `Object.keys` which creates an array of the
-	 * own enumerable property names of `object`.
-	 *
-	 * @private
-	 * @param {Object} object The object to query.
-	 * @returns {Array} Returns the array of property names.
-	 */
-	function shimKeys(object) {
-	  var props = keysIn(object),
-	      propsLength = props.length,
-	      length = propsLength && object.length;
-	
-	  var allowIndexes = !!length && isLength(length) &&
-	    (isArray(object) || isArguments(object) || isString(object));
-	
-	  var index = -1,
-	      result = [];
-	
-	  while (++index < propsLength) {
-	    var key = props[index];
-	    if ((allowIndexes && isIndex(key, length)) || hasOwnProperty.call(object, key)) {
-	      result.push(key);
-	    }
-	  }
-	  return result;
-	}
-	
-	module.exports = shimKeys;
-	
-	},{"../lang/isArguments":50,"../lang/isArray":51,"../lang/isString":56,"../object/keysIn":60,"./isIndex":44,"./isLength":46}],49:[function(require,module,exports){
-	var isObject = require('../lang/isObject'),
-	    isString = require('../lang/isString'),
-	    support = require('../support');
-	
-	/**
-	 * Converts `value` to an object if it's not one.
-	 *
-	 * @private
-	 * @param {*} value The value to process.
-	 * @returns {Object} Returns the object.
-	 */
-	function toObject(value) {
-	  if (support.unindexedChars && isString(value)) {
-	    var index = -1,
-	        length = value.length,
-	        result = Object(value);
-	
-	    while (++index < length) {
-	      result[index] = value.charAt(index);
-	    }
-	    return result;
-	  }
-	  return isObject(value) ? value : Object(value);
-	}
-	
-	module.exports = toObject;
-	
-	},{"../lang/isObject":54,"../lang/isString":56,"../support":62}],50:[function(require,module,exports){
-	var isArrayLike = require('../internal/isArrayLike'),
-	    isObjectLike = require('../internal/isObjectLike');
-	
-	/** Used for native method references. */
-	var objectProto = Object.prototype;
-	
-	/** Used to check objects for own properties. */
-	var hasOwnProperty = objectProto.hasOwnProperty;
-	
-	/** Native method references. */
-	var propertyIsEnumerable = objectProto.propertyIsEnumerable;
-	
-	/**
-	 * Checks if `value` is classified as an `arguments` object.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Lang
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
-	 * @example
-	 *
-	 * _.isArguments(function() { return arguments; }());
-	 * // => true
-	 *
-	 * _.isArguments([1, 2, 3]);
-	 * // => false
-	 */
-	function isArguments(value) {
-	  return isObjectLike(value) && isArrayLike(value) &&
-	    hasOwnProperty.call(value, 'callee') && !propertyIsEnumerable.call(value, 'callee');
-	}
-	
-	module.exports = isArguments;
-	
-	},{"../internal/isArrayLike":42,"../internal/isObjectLike":47}],51:[function(require,module,exports){
-	var getNative = require('../internal/getNative'),
-	    isLength = require('../internal/isLength'),
-	    isObjectLike = require('../internal/isObjectLike');
-	
-	/** `Object#toString` result references. */
-	var arrayTag = '[object Array]';
-	
-	/** Used for native method references. */
-	var objectProto = Object.prototype;
-	
-	/**
-	 * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
-	 * of values.
-	 */
-	var objToString = objectProto.toString;
-	
-	/* Native method references for those with the same name as other `lodash` methods. */
-	var nativeIsArray = getNative(Array, 'isArray');
-	
-	/**
-	 * Checks if `value` is classified as an `Array` object.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Lang
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
-	 * @example
-	 *
-	 * _.isArray([1, 2, 3]);
-	 * // => true
-	 *
-	 * _.isArray(function() { return arguments; }());
-	 * // => false
-	 */
-	var isArray = nativeIsArray || function(value) {
-	  return isObjectLike(value) && isLength(value.length) && objToString.call(value) == arrayTag;
-	};
-	
-	module.exports = isArray;
-	
-	},{"../internal/getNative":41,"../internal/isLength":46,"../internal/isObjectLike":47}],52:[function(require,module,exports){
-	var isObject = require('./isObject');
-	
-	/** `Object#toString` result references. */
-	var funcTag = '[object Function]';
-	
-	/** Used for native method references. */
-	var objectProto = Object.prototype;
-	
-	/**
-	 * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
-	 * of values.
-	 */
-	var objToString = objectProto.toString;
-	
-	/**
-	 * Checks if `value` is classified as a `Function` object.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Lang
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
-	 * @example
-	 *
-	 * _.isFunction(_);
-	 * // => true
-	 *
-	 * _.isFunction(/abc/);
-	 * // => false
-	 */
-	function isFunction(value) {
-	  // The use of `Object#toString` avoids issues with the `typeof` operator
-	  // in older versions of Chrome and Safari which return 'function' for regexes
-	  // and Safari 8 which returns 'object' for typed array constructors.
-	  return isObject(value) && objToString.call(value) == funcTag;
-	}
-	
-	module.exports = isFunction;
-	
-	},{"./isObject":54}],53:[function(require,module,exports){
-	var isFunction = require('./isFunction'),
-	    isHostObject = require('../internal/isHostObject'),
-	    isObjectLike = require('../internal/isObjectLike');
-	
-	/** Used to detect host constructors (Safari > 5). */
-	var reIsHostCtor = /^\[object .+?Constructor\]$/;
-	
-	/** Used for native method references. */
-	var objectProto = Object.prototype;
-	
-	/** Used to resolve the decompiled source of functions. */
-	var fnToString = Function.prototype.toString;
-	
-	/** Used to check objects for own properties. */
-	var hasOwnProperty = objectProto.hasOwnProperty;
-	
-	/** Used to detect if a method is native. */
-	var reIsNative = RegExp('^' +
-	  fnToString.call(hasOwnProperty).replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')
-	  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
-	);
-	
-	/**
-	 * Checks if `value` is a native function.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Lang
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is a native function, else `false`.
-	 * @example
-	 *
-	 * _.isNative(Array.prototype.push);
-	 * // => true
-	 *
-	 * _.isNative(_);
-	 * // => false
-	 */
-	function isNative(value) {
-	  if (value == null) {
-	    return false;
-	  }
-	  if (isFunction(value)) {
-	    return reIsNative.test(fnToString.call(value));
-	  }
-	  return isObjectLike(value) && (isHostObject(value) ? reIsNative : reIsHostCtor).test(value);
-	}
-	
-	module.exports = isNative;
-	
-	},{"../internal/isHostObject":43,"../internal/isObjectLike":47,"./isFunction":52}],54:[function(require,module,exports){
-	/**
-	 * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
-	 * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Lang
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is an object, else `false`.
-	 * @example
-	 *
-	 * _.isObject({});
-	 * // => true
-	 *
-	 * _.isObject([1, 2, 3]);
-	 * // => true
-	 *
-	 * _.isObject(1);
-	 * // => false
-	 */
-	function isObject(value) {
-	  // Avoid a V8 JIT bug in Chrome 19-20.
-	  // See https://code.google.com/p/v8/issues/detail?id=2291 for more details.
-	  var type = typeof value;
-	  return !!value && (type == 'object' || type == 'function');
-	}
-	
-	module.exports = isObject;
-	
-	},{}],55:[function(require,module,exports){
-	var baseForIn = require('../internal/baseForIn'),
-	    isArguments = require('./isArguments'),
-	    isHostObject = require('../internal/isHostObject'),
-	    isObjectLike = require('../internal/isObjectLike'),
-	    support = require('../support');
-	
-	/** `Object#toString` result references. */
-	var objectTag = '[object Object]';
-	
-	/** Used for native method references. */
-	var objectProto = Object.prototype;
-	
-	/** Used to check objects for own properties. */
-	var hasOwnProperty = objectProto.hasOwnProperty;
-	
-	/**
-	 * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
-	 * of values.
-	 */
-	var objToString = objectProto.toString;
-	
-	/**
-	 * Checks if `value` is a plain object, that is, an object created by the
-	 * `Object` constructor or one with a `[[Prototype]]` of `null`.
-	 *
-	 * **Note:** This method assumes objects created by the `Object` constructor
-	 * have no inherited enumerable properties.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Lang
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is a plain object, else `false`.
-	 * @example
-	 *
-	 * function Foo() {
-	 *   this.a = 1;
-	 * }
-	 *
-	 * _.isPlainObject(new Foo);
-	 * // => false
-	 *
-	 * _.isPlainObject([1, 2, 3]);
-	 * // => false
-	 *
-	 * _.isPlainObject({ 'x': 0, 'y': 0 });
-	 * // => true
-	 *
-	 * _.isPlainObject(Object.create(null));
-	 * // => true
-	 */
-	function isPlainObject(value) {
-	  var Ctor;
-	
-	  // Exit early for non `Object` objects.
-	  if (!(isObjectLike(value) && objToString.call(value) == objectTag && !isHostObject(value) && !isArguments(value)) ||
-	      (!hasOwnProperty.call(value, 'constructor') && (Ctor = value.constructor, typeof Ctor == 'function' && !(Ctor instanceof Ctor)))) {
-	    return false;
-	  }
-	  // IE < 9 iterates inherited properties before own properties. If the first
-	  // iterated property is an object's own property then there are no inherited
-	  // enumerable properties.
-	  var result;
-	  if (support.ownLast) {
-	    baseForIn(value, function(subValue, key, object) {
-	      result = hasOwnProperty.call(object, key);
-	      return false;
-	    });
-	    return result !== false;
-	  }
-	  // In most environments an object's own properties are iterated before
-	  // its inherited properties. If the last iterated property is an object's
-	  // own property then there are no inherited enumerable properties.
-	  baseForIn(value, function(subValue, key) {
-	    result = key;
-	  });
-	  return result === undefined || hasOwnProperty.call(value, result);
-	}
-	
-	module.exports = isPlainObject;
-	
-	},{"../internal/baseForIn":33,"../internal/isHostObject":43,"../internal/isObjectLike":47,"../support":62,"./isArguments":50}],56:[function(require,module,exports){
-	var isObjectLike = require('../internal/isObjectLike');
-	
-	/** `Object#toString` result references. */
-	var stringTag = '[object String]';
-	
-	/** Used for native method references. */
-	var objectProto = Object.prototype;
-	
-	/**
-	 * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
-	 * of values.
-	 */
-	var objToString = objectProto.toString;
-	
-	/**
-	 * Checks if `value` is classified as a `String` primitive or object.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Lang
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
-	 * @example
-	 *
-	 * _.isString('abc');
-	 * // => true
-	 *
-	 * _.isString(1);
-	 * // => false
-	 */
-	function isString(value) {
-	  return typeof value == 'string' || (isObjectLike(value) && objToString.call(value) == stringTag);
-	}
-	
-	module.exports = isString;
-	
-	},{"../internal/isObjectLike":47}],57:[function(require,module,exports){
-	var isLength = require('../internal/isLength'),
-	    isObjectLike = require('../internal/isObjectLike');
-	
-	/** `Object#toString` result references. */
-	var argsTag = '[object Arguments]',
-	    arrayTag = '[object Array]',
-	    boolTag = '[object Boolean]',
-	    dateTag = '[object Date]',
-	    errorTag = '[object Error]',
-	    funcTag = '[object Function]',
-	    mapTag = '[object Map]',
-	    numberTag = '[object Number]',
-	    objectTag = '[object Object]',
-	    regexpTag = '[object RegExp]',
-	    setTag = '[object Set]',
-	    stringTag = '[object String]',
-	    weakMapTag = '[object WeakMap]';
-	
-	var arrayBufferTag = '[object ArrayBuffer]',
-	    float32Tag = '[object Float32Array]',
-	    float64Tag = '[object Float64Array]',
-	    int8Tag = '[object Int8Array]',
-	    int16Tag = '[object Int16Array]',
-	    int32Tag = '[object Int32Array]',
-	    uint8Tag = '[object Uint8Array]',
-	    uint8ClampedTag = '[object Uint8ClampedArray]',
-	    uint16Tag = '[object Uint16Array]',
-	    uint32Tag = '[object Uint32Array]';
-	
-	/** Used to identify `toStringTag` values of typed arrays. */
-	var typedArrayTags = {};
-	typedArrayTags[float32Tag] = typedArrayTags[float64Tag] =
-	typedArrayTags[int8Tag] = typedArrayTags[int16Tag] =
-	typedArrayTags[int32Tag] = typedArrayTags[uint8Tag] =
-	typedArrayTags[uint8ClampedTag] = typedArrayTags[uint16Tag] =
-	typedArrayTags[uint32Tag] = true;
-	typedArrayTags[argsTag] = typedArrayTags[arrayTag] =
-	typedArrayTags[arrayBufferTag] = typedArrayTags[boolTag] =
-	typedArrayTags[dateTag] = typedArrayTags[errorTag] =
-	typedArrayTags[funcTag] = typedArrayTags[mapTag] =
-	typedArrayTags[numberTag] = typedArrayTags[objectTag] =
-	typedArrayTags[regexpTag] = typedArrayTags[setTag] =
-	typedArrayTags[stringTag] = typedArrayTags[weakMapTag] = false;
-	
-	/** Used for native method references. */
-	var objectProto = Object.prototype;
-	
-	/**
-	 * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
-	 * of values.
-	 */
-	var objToString = objectProto.toString;
-	
-	/**
-	 * Checks if `value` is classified as a typed array.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Lang
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
-	 * @example
-	 *
-	 * _.isTypedArray(new Uint8Array);
-	 * // => true
-	 *
-	 * _.isTypedArray([]);
-	 * // => false
-	 */
-	function isTypedArray(value) {
-	  return isObjectLike(value) && isLength(value.length) && !!typedArrayTags[objToString.call(value)];
-	}
-	
-	module.exports = isTypedArray;
-	
-	},{"../internal/isLength":46,"../internal/isObjectLike":47}],58:[function(require,module,exports){
-	var baseCopy = require('../internal/baseCopy'),
-	    keysIn = require('../object/keysIn');
-	
-	/**
-	 * Converts `value` to a plain object flattening inherited enumerable
-	 * properties of `value` to own properties of the plain object.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Lang
-	 * @param {*} value The value to convert.
-	 * @returns {Object} Returns the converted plain object.
-	 * @example
-	 *
-	 * function Foo() {
-	 *   this.b = 2;
-	 * }
-	 *
-	 * Foo.prototype.c = 3;
-	 *
-	 * _.assign({ 'a': 1 }, new Foo);
-	 * // => { 'a': 1, 'b': 2 }
-	 *
-	 * _.assign({ 'a': 1 }, _.toPlainObject(new Foo));
-	 * // => { 'a': 1, 'b': 2, 'c': 3 }
-	 */
-	function toPlainObject(value) {
-	  return baseCopy(value, keysIn(value));
-	}
-	
-	module.exports = toPlainObject;
-	
-	},{"../internal/baseCopy":31,"../object/keysIn":60}],59:[function(require,module,exports){
-	var getNative = require('../internal/getNative'),
-	    isArrayLike = require('../internal/isArrayLike'),
-	    isObject = require('../lang/isObject'),
-	    shimKeys = require('../internal/shimKeys'),
-	    support = require('../support');
-	
-	/* Native method references for those with the same name as other `lodash` methods. */
-	var nativeKeys = getNative(Object, 'keys');
-	
-	/**
-	 * Creates an array of the own enumerable property names of `object`.
-	 *
-	 * **Note:** Non-object values are coerced to objects. See the
-	 * [ES spec](http://ecma-international.org/ecma-262/6.0/#sec-object.keys)
-	 * for more details.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Object
-	 * @param {Object} object The object to query.
-	 * @returns {Array} Returns the array of property names.
-	 * @example
-	 *
-	 * function Foo() {
-	 *   this.a = 1;
-	 *   this.b = 2;
-	 * }
-	 *
-	 * Foo.prototype.c = 3;
-	 *
-	 * _.keys(new Foo);
-	 * // => ['a', 'b'] (iteration order is not guaranteed)
-	 *
-	 * _.keys('hi');
-	 * // => ['0', '1']
-	 */
-	var keys = !nativeKeys ? shimKeys : function(object) {
-	  var Ctor = object == null ? undefined : object.constructor;
-	  if ((typeof Ctor == 'function' && Ctor.prototype === object) ||
-	      (typeof object == 'function' ? support.enumPrototypes : isArrayLike(object))) {
-	    return shimKeys(object);
-	  }
-	  return isObject(object) ? nativeKeys(object) : [];
-	};
-	
-	module.exports = keys;
-	
-	},{"../internal/getNative":41,"../internal/isArrayLike":42,"../internal/shimKeys":48,"../lang/isObject":54,"../support":62}],60:[function(require,module,exports){
-	var arrayEach = require('../internal/arrayEach'),
-	    isArguments = require('../lang/isArguments'),
-	    isArray = require('../lang/isArray'),
-	    isFunction = require('../lang/isFunction'),
-	    isIndex = require('../internal/isIndex'),
-	    isLength = require('../internal/isLength'),
-	    isObject = require('../lang/isObject'),
-	    isString = require('../lang/isString'),
-	    support = require('../support');
-	
-	/** `Object#toString` result references. */
-	var arrayTag = '[object Array]',
-	    boolTag = '[object Boolean]',
-	    dateTag = '[object Date]',
-	    errorTag = '[object Error]',
-	    funcTag = '[object Function]',
-	    numberTag = '[object Number]',
-	    objectTag = '[object Object]',
-	    regexpTag = '[object RegExp]',
-	    stringTag = '[object String]';
-	
-	/** Used to fix the JScript `[[DontEnum]]` bug. */
-	var shadowProps = [
-	  'constructor', 'hasOwnProperty', 'isPrototypeOf', 'propertyIsEnumerable',
-	  'toLocaleString', 'toString', 'valueOf'
-	];
-	
-	/** Used for native method references. */
-	var errorProto = Error.prototype,
-	    objectProto = Object.prototype,
-	    stringProto = String.prototype;
-	
-	/** Used to check objects for own properties. */
-	var hasOwnProperty = objectProto.hasOwnProperty;
-	
-	/**
-	 * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
-	 * of values.
-	 */
-	var objToString = objectProto.toString;
-	
-	/** Used to avoid iterating over non-enumerable properties in IE < 9. */
-	var nonEnumProps = {};
-	nonEnumProps[arrayTag] = nonEnumProps[dateTag] = nonEnumProps[numberTag] = { 'constructor': true, 'toLocaleString': true, 'toString': true, 'valueOf': true };
-	nonEnumProps[boolTag] = nonEnumProps[stringTag] = { 'constructor': true, 'toString': true, 'valueOf': true };
-	nonEnumProps[errorTag] = nonEnumProps[funcTag] = nonEnumProps[regexpTag] = { 'constructor': true, 'toString': true };
-	nonEnumProps[objectTag] = { 'constructor': true };
-	
-	arrayEach(shadowProps, function(key) {
-	  for (var tag in nonEnumProps) {
-	    if (hasOwnProperty.call(nonEnumProps, tag)) {
-	      var props = nonEnumProps[tag];
-	      props[key] = hasOwnProperty.call(props, key);
-	    }
-	  }
-	});
-	
-	/**
-	 * Creates an array of the own and inherited enumerable property names of `object`.
-	 *
-	 * **Note:** Non-object values are coerced to objects.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Object
-	 * @param {Object} object The object to query.
-	 * @returns {Array} Returns the array of property names.
-	 * @example
-	 *
-	 * function Foo() {
-	 *   this.a = 1;
-	 *   this.b = 2;
-	 * }
-	 *
-	 * Foo.prototype.c = 3;
-	 *
-	 * _.keysIn(new Foo);
-	 * // => ['a', 'b', 'c'] (iteration order is not guaranteed)
-	 */
-	function keysIn(object) {
-	  if (object == null) {
-	    return [];
-	  }
-	  if (!isObject(object)) {
-	    object = Object(object);
-	  }
-	  var length = object.length;
-	
-	  length = (length && isLength(length) &&
-	    (isArray(object) || isArguments(object) || isString(object)) && length) || 0;
-	
-	  var Ctor = object.constructor,
-	      index = -1,
-	      proto = (isFunction(Ctor) && Ctor.prototype) || objectProto,
-	      isProto = proto === object,
-	      result = Array(length),
-	      skipIndexes = length > 0,
-	      skipErrorProps = support.enumErrorProps && (object === errorProto || object instanceof Error),
-	      skipProto = support.enumPrototypes && isFunction(object);
-	
-	  while (++index < length) {
-	    result[index] = (index + '');
-	  }
-	  // lodash skips the `constructor` property when it infers it's iterating
-	  // over a `prototype` object because IE < 9 can't set the `[[Enumerable]]`
-	  // attribute of an existing property and the `constructor` property of a
-	  // prototype defaults to non-enumerable.
-	  for (var key in object) {
-	    if (!(skipProto && key == 'prototype') &&
-	        !(skipErrorProps && (key == 'message' || key == 'name')) &&
-	        !(skipIndexes && isIndex(key, length)) &&
-	        !(key == 'constructor' && (isProto || !hasOwnProperty.call(object, key)))) {
-	      result.push(key);
-	    }
-	  }
-	  if (support.nonEnumShadows && object !== objectProto) {
-	    var tag = object === stringProto ? stringTag : (object === errorProto ? errorTag : objToString.call(object)),
-	        nonEnums = nonEnumProps[tag] || nonEnumProps[objectTag];
-	
-	    if (tag == objectTag) {
-	      proto = objectProto;
-	    }
-	    length = shadowProps.length;
-	    while (length--) {
-	      key = shadowProps[length];
-	      var nonEnum = nonEnums[key];
-	      if (!(isProto && nonEnum) &&
-	          (nonEnum ? hasOwnProperty.call(object, key) : object[key] !== proto[key])) {
-	        result.push(key);
-	      }
-	    }
-	  }
-	  return result;
-	}
-	
-	module.exports = keysIn;
-	
-	},{"../internal/arrayEach":30,"../internal/isIndex":44,"../internal/isLength":46,"../lang/isArguments":50,"../lang/isArray":51,"../lang/isFunction":52,"../lang/isObject":54,"../lang/isString":56,"../support":62}],61:[function(require,module,exports){
-	var baseMerge = require('../internal/baseMerge'),
-	    createAssigner = require('../internal/createAssigner');
-	
-	/**
-	 * Recursively merges own enumerable properties of the source object(s), that
-	 * don't resolve to `undefined` into the destination object. Subsequent sources
-	 * overwrite property assignments of previous sources. If `customizer` is
-	 * provided it's invoked to produce the merged values of the destination and
-	 * source properties. If `customizer` returns `undefined` merging is handled
-	 * by the method instead. The `customizer` is bound to `thisArg` and invoked
-	 * with five arguments: (objectValue, sourceValue, key, object, source).
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Object
-	 * @param {Object} object The destination object.
-	 * @param {...Object} [sources] The source objects.
-	 * @param {Function} [customizer] The function to customize assigned values.
-	 * @param {*} [thisArg] The `this` binding of `customizer`.
-	 * @returns {Object} Returns `object`.
-	 * @example
-	 *
-	 * var users = {
-	 *   'data': [{ 'user': 'barney' }, { 'user': 'fred' }]
-	 * };
-	 *
-	 * var ages = {
-	 *   'data': [{ 'age': 36 }, { 'age': 40 }]
-	 * };
-	 *
-	 * _.merge(users, ages);
-	 * // => { 'data': [{ 'user': 'barney', 'age': 36 }, { 'user': 'fred', 'age': 40 }] }
-	 *
-	 * // using a customizer callback
-	 * var object = {
-	 *   'fruits': ['apple'],
-	 *   'vegetables': ['beet']
-	 * };
-	 *
-	 * var other = {
-	 *   'fruits': ['banana'],
-	 *   'vegetables': ['carrot']
-	 * };
-	 *
-	 * _.merge(object, other, function(a, b) {
-	 *   if (_.isArray(a)) {
-	 *     return a.concat(b);
-	 *   }
-	 * });
-	 * // => { 'fruits': ['apple', 'banana'], 'vegetables': ['beet', 'carrot'] }
-	 */
-	var merge = createAssigner(baseMerge);
-	
-	module.exports = merge;
-	
-	},{"../internal/baseMerge":34,"../internal/createAssigner":38}],62:[function(require,module,exports){
-	/** Used for native method references. */
-	var arrayProto = Array.prototype,
-	    errorProto = Error.prototype,
-	    objectProto = Object.prototype;
-	
-	/** Native method references. */
-	var propertyIsEnumerable = objectProto.propertyIsEnumerable,
-	    splice = arrayProto.splice;
-	
-	/**
-	 * An object environment feature flags.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @type Object
-	 */
-	var support = {};
-	
-	(function(x) {
-	  var Ctor = function() { this.x = x; },
-	      object = { '0': x, 'length': x },
-	      props = [];
-	
-	  Ctor.prototype = { 'valueOf': x, 'y': x };
-	  for (var key in new Ctor) { props.push(key); }
-	
-	  /**
-	   * Detect if `name` or `message` properties of `Error.prototype` are
-	   * enumerable by default (IE < 9, Safari < 5.1).
-	   *
-	   * @memberOf _.support
-	   * @type boolean
-	   */
-	  support.enumErrorProps = propertyIsEnumerable.call(errorProto, 'message') ||
-	    propertyIsEnumerable.call(errorProto, 'name');
-	
-	  /**
-	   * Detect if `prototype` properties are enumerable by default.
-	   *
-	   * Firefox < 3.6, Opera > 9.50 - Opera < 11.60, and Safari < 5.1
-	   * (if the prototype or a property on the prototype has been set)
-	   * incorrectly set the `[[Enumerable]]` value of a function's `prototype`
-	   * property to `true`.
-	   *
-	   * @memberOf _.support
-	   * @type boolean
-	   */
-	  support.enumPrototypes = propertyIsEnumerable.call(Ctor, 'prototype');
-	
-	  /**
-	   * Detect if properties shadowing those on `Object.prototype` are non-enumerable.
-	   *
-	   * In IE < 9 an object's own properties, shadowing non-enumerable ones,
-	   * are made non-enumerable as well (a.k.a the JScript `[[DontEnum]]` bug).
-	   *
-	   * @memberOf _.support
-	   * @type boolean
-	   */
-	  support.nonEnumShadows = !/valueOf/.test(props);
-	
-	  /**
-	   * Detect if own properties are iterated after inherited properties (IE < 9).
-	   *
-	   * @memberOf _.support
-	   * @type boolean
-	   */
-	  support.ownLast = props[0] != 'x';
-	
-	  /**
-	   * Detect if `Array#shift` and `Array#splice` augment array-like objects
-	   * correctly.
-	   *
-	   * Firefox < 10, compatibility modes of IE 8, and IE < 9 have buggy Array
-	   * `shift()` and `splice()` functions that fail to remove the last element,
-	   * `value[0]`, of array-like objects even though the "length" property is
-	   * set to `0`. The `shift()` method is buggy in compatibility modes of IE 8,
-	   * while `splice()` is buggy regardless of mode in IE < 9.
-	   *
-	   * @memberOf _.support
-	   * @type boolean
-	   */
-	  support.spliceObjects = (splice.call(object, 0, 1), !object[0]);
-	
-	  /**
-	   * Detect lack of support for accessing string characters by index.
-	   *
-	   * IE < 8 can't access characters by index. IE 8 can only access characters
-	   * by index on string literals, not string objects.
-	   *
-	   * @memberOf _.support
-	   * @type boolean
-	   */
-	  support.unindexedChars = ('x'[0] + Object('x')[0]) != 'xx';
-	}(1, 0));
-	
-	module.exports = support;
-	
-	},{}],63:[function(require,module,exports){
-	/**
-	 * This method returns the first argument provided to it.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @category Utility
-	 * @param {*} value Any value.
-	 * @returns {*} Returns `value`.
-	 * @example
-	 *
-	 * var object = { 'user': 'fred' };
-	 *
-	 * _.identity(object) === object;
-	 * // => true
-	 */
-	function identity(value) {
-	  return value;
-	}
-	
-	module.exports = identity;
-	
-	},{}],64:[function(require,module,exports){
-	/**
-	 * @file m3u8/index.js
-	 *
-	 * Utilities for parsing M3U8 files. If the entire manifest is available,
-	 * `Parser` will create an object representation with enough detail for managing
-	 * playback. `ParseStream` and `LineStream` are lower-level parsing primitives
-	 * that do not assume the entirety of the manifest is ready and expose a
-	 * ReadableStream-like interface.
-	 */
-	
 	'use strict';
-	
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
 	var _lineStream = require('./line-stream');
 	
@@ -37837,35 +36582,44 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _parser2 = _interopRequireDefault(_parser);
 	
-	exports['default'] = {
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	module.exports = {
 	  LineStream: _lineStream2['default'],
 	  ParseStream: _parseStream2['default'],
 	  Parser: _parser2['default']
-	};
-	module.exports = exports['default'];
-	},{"./line-stream":65,"./parse-stream":66,"./parser":67}],65:[function(require,module,exports){
-	/**
-	 * @file m3u8/line-stream.js
-	 */
+	}; /**
+	    * @file m3u8/index.js
+	    *
+	    * Utilities for parsing M3U8 files. If the entire manifest is available,
+	    * `Parser` will create an object representation with enough detail for managing
+	    * playback. `ParseStream` and `LineStream` are lower-level parsing primitives
+	    * that do not assume the entirety of the manifest is ready and expose a
+	    * ReadableStream-like interface.
+	    */
+	},{"./line-stream":30,"./parse-stream":31,"./parser":32}],30:[function(require,module,exports){
 	'use strict';
 	
-	Object.defineProperty(exports, '__esModule', {
+	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 	
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-	
-	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	var _stream = require('./stream');
 	
 	var _stream2 = _interopRequireDefault(_stream);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * @file m3u8/line-stream.js
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+	
 	
 	/**
 	 * A stream that buffers string input and generates a `data` event for each
@@ -37874,15 +36628,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @class LineStream
 	 * @extends Stream
 	 */
-	
-	var LineStream = (function (_Stream) {
+	var LineStream = function (_Stream) {
 	  _inherits(LineStream, _Stream);
 	
 	  function LineStream() {
 	    _classCallCheck(this, LineStream);
 	
-	    _get(Object.getPrototypeOf(LineStream.prototype), 'constructor', this).call(this);
-	    this.buffer = '';
+	    var _this = _possibleConstructorReturn(this, (LineStream.__proto__ || Object.getPrototypeOf(LineStream)).call(this));
+	
+	    _this.buffer = '';
+	    return _this;
 	  }
 	
 	  /**
@@ -37891,10 +36646,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @param {String} data the text to process
 	   */
 	
+	
 	  _createClass(LineStream, [{
 	    key: 'push',
 	    value: function push(data) {
-	      var nextNewline = undefined;
+	      var nextNewline = void 0;
 	
 	      this.buffer += data;
 	      nextNewline = this.buffer.indexOf('\n');
@@ -37907,35 +36663,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }]);
 	
 	  return LineStream;
-	})(_stream2['default']);
+	}(_stream2['default']);
 	
 	exports['default'] = LineStream;
-	module.exports = exports['default'];
-	},{"./stream":68}],66:[function(require,module,exports){
-	/**
-	 * @file m3u8/parse-stream.js
-	 */
+	},{"./stream":33}],31:[function(require,module,exports){
 	'use strict';
 	
-	Object.defineProperty(exports, '__esModule', {
+	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 	
-	var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 	
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-	
-	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	var _stream = require('./stream');
 	
 	var _stream2 = _interopRequireDefault(_stream);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * @file m3u8/parse-stream.js
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+	
 	
 	/**
 	 * "forgiving" attribute list psuedo-grammar:
@@ -37960,9 +36715,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	var parseAttributes = function parseAttributes(attributes) {
 	  // split the string using attributes as the separator
 	  var attrs = attributes.split(attributeSeparator());
-	  var i = attrs.length;
 	  var result = {};
-	  var attr = undefined;
+	  var i = attrs.length;
+	  var attr = void 0;
 	
 	  while (i--) {
 	    // filter out unmatched portions of the string
@@ -38006,13 +36761,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @extends Stream
 	 */
 	
-	var ParseStream = (function (_Stream) {
+	var ParseStream = function (_Stream) {
 	  _inherits(ParseStream, _Stream);
 	
 	  function ParseStream() {
 	    _classCallCheck(this, ParseStream);
 	
-	    _get(Object.getPrototypeOf(ParseStream.prototype), 'constructor', this).call(this);
+	    return _possibleConstructorReturn(this, (ParseStream.__proto__ || Object.getPrototypeOf(ParseStream)).call(this));
 	  }
 	
 	  /**
@@ -38021,11 +36776,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @param {String} line a single line of an M3U8 file to parse
 	   */
 	
+	
 	  _createClass(ParseStream, [{
 	    key: 'push',
 	    value: function push(line) {
-	      var match = undefined;
-	      var event = undefined;
+	      var match = void 0;
+	      var event = void 0;
 	
 	      // strip whitespace
 	      line = line.replace(/^[\u0000\s]+|[\u0000\s]+$/g, '');
@@ -38193,16 +36949,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	            event.uri = attributes.URI;
 	          }
 	          if (attributes.BYTERANGE) {
-	            var _attributes$BYTERANGE$split = attributes.BYTERANGE.split('@');
-	
-	            var _attributes$BYTERANGE$split2 = _slicedToArray(_attributes$BYTERANGE$split, 2);
-	
-	            var _length = _attributes$BYTERANGE$split2[0];
-	            var offset = _attributes$BYTERANGE$split2[1];
+	            var _attributes$BYTERANGE = attributes.BYTERANGE.split('@'),
+	                _attributes$BYTERANGE2 = _slicedToArray(_attributes$BYTERANGE, 2),
+	                length = _attributes$BYTERANGE2[0],
+	                offset = _attributes$BYTERANGE2[1];
 	
 	            event.byterange = {};
-	            if (_length) {
-	              event.byterange.length = parseInt(_length, 10);
+	            if (length) {
+	              event.byterange.length = parseInt(length, 10);
 	            }
 	            if (offset) {
 	              event.byterange.offset = parseInt(offset, 10);
@@ -38362,29 +37116,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }]);
 	
 	  return ParseStream;
-	})(_stream2['default']);
+	}(_stream2['default']);
 	
 	exports['default'] = ParseStream;
-	module.exports = exports['default'];
-	},{"./stream":68}],67:[function(require,module,exports){
-	/**
-	 * @file m3u8/parser.js
-	 */
+	},{"./stream":33}],32:[function(require,module,exports){
 	'use strict';
 	
-	Object.defineProperty(exports, '__esModule', {
+	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 	
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 	
-	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	var _stream = require('./stream');
 	
@@ -38398,9 +37142,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _parseStream2 = _interopRequireDefault(_parseStream);
 	
-	var _lodashCompatObjectMerge = require('lodash-compat/object/merge');
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _lodashCompatObjectMerge2 = _interopRequireDefault(_lodashCompatObjectMerge);
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * @file m3u8/parser.js
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+	
 	
 	/**
 	 * A parser for M3U8 files. The current interpretation of the input is
@@ -38423,26 +37174,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @class Parser
 	 * @extends Stream
 	 */
-	
-	var Parser = (function (_Stream) {
+	var Parser = function (_Stream) {
 	  _inherits(Parser, _Stream);
 	
 	  function Parser() {
 	    _classCallCheck(this, Parser);
 	
-	    _get(Object.getPrototypeOf(Parser.prototype), 'constructor', this).call(this);
-	    this.lineStream = new _lineStream2['default']();
-	    this.parseStream = new _parseStream2['default']();
-	    this.lineStream.pipe(this.parseStream);
+	    var _this = _possibleConstructorReturn(this, (Parser.__proto__ || Object.getPrototypeOf(Parser)).call(this));
+	
+	    _this.lineStream = new _lineStream2['default']();
+	    _this.parseStream = new _parseStream2['default']();
+	    _this.lineStream.pipe(_this.parseStream);
 	    /* eslint-disable consistent-this */
-	    var self = this;
+	    var self = _this;
 	    /* eslint-enable consistent-this */
 	    var uris = [];
 	    var currentUri = {};
 	    // if specified, the active EXT-X-MAP definition
-	    var currentMap = undefined;
+	    var currentMap = void 0;
 	    // if specified, the active decryption key
-	    var _key = undefined;
+	    var _key = void 0;
 	    var noop = function noop() {};
 	    var defaultMediaGroups = {
 	      'AUDIO': {},
@@ -38454,15 +37205,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var currentTimeline = 0;
 	
 	    // the manifest is empty until the parse stream begins delivering data
-	    this.manifest = {
+	    _this.manifest = {
 	      allowCache: true,
-	      discontinuityStarts: []
+	      discontinuityStarts: [],
+	      segments: []
 	    };
 	
 	    // update the manifest with the m3u8 entry from the parse stream
-	    this.parseStream.on('data', function (entry) {
-	      var mediaGroup = undefined;
-	      var rendition = undefined;
+	    _this.parseStream.on('data', function (entry) {
+	      var mediaGroup = void 0;
+	      var rendition = void 0;
 	
 	      ({
 	        tag: function tag() {
@@ -38610,7 +37362,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	              if (!currentUri.attributes) {
 	                currentUri.attributes = {};
 	              }
-	              currentUri.attributes = (0, _lodashCompatObjectMerge2['default'])(currentUri.attributes, entry.attributes);
+	              _extends(currentUri.attributes, entry.attributes);
 	            },
 	            media: function media() {
 	              this.manifest.mediaGroups = this.manifest.mediaGroups || defaultMediaGroups;
@@ -38717,6 +37469,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	      })[entry.type].call(self);
 	    });
+	
+	    return _this;
 	  }
 	
 	  /**
@@ -38724,6 +37478,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   *
 	   * @param {String} chunk a potentially incomplete portion of the manifest
 	   */
+	
 	
 	  _createClass(Parser, [{
 	    key: 'push',
@@ -38736,6 +37491,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * manifest did not contain a trailing newline but the file has been
 	     * completely received.
 	     */
+	
 	  }, {
 	    key: 'end',
 	    value: function end() {
@@ -38745,13 +37501,143 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }]);
 	
 	  return Parser;
-	})(_stream2['default']);
+	}(_stream2['default']);
 	
 	exports['default'] = Parser;
-	module.exports = exports['default'];
-	},{"./line-stream":65,"./parse-stream":66,"./stream":68,"lodash-compat/object/merge":61}],68:[function(require,module,exports){
-	arguments[4][14][0].apply(exports,arguments)
-	},{"dup":14}],69:[function(require,module,exports){
+	},{"./line-stream":30,"./parse-stream":31,"./stream":33}],33:[function(require,module,exports){
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	/**
+	 * @file stream.js
+	 */
+	/**
+	 * A lightweight readable stream implemention that handles event dispatching.
+	 *
+	 * @class Stream
+	 */
+	var Stream = function () {
+	  function Stream() {
+	    _classCallCheck(this, Stream);
+	
+	    this.listeners = {};
+	  }
+	
+	  /**
+	   * Add a listener for a specified event type.
+	   *
+	   * @param {String} type the event name
+	   * @param {Function} listener the callback to be invoked when an event of
+	   * the specified type occurs
+	   */
+	
+	
+	  _createClass(Stream, [{
+	    key: 'on',
+	    value: function on(type, listener) {
+	      if (!this.listeners[type]) {
+	        this.listeners[type] = [];
+	      }
+	      this.listeners[type].push(listener);
+	    }
+	
+	    /**
+	     * Remove a listener for a specified event type.
+	     *
+	     * @param {String} type the event name
+	     * @param {Function} listener  a function previously registered for this
+	     * type of event through `on`
+	     * @return {Boolean} if we could turn it off or not
+	     */
+	
+	  }, {
+	    key: 'off',
+	    value: function off(type, listener) {
+	      if (!this.listeners[type]) {
+	        return false;
+	      }
+	
+	      var index = this.listeners[type].indexOf(listener);
+	
+	      this.listeners[type].splice(index, 1);
+	      return index > -1;
+	    }
+	
+	    /**
+	     * Trigger an event of the specified type on this stream. Any additional
+	     * arguments to this function are passed as parameters to event listeners.
+	     *
+	     * @param {String} type the event name
+	     */
+	
+	  }, {
+	    key: 'trigger',
+	    value: function trigger(type) {
+	      var callbacks = this.listeners[type];
+	      var i = void 0;
+	      var length = void 0;
+	      var args = void 0;
+	
+	      if (!callbacks) {
+	        return;
+	      }
+	      // Slicing the arguments on every invocation of this method
+	      // can add a significant amount of overhead. Avoid the
+	      // intermediate object creation for the common case of a
+	      // single callback argument
+	      if (arguments.length === 2) {
+	        length = callbacks.length;
+	        for (i = 0; i < length; ++i) {
+	          callbacks[i].call(this, arguments[1]);
+	        }
+	      } else {
+	        args = Array.prototype.slice.call(arguments, 1);
+	        length = callbacks.length;
+	        for (i = 0; i < length; ++i) {
+	          callbacks[i].apply(this, args);
+	        }
+	      }
+	    }
+	
+	    /**
+	     * Destroys the stream and cleans up.
+	     */
+	
+	  }, {
+	    key: 'dispose',
+	    value: function dispose() {
+	      this.listeners = {};
+	    }
+	    /**
+	     * Forwards all `data` events on this stream to the destination stream. The
+	     * destination stream should provide a method `push` to receive the data
+	     * events as they arrive.
+	     *
+	     * @param {Stream} destination the stream that will receive all `data` events
+	     * @see http://nodejs.org/api/stream.html#stream_readable_pipe_destination_options
+	     */
+	
+	  }, {
+	    key: 'pipe',
+	    value: function pipe(destination) {
+	      this.on('data', function (data) {
+	        destination.push(data);
+	      });
+	    }
+	  }]);
+	
+	  return Stream;
+	}();
+	
+	exports['default'] = Stream;
+	},{}],34:[function(require,module,exports){
 	/**
 	 * mux.js
 	 *
@@ -38896,7 +37782,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	module.exports = AacStream;
 	
-	},{"../utils/stream.js":89}],70:[function(require,module,exports){
+	},{"../utils/stream.js":56}],35:[function(require,module,exports){
 	/**
 	 * mux.js
 	 *
@@ -39059,7 +37945,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  parseAacTimestamp: parseAacTimestamp
 	};
 	
-	},{}],71:[function(require,module,exports){
+	},{}],36:[function(require,module,exports){
 	'use strict';
 	
 	var Stream = require('../utils/stream.js');
@@ -39193,7 +38079,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	module.exports = AdtsStream;
 	
-	},{"../utils/stream.js":89}],72:[function(require,module,exports){
+	},{"../utils/stream.js":56}],37:[function(require,module,exports){
 	'use strict';
 	
 	var Stream = require('../utils/stream.js');
@@ -39613,7 +38499,44 @@ return /******/ (function(modules) { // webpackBootstrap
 	  NalByteStream: NalByteStream
 	};
 	
-	},{"../utils/exp-golomb.js":88,"../utils/stream.js":89}],73:[function(require,module,exports){
+	},{"../utils/exp-golomb.js":55,"../utils/stream.js":56}],38:[function(require,module,exports){
+	var highPrefix = [33, 16, 5, 32, 164, 27];
+	var lowPrefix = [33, 65, 108, 84, 1, 2, 4, 8, 168, 2, 4, 8, 17, 191, 252];
+	var zeroFill = function(count) {
+	  var a = [];
+	  while (count--) {
+	    a.push(0);
+	  }
+	  return a;
+	};
+	
+	var makeTable = function(metaTable) {
+	  return Object.keys(metaTable).reduce(function(obj, key) {
+	    obj[key] = new Uint8Array(metaTable[key].reduce(function(arr, part) {
+	      return arr.concat(part);
+	    }, []));
+	    return obj;
+	  }, {});
+	};
+	
+	// Frames-of-silence to use for filling in missing AAC frames
+	var coneOfSilence = {
+	  96000: [highPrefix, [227, 64], zeroFill(154), [56]],
+	  88200: [highPrefix, [231], zeroFill(170), [56]],
+	  64000: [highPrefix, [248, 192], zeroFill(240), [56]],
+	  48000: [highPrefix, [255, 192], zeroFill(268), [55, 148, 128], zeroFill(54), [112]],
+	  44100: [highPrefix, [255, 192], zeroFill(268), [55, 163, 128], zeroFill(84), [112]],
+	  32000: [highPrefix, [255, 192], zeroFill(268), [55, 234], zeroFill(226), [112]],
+	  24000: [highPrefix, [255, 192], zeroFill(268), [55, 255, 128], zeroFill(268), [111, 112], zeroFill(126), [224]],
+	  16000: [highPrefix, [255, 192], zeroFill(268), [55, 255, 128], zeroFill(268), [111, 255], zeroFill(269), [223, 108], zeroFill(195), [1, 192]],
+	  12000: [lowPrefix, zeroFill(268), [3, 127, 248], zeroFill(268), [6, 255, 240], zeroFill(268), [13, 255, 224], zeroFill(268), [27, 253, 128], zeroFill(259), [56]],
+	  11025: [lowPrefix, zeroFill(268), [3, 127, 248], zeroFill(268), [6, 255, 240], zeroFill(268), [13, 255, 224], zeroFill(268), [27, 255, 192], zeroFill(268), [55, 175, 128], zeroFill(108), [112]],
+	  8000: [lowPrefix, zeroFill(268), [3, 121, 16], zeroFill(47), [7]]
+	};
+	
+	module.exports = makeTable(coneOfSilence);
+	
+	},{}],39:[function(require,module,exports){
 	'use strict';
 	
 	var Stream = require('../utils/stream.js');
@@ -39758,7 +38681,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	module.exports = CoalesceStream;
 	
-	},{"../utils/stream.js":89}],74:[function(require,module,exports){
+	},{"../utils/stream.js":56}],40:[function(require,module,exports){
 	/**
 	 * An object that stores the bytes of an FLV tag and methods for
 	 * querying and manipulating that data.
@@ -40132,13 +39055,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	module.exports = FlvTag;
 	
-	},{}],75:[function(require,module,exports){
+	},{}],41:[function(require,module,exports){
 	module.exports = {
 	  tag: require('./flv-tag'),
 	  Transmuxer: require('./transmuxer')
 	};
 	
-	},{"./flv-tag":74,"./transmuxer":76}],76:[function(require,module,exports){
+	},{"./flv-tag":40,"./transmuxer":42}],42:[function(require,module,exports){
 	'use strict';
 	
 	var Stream = require('../utils/stream.js');
@@ -40605,7 +39528,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// forward compatibility
 	module.exports = Transmuxer;
 	
-	},{"../codecs/adts.js":71,"../codecs/h264":72,"../m2ts/m2ts.js":78,"../utils/stream.js":89,"./coalesce-stream.js":73,"./flv-tag.js":74}],77:[function(require,module,exports){
+	},{"../codecs/adts.js":36,"../codecs/h264":37,"../m2ts/m2ts.js":44,"../utils/stream.js":56,"./coalesce-stream.js":39,"./flv-tag.js":40}],43:[function(require,module,exports){
 	/**
 	 * mux.js
 	 *
@@ -40987,6 +39910,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return;
 	      }
 	
+	      // remove null chars
+	      if (char0 === 0x00) {
+	        char0 = null;
+	      }
+	      if (char1 === 0x00) {
+	        char1 = null;
+	      }
+	
 	      // character handling is dependent on the current mode
 	      this[this.mode_](packet.pts, char0, char1);
 	      break;
@@ -41063,7 +39994,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  Cea608Stream: Cea608Stream
 	};
 	
-	},{"../utils/stream":89}],78:[function(require,module,exports){
+	},{"../utils/stream":56}],44:[function(require,module,exports){
 	/**
 	 * mux.js
 	 *
@@ -41524,7 +40455,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	module.exports = m2ts;
 	
-	},{"../utils/stream.js":89,"./caption-stream":77,"./metadata-stream":79,"./stream-types":81,"./stream-types.js":81,"./timestamp-rollover-stream":82}],79:[function(require,module,exports){
+	},{"../utils/stream.js":56,"./caption-stream":43,"./metadata-stream":45,"./stream-types":47,"./stream-types.js":47,"./timestamp-rollover-stream":48}],45:[function(require,module,exports){
 	/**
 	 * Accepts program elementary stream (PES) data events and parses out
 	 * ID3 metadata from them, if present.
@@ -41774,7 +40705,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	module.exports = MetadataStream;
 	
-	},{"../utils/stream":89,"./stream-types":81}],80:[function(require,module,exports){
+	},{"../utils/stream":56,"./stream-types":47}],46:[function(require,module,exports){
 	/**
 	 * mux.js
 	 *
@@ -42048,7 +40979,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  videoPacketContainsKeyFrame: videoPacketContainsKeyFrame
 	};
 	
-	},{"./stream-types.js":81}],81:[function(require,module,exports){
+	},{"./stream-types.js":47}],47:[function(require,module,exports){
 	'use strict';
 	
 	module.exports = {
@@ -42057,7 +40988,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  METADATA_STREAM_TYPE: 0x15
 	};
 	
-	},{}],82:[function(require,module,exports){
+	},{}],48:[function(require,module,exports){
 	/**
 	 * mux.js
 	 *
@@ -42138,7 +41069,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  handleRollover: handleRollover
 	};
 	
-	},{"../utils/stream":89}],83:[function(require,module,exports){
+	},{"../utils/stream":56}],49:[function(require,module,exports){
 	module.exports = {
 	  generator: require('./mp4-generator'),
 	  Transmuxer: require('./transmuxer').Transmuxer,
@@ -42146,7 +41077,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  VideoSegmentStream: require('./transmuxer').VideoSegmentStream
 	};
 	
-	},{"./mp4-generator":84,"./transmuxer":86}],84:[function(require,module,exports){
+	},{"./mp4-generator":50,"./transmuxer":52}],50:[function(require,module,exports){
 	/**
 	 * mux.js
 	 *
@@ -42918,7 +41849,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	};
 	
-	},{}],85:[function(require,module,exports){
+	},{}],51:[function(require,module,exports){
 	/**
 	 * mux.js
 	 *
@@ -43108,7 +42039,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  startTime: startTime
 	};
 	
-	},{}],86:[function(require,module,exports){
+	},{}],52:[function(require,module,exports){
 	/**
 	 * mux.js
 	 *
@@ -43127,6 +42058,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var AdtsStream = require('../codecs/adts.js');
 	var H264Stream = require('../codecs/h264').H264Stream;
 	var AacStream = require('../aac');
+	var coneOfSilence = require('../data/silence');
+	var clock = require('../utils/clock');
 	
 	// constants
 	var AUDIO_PROPERTIES = [
@@ -43144,6 +42077,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  'levelIdc',
 	  'profileCompatibility'
 	];
+	
+	var ONE_SECOND_IN_TS = 90000; // 90kHz clock
 	
 	// object types
 	var VideoSegmentStream, AudioSegmentStream, Transmuxer, CoalesceStream;
@@ -43232,7 +42167,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var
 	    adtsFrames = [],
 	    sequenceNumber = 0,
-	    earliestAllowedDts = 0;
+	    earliestAllowedDts = 0,
+	    audioAppendStartTs = 0,
+	    videoBaseMediaDecodeTime = Infinity;
 	
 	  AudioSegmentStream.prototype.init.call(this);
 	
@@ -43253,6 +42190,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    earliestAllowedDts = earliestDts - track.timelineStartInfo.baseMediaDecodeTime;
 	  };
 	
+	  this.setVideoBaseMediaDecodeTime = function(baseMediaDecodeTime) {
+	    videoBaseMediaDecodeTime = baseMediaDecodeTime;
+	  };
+	
+	  this.setAudioAppendStart = function(timestamp) {
+	    audioAppendStartTs = timestamp;
+	  };
+	
 	  this.flush = function() {
 	    var
 	      frames,
@@ -43267,6 +42212,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    frames = this.trimAdtsFramesByEarliestDts_(adtsFrames);
+	    track.baseMediaDecodeTime = calculateTrackBaseMediaDecodeTime(track);
+	
+	    this.prefixWithSilence_(track, frames);
 	
 	    // we have to build the index from byte locations to
 	    // samples (that is, adts frames) in the audio data
@@ -43277,7 +42225,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    adtsFrames = [];
 	
-	    calculateTrackBaseMediaDecodeTime(track);
 	    moof = mp4.moof(sequenceNumber, [track]);
 	    boxes = new Uint8Array(moof.byteLength + mdat.byteLength);
 	
@@ -43291,6 +42238,61 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    this.trigger('data', {track: track, boxes: boxes});
 	    this.trigger('done', 'AudioSegmentStream');
+	  };
+	
+	  // Possibly pad (prefix) the audio track with silence if appending this track
+	  // would lead to the introduction of a gap in the audio buffer
+	  this.prefixWithSilence_ = function(track, frames) {
+	    var
+	      baseMediaDecodeTimeTs,
+	      frameDuration = 0,
+	      audioGapDuration = 0,
+	      audioFillFrameCount = 0,
+	      audioFillDuration = 0,
+	      silentFrame,
+	      i;
+	
+	    if (!frames.length) {
+	      return;
+	    }
+	
+	    baseMediaDecodeTimeTs = clock.audioTsToVideoTs(track.baseMediaDecodeTime, track.samplerate);
+	
+	    if (audioAppendStartTs &&
+	        videoBaseMediaDecodeTime &&
+	        // old audio doesn't overlap with new audio
+	        audioAppendStartTs < baseMediaDecodeTimeTs) {
+	      audioGapDuration = baseMediaDecodeTimeTs - videoBaseMediaDecodeTime;
+	      // determine frame clock duration based on sample rate, round up to avoid overfills
+	      frameDuration = Math.ceil(ONE_SECOND_IN_TS / (track.samplerate / 1024));
+	      // number of full frames in the audio gap
+	      audioFillFrameCount = Math.floor(audioGapDuration / frameDuration);
+	      // ensure gap is a whole number of frames
+	      audioFillDuration = audioFillFrameCount * frameDuration;
+	    }
+	
+	    // don't attempt to fill gaps smaller than a single frame or larger
+	    // than a half second
+	    if (audioFillFrameCount < 1 || audioFillDuration > ONE_SECOND_IN_TS / 2) {
+	      return;
+	    }
+	
+	    silentFrame = coneOfSilence[track.samplerate];
+	
+	    if (!silentFrame) {
+	      // we don't have a silent frame pregenerated for the sample rate, so use a frame
+	      // from the content instead
+	      silentFrame = frames[0].data;
+	    }
+	
+	    for (i = 0; i < audioFillFrameCount; i++) {
+	      frames.splice(i, 0, {
+	        data: silentFrame
+	      });
+	    }
+	
+	    track.baseMediaDecodeTime -=
+	      Math.floor(clock.videoTsToAudioTs(audioFillDuration, track.samplerate));
 	  };
 	
 	  // If the audio segment extends before the earliest allowed dts
@@ -43485,8 +42487,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // Clear nalUnits
 	    nalUnits = [];
 	
-	    calculateTrackBaseMediaDecodeTime(track);
+	    track.baseMediaDecodeTime = calculateTrackBaseMediaDecodeTime(track);
 	
+	    this.trigger('baseMediaDecodeTime', track.baseMediaDecodeTime);
 	    this.trigger('timelineStartInfo', track.timelineStartInfo);
 	
 	    moof = mp4.moof(sequenceNumber, [track]);
@@ -43845,7 +42848,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	calculateTrackBaseMediaDecodeTime = function(track) {
 	  var
-	    oneSecondInTS = 90000, // 90kHz clock
+	    baseMediaDecodeTime,
 	    scale,
 	    // Calculate the distance, in time, that this segment starts from the start
 	    // of the timeline (earliest time seen since the transmuxer initialized)
@@ -43853,21 +42856,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  // track.timelineStartInfo.baseMediaDecodeTime is the location, in time, where
 	  // we want the start of the first segment to be placed
-	  track.baseMediaDecodeTime = track.timelineStartInfo.baseMediaDecodeTime;
+	  baseMediaDecodeTime = track.timelineStartInfo.baseMediaDecodeTime;
 	
 	  // Add to that the distance this segment is from the very first
-	  track.baseMediaDecodeTime += timeSinceStartOfTimeline;
+	  baseMediaDecodeTime += timeSinceStartOfTimeline;
 	
 	  // baseMediaDecodeTime must not become negative
-	  track.baseMediaDecodeTime = Math.max(0, track.baseMediaDecodeTime);
+	  baseMediaDecodeTime = Math.max(0, baseMediaDecodeTime);
 	
 	  if (track.type === 'audio') {
 	    // Audio has a different clock equal to the sampling_rate so we need to
 	    // scale the PTS values into the clock rate of the track
-	    scale = track.samplerate / oneSecondInTS;
-	    track.baseMediaDecodeTime *= scale;
-	    track.baseMediaDecodeTime = Math.floor(track.baseMediaDecodeTime);
+	    scale = track.samplerate / ONE_SECOND_IN_TS;
+	    baseMediaDecodeTime *= scale;
+	    baseMediaDecodeTime = Math.floor(baseMediaDecodeTime);
 	  }
+	
+	  return baseMediaDecodeTime;
 	};
 	
 	/**
@@ -44197,6 +43202,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	          });
 	
+	          pipeline.videoSegmentStream.on('baseMediaDecodeTime', function(baseMediaDecodeTime) {
+	            if (audioTrack) {
+	              pipeline.audioSegmentStream.setVideoBaseMediaDecodeTime(baseMediaDecodeTime);
+	            }
+	          });
+	
 	          // Set up the final part of the video pipeline
 	          pipeline.h264Stream
 	            .pipe(pipeline.videoSegmentStream)
@@ -44244,6 +43255,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  };
 	
+	  this.setAudioAppendStart = function(timestamp) {
+	    if (audioTrack) {
+	      this.transmuxPipeline_.audioSegmentStream.setAudioAppendStart(timestamp);
+	    }
+	  };
+	
 	  // feed incoming data to the front of the parsing pipeline
 	  this.push = function(data) {
 	    if (hasFlushed) {
@@ -44276,7 +43293,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  VIDEO_PROPERTIES: VIDEO_PROPERTIES
 	};
 	
-	},{"../aac":69,"../codecs/adts.js":71,"../codecs/h264":72,"../m2ts/m2ts.js":78,"../utils/stream.js":89,"./mp4-generator.js":84}],87:[function(require,module,exports){
+	},{"../aac":34,"../codecs/adts.js":36,"../codecs/h264":37,"../data/silence":38,"../m2ts/m2ts.js":44,"../utils/clock":54,"../utils/stream.js":56,"./mp4-generator.js":50}],53:[function(require,module,exports){
 	/**
 	 * mux.js
 	 *
@@ -44782,7 +43799,50 @@ return /******/ (function(modules) { // webpackBootstrap
 	  inspect: inspect
 	};
 	
-	},{"../aac/probe.js":70,"../m2ts/probe.js":80,"../m2ts/stream-types.js":81,"../m2ts/timestamp-rollover-stream.js":82}],88:[function(require,module,exports){
+	},{"../aac/probe.js":35,"../m2ts/probe.js":46,"../m2ts/stream-types.js":47,"../m2ts/timestamp-rollover-stream.js":48}],54:[function(require,module,exports){
+	var
+	  ONE_SECOND_IN_TS = 90000, // 90kHz clock
+	  secondsToVideoTs,
+	  secondsToAudioTs,
+	  videoTsToSeconds,
+	  audioTsToSeconds,
+	  audioTsToVideoTs,
+	  videoTsToAudioTs;
+	
+	secondsToVideoTs = function(seconds) {
+	  return seconds * ONE_SECOND_IN_TS;
+	};
+	
+	secondsToAudioTs = function(seconds, sampleRate) {
+	  return seconds * sampleRate;
+	};
+	
+	videoTsToSeconds = function(timestamp) {
+	  return timestamp / ONE_SECOND_IN_TS;
+	};
+	
+	audioTsToSeconds = function(timestamp, sampleRate) {
+	  return timestamp / sampleRate;
+	};
+	
+	audioTsToVideoTs = function(timestamp, sampleRate) {
+	  return secondsToVideoTs(audioTsToSeconds(timestamp, sampleRate));
+	};
+	
+	videoTsToAudioTs = function(timestamp, sampleRate) {
+	  return secondsToAudioTs(videoTsToSeconds(timestamp), sampleRate);
+	};
+	
+	module.exports = {
+	  secondsToVideoTs: secondsToVideoTs,
+	  secondsToAudioTs: secondsToAudioTs,
+	  videoTsToSeconds: videoTsToSeconds,
+	  audioTsToSeconds: audioTsToSeconds,
+	  audioTsToVideoTs: audioTsToVideoTs,
+	  videoTsToAudioTs: videoTsToAudioTs
+	};
+	
+	},{}],55:[function(require,module,exports){
 	'use strict';
 	
 	var ExpGolomb;
@@ -44931,7 +43991,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	module.exports = ExpGolomb;
 	
-	},{}],89:[function(require,module,exports){
+	},{}],56:[function(require,module,exports){
 	/**
 	 * mux.js
 	 *
@@ -45050,7 +44110,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	module.exports = Stream;
 	
-	},{}],90:[function(require,module,exports){
+	},{}],57:[function(require,module,exports){
 	/* jshint ignore:start */
 	(function(root) { 
 	/* jshint ignore:end */
@@ -45149,7 +44209,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	})(this);
 	/* jshint ignore:end */
 	
-	},{}],91:[function(require,module,exports){
+	},{}],58:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file add-text-track-data.js
@@ -45276,7 +44336,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"global/window":27}],92:[function(require,module,exports){
+	},{"global/window":28}],59:[function(require,module,exports){
 	/**
 	 * Remove the text track from the player if one with matching kind and
 	 * label properties already exists on the player
@@ -45315,7 +44375,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  removeExistingTrack(player, 'metadata', 'Timed Metadata');
 	};
 	exports.cleanupTextTracks = cleanupTextTracks;
-	},{}],93:[function(require,module,exports){
+	},{}],60:[function(require,module,exports){
 	/**
 	 * @file codec-utils.js
 	 */
@@ -45377,13 +44437,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return object;
 	};
 	
+	/**
+	 * Replace the old apple-style `avc1.<dd>.<dd>` codec string with the standard
+	 * `avc1.<hhhhhh>`
+	 *
+	 * @param {Array} codecs an array of codec strings to fix
+	 * @return {Array} the translated codec array
+	 * @private
+	 */
+	var translateLegacyCodecs = function translateLegacyCodecs(codecs) {
+	  return codecs.map(function (codec) {
+	    return codec.replace(/avc1\.(\d+)\.(\d+)/i, function (orig, profile, avcLevel) {
+	      var profileHex = ('00' + Number(profile).toString(16)).slice(-2);
+	      var avcLevelHex = ('00' + Number(avcLevel).toString(16)).slice(-2);
+	
+	      return 'avc1.' + profileHex + '00' + avcLevelHex;
+	    });
+	  });
+	};
+	
 	exports['default'] = {
 	  isAudioCodec: isAudioCodec,
 	  parseContentType: parseContentType,
-	  isVideoCodec: isVideoCodec
+	  isVideoCodec: isVideoCodec,
+	  translateLegacyCodecs: translateLegacyCodecs
 	};
 	module.exports = exports['default'];
-	},{}],94:[function(require,module,exports){
+	},{}],61:[function(require,module,exports){
 	/**
 	 * @file create-text-tracks-if-necessary.js
 	 */
@@ -45427,7 +44507,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	exports['default'] = createTextTracksIfNecessary;
 	module.exports = exports['default'];
-	},{"./cleanup-text-tracks":92}],95:[function(require,module,exports){
+	},{"./cleanup-text-tracks":59}],62:[function(require,module,exports){
 	/**
 	 * @file flash-constants.js
 	 */
@@ -45454,7 +44534,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	exports["default"] = flashConstants;
 	module.exports = exports["default"];
-	},{}],96:[function(require,module,exports){
+	},{}],63:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file flash-media-source.js
@@ -45670,7 +44750,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./cleanup-text-tracks":92,"./codec-utils":93,"./flash-constants":95,"./flash-source-buffer":97,"global/document":26}],97:[function(require,module,exports){
+	},{"./cleanup-text-tracks":59,"./codec-utils":60,"./flash-constants":62,"./flash-source-buffer":64,"global/document":27}],64:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file flash-source-buffer.js
@@ -46021,16 +45101,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var segmentByteLength = 0;
 	      var tech = this.mediaSource_.tech_;
 	      var targetPts = 0;
-	      var i = undefined;
-	      var j = undefined;
 	      var segment = undefined;
-	      var filteredTags = [];
-	      var tags = this.getOrderedTags_(segmentData);
+	      var filteredAudioTags = [];
+	      var filteredVideoTags = [];
+	      var videoTags = segmentData.tags.videoTags;
+	      var audioTags = segmentData.tags.audioTags;
 	
 	      // Establish the media timeline to PTS translation if we don't
 	      // have one already
-	      if (isNaN(this.basePtsOffset_) && tags.length) {
-	        this.basePtsOffset_ = tags[0].pts;
+	      if (isNaN(this.basePtsOffset_) && (videoTags.length || audioTags.length)) {
+	        // We know there is at least one video or audio tag, but since we may not have both,
+	        // we use pts: Infinity for the missing tag. The will force the following Math.min
+	        // call will to use the proper pts value since it will always be less than Infinity
+	        var firstVideoTag = videoTags[0] || { pts: Infinity };
+	        var firstAudioTag = audioTags[0] || { pts: Infinity };
+	
+	        this.basePtsOffset_ = Math.min(firstAudioTag.pts, firstVideoTag.pts);
+	      }
+	
+	      if (tech.buffered().length) {
+	        targetPts = tech.buffered().end(0) - this.timestampOffset;
 	      }
 	
 	      // Trim to currentTime if it's ahead of buffered or buffered doesn't exist
@@ -46042,25 +45132,70 @@ return /******/ (function(modules) { // webpackBootstrap
 	      targetPts *= 1e3;
 	      targetPts += this.basePtsOffset_;
 	
-	      // skip tags with a presentation time less than the seek target
-	      for (i = 0; i < tags.length; i++) {
-	        if (tags[i].pts >= targetPts) {
-	          filteredTags.push(tags[i]);
+	      // skip tags with a presentation time less than the seek target/end of buffer
+	      for (var i = 0; i < audioTags.length; i++) {
+	        if (audioTags[i].pts >= targetPts) {
+	          filteredAudioTags.push(audioTags[i]);
 	        }
 	      }
 	
-	      if (filteredTags.length === 0) {
+	      // filter complete GOPs with a presentation time less than the seek target/end of buffer
+	      var startIndex = 0;
+	
+	      while (startIndex < videoTags.length) {
+	        var startTag = videoTags[startIndex];
+	
+	        if (startTag.pts >= targetPts) {
+	          filteredVideoTags.push(startTag);
+	        } else if (startTag.keyFrame) {
+	          var nextIndex = startIndex + 1;
+	          var foundNextKeyFrame = false;
+	
+	          while (nextIndex < videoTags.length) {
+	            var nextTag = videoTags[nextIndex];
+	
+	            if (nextTag.pts >= targetPts) {
+	              break;
+	            } else if (nextTag.keyFrame) {
+	              foundNextKeyFrame = true;
+	              break;
+	            } else {
+	              nextIndex++;
+	            }
+	          }
+	
+	          if (foundNextKeyFrame) {
+	            // we found another key frame before the targetPts. This means it is safe
+	            // to drop this entire GOP
+	            startIndex = nextIndex;
+	          } else {
+	            // we reached the target pts or the end of the tag list before finding the
+	            // next key frame. We want to append all the tags from the current key frame
+	            // startTag to the targetPts to prevent trimming part of a GOP
+	            while (startIndex < nextIndex) {
+	              filteredVideoTags.push(videoTags[startIndex]);
+	              startIndex++;
+	            }
+	          }
+	          continue;
+	        }
+	        startIndex++;
+	      }
+	
+	      var tags = this.getOrderedTags_(filteredVideoTags, filteredAudioTags);
+	
+	      if (tags.length === 0) {
 	        return;
 	      }
 	
 	      // concatenate the bytes into a single segment
-	      for (i = 0; i < filteredTags.length; i++) {
-	        segmentByteLength += filteredTags[i].bytes.byteLength;
+	      for (var i = 0; i < tags.length; i++) {
+	        segmentByteLength += tags[i].bytes.byteLength;
 	      }
 	      segment = new Uint8Array(segmentByteLength);
-	      for (i = 0, j = 0; i < filteredTags.length; i++) {
-	        segment.set(filteredTags[i].bytes, j);
-	        j += filteredTags[i].bytes.byteLength;
+	      for (var i = 0, j = 0; i < tags.length; i++) {
+	        segment.set(tags[i].bytes, j);
+	        j += tags[i].bytes.byteLength;
 	      }
 	
 	      return segment;
@@ -46070,13 +45205,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * Assemble the FLV tags in decoder order.
 	     *
 	     * @private
-	     * @param {Object} segmentData object of segment data
+	     * @param {Array} videoTags list of video tags
+	     * @param {Array} audioTags list of audio tags
 	     */
 	  }, {
 	    key: 'getOrderedTags_',
-	    value: function getOrderedTags_(segmentData) {
-	      var videoTags = segmentData.tags.videoTags;
-	      var audioTags = segmentData.tags.audioTags;
+	    value: function getOrderedTags_(videoTags, audioTags) {
 	      var tag = undefined;
 	      var tags = [];
 	
@@ -46108,7 +45242,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports['default'] = FlashSourceBuffer;
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./add-text-track-data":91,"./create-text-tracks-if-necessary":94,"./flash-constants":95,"./remove-cues-from-track":99,"global/window":27,"mux.js/lib/flv":75}],98:[function(require,module,exports){
+	},{"./add-text-track-data":58,"./create-text-tracks-if-necessary":61,"./flash-constants":62,"./remove-cues-from-track":66,"global/window":28,"mux.js/lib/flv":41}],65:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file html-media-source.js
@@ -46150,25 +45284,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _codecUtils = require('./codec-utils');
 	
 	var _cleanupTextTracks = require('./cleanup-text-tracks');
-	
-	/**
-	 * Replace the old apple-style `avc1.<dd>.<dd>` codec string with the standard
-	 * `avc1.<hhhhhh>`
-	 *
-	 * @param {Array} codecs an array of codec strings to fix
-	 * @return {Array} the translated codec array
-	 * @private
-	 */
-	var translateLegacyCodecs = function translateLegacyCodecs(codecs) {
-	  return codecs.map(function (codec) {
-	    return codec.replace(/avc1\.(\d+)\.(\d+)/i, function (orig, profile, avcLevel) {
-	      var profileHex = ('00' + Number(profile).toString(16)).slice(-2);
-	      var avcLevelHex = ('00' + Number(avcLevel).toString(16)).slice(-2);
-	
-	      return 'avc1.' + profileHex + '00' + avcLevelHex;
-	    });
-	  });
-	};
 	
 	/**
 	 * Our MediaSource implementation in HTML, mimics native
@@ -46426,7 +45541,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        if (parsedType.parameters && parsedType.parameters.codecs) {
 	          codecs = parsedType.parameters.codecs.split(',');
-	          codecs = translateLegacyCodecs(codecs);
+	          codecs = (0, _codecUtils.translateLegacyCodecs)(codecs);
 	          codecs = codecs.filter(function (codec) {
 	            return (0, _codecUtils.isAudioCodec)(codec) || (0, _codecUtils.isVideoCodec)(codec);
 	          });
@@ -46467,7 +45582,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports['default'] = HtmlMediaSource;
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./add-text-track-data":91,"./cleanup-text-tracks":92,"./codec-utils":93,"./virtual-source-buffer":102,"global/document":26,"global/window":27}],99:[function(require,module,exports){
+	},{"./add-text-track-data":58,"./cleanup-text-tracks":59,"./codec-utils":60,"./virtual-source-buffer":69,"global/document":27,"global/window":28}],66:[function(require,module,exports){
 	/**
 	 * @file remove-cues-from-track.js
 	 */
@@ -46511,7 +45626,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	exports["default"] = removeCuesFromTrack;
 	module.exports = exports["default"];
-	},{}],100:[function(require,module,exports){
+	},{}],67:[function(require,module,exports){
 	/**
 	 * @file transmuxer-worker.js
 	 */
@@ -46669,6 +45784,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      this.transmuxer.setBaseMediaDecodeTime(Math.round(timestampOffset * 90000));
 	    }
+	  }, {
+	    key: 'setAudioAppendStart',
+	    value: function setAudioAppendStart(data) {
+	      this.transmuxer.setAudioAppendStart(Math.ceil(data.appendStart * 90000));
+	    }
 	
 	    /**
 	     * Forces the pipeline to finish processing the last segment and emit it's
@@ -46710,7 +45830,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	module.exports = exports['default'];
-	},{"global/window":27,"mux.js/lib/mp4":83}],101:[function(require,module,exports){
+	},{"global/window":28,"mux.js/lib/mp4":49}],68:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file videojs-contrib-media-sources.js
@@ -46868,7 +45988,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	_videoJs2['default'].MediaSource = MediaSource;
 	_videoJs2['default'].URL = URL;
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./flash-media-source":96,"./html-media-source":98,"global/window":27}],102:[function(require,module,exports){
+	},{"./flash-media-source":63,"./html-media-source":65,"global/window":28}],69:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file virtual-source-buffer.js
@@ -47232,6 +46352,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // Start the internal "updating" state
 	      this.bufferUpdating_ = true;
 	
+	      if (this.audioBuffer_ && this.audioBuffer_.buffered.length) {
+	        var audioBuffered = this.audioBuffer_.buffered;
+	
+	        this.transmuxer_.postMessage({
+	          action: 'setAudioAppendStart',
+	          appendStart: audioBuffered.end(audioBuffered.length - 1)
+	        });
+	      }
+	
 	      this.transmuxer_.postMessage({
 	        action: 'push',
 	        // Send the typed-array of data as an ArrayBuffer so that
@@ -47437,7 +46566,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports['default'] = VirtualSourceBuffer;
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./add-text-track-data":91,"./codec-utils":93,"./create-text-tracks-if-necessary":94,"./remove-cues-from-track":99,"./transmuxer-worker":100,"webworkify":103}],103:[function(require,module,exports){
+	},{"./add-text-track-data":58,"./codec-utils":60,"./create-text-tracks-if-necessary":61,"./remove-cues-from-track":66,"./transmuxer-worker":67,"webworkify":70}],70:[function(require,module,exports){
 	var bundleFn = arguments[3];
 	var sources = arguments[4];
 	var cache = arguments[5];
@@ -47494,7 +46623,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    ));
 	};
 	
-	},{}],104:[function(require,module,exports){
+	},{}],71:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file videojs-contrib-hls.js
@@ -47623,6 +46752,45 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	/**
+	 * Updates the selectedIndex of the QualityLevelList when a mediachange happens in hls.
+	 *
+	 * @param {QualityLevelList} qualityLevels The QualityLevelList to update.
+	 * @param {PlaylistLoader} playlistLoader PlaylistLoader containing the new media info.
+	 * @function handleHlsMediaChange
+	 */
+	var handleHlsMediaChange = function handleHlsMediaChange(qualityLevels, playlistLoader) {
+	  var newPlaylist = playlistLoader.media();
+	  var selectedIndex = -1;
+	
+	  for (var i = 0; i < qualityLevels.length; i++) {
+	    if (qualityLevels[i].id === newPlaylist.uri) {
+	      selectedIndex = i;
+	      break;
+	    }
+	  }
+	
+	  qualityLevels.selectedIndex_ = selectedIndex;
+	  qualityLevels.trigger({
+	    selectedIndex: selectedIndex,
+	    type: 'change'
+	  });
+	};
+	
+	/**
+	 * Adds quality levels to list once playlist metadata is available
+	 *
+	 * @param {QualityLevelList} qualityLevels The QualityLevelList to attach events to.
+	 * @param {Object} hls Hls object to listen to for media events.
+	 * @function handleHlsLoadedMetadata
+	 */
+	var handleHlsLoadedMetadata = function handleHlsLoadedMetadata(qualityLevels, hls) {
+	  hls.representations().forEach(function (rep) {
+	    qualityLevels.addQualityLevel(rep);
+	  });
+	  handleHlsMediaChange(qualityLevels, hls.playlists);
+	};
+	
+	/**
 	 * Chooses the appropriate media playlist based on the current
 	 * bandwidth estimate and the player size.
 	 *
@@ -47633,7 +46801,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var effectiveBitrate = undefined;
 	  var sortedPlaylists = this.playlists.master.playlists.slice();
 	  var bandwidthPlaylists = [];
-	  var now = +new Date();
 	  var i = undefined;
 	  var variant = undefined;
 	  var bandwidthBestVariant = undefined;
@@ -47647,12 +46814,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  // filter out any playlists that have been excluded due to
 	  // incompatible configurations or playback errors
-	  sortedPlaylists = sortedPlaylists.filter(function (localVariant) {
-	    if (typeof localVariant.excludeUntil !== 'undefined') {
-	      return now >= localVariant.excludeUntil;
-	    }
-	    return true;
-	  });
+	  sortedPlaylists = sortedPlaylists.filter(_playlist2['default'].isEnabled);
 	
 	  // filter out any variant that has greater effective bitrate
 	  // than the current estimated bandwidth
@@ -47745,7 +46907,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var video = _globalDocument2['default'].createElement('video');
 	
 	  // native HLS is definitely not supported if HTML5 video isn't
-	  if (!_videoJs2['default'].getComponent('Html5').isSupported()) {
+	  if (!_videoJs2['default'].getTech('Html5').isSupported()) {
 	    return false;
 	  }
 	
@@ -47832,6 +46994,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	          }
 	        });
 	      }
+	    }
+	
+	    // overriding native HLS only works if audio tracks have been emulated
+	    // error early if we're misconfigured:
+	    if (_videoJs2['default'].options.hls.overrideNative && (tech.featuresNativeVideoTracks || tech.featuresNativeAudioTracks)) {
+	      throw new Error('Overriding native HLS requires emulated tracks. ' + 'See https://git.io/vMpjB');
 	    }
 	
 	    this.tech_ = tech;
@@ -47926,6 +47094,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.options_.url = this.source_.src;
 	      this.options_.tech = this.tech_;
 	      this.options_.externHls = Hls;
+	
 	      this.masterPlaylistController_ = new _masterPlaylistController.MasterPlaylistController(this.options_);
 	      this.playbackWatcher_ = new _playbackWatcher2['default'](_videoJs2['default'].mergeOptions(this.options_, {
 	        seekable: function seekable() {
@@ -48070,6 +47239,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.ignoreNextSeekingEvent_ = true;
 	      });
 	
+	      this.tech_.ready(function () {
+	        return _this3.setupQualityLevels_();
+	      });
+	
 	      // do nothing if the tech has been disposed already
 	      // this can occur if someone sets the src in player.ready(), for instance
 	      if (!this.tech_.el()) {
@@ -48077,6 +47250,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	
 	      this.tech_.src(_videoJs2['default'].URL.createObjectURL(this.masterPlaylistController_.mediaSource));
+	    }
+	
+	    /**
+	     * Initializes the quality levels and sets listeners to update them.
+	     *
+	     * @method setupQualityLevels_
+	     * @private
+	     */
+	  }, {
+	    key: 'setupQualityLevels_',
+	    value: function setupQualityLevels_() {
+	      var _this4 = this;
+	
+	      var player = _videoJs2['default'].players[this.tech_.options_.playerId];
+	
+	      if (player && player.qualityLevels) {
+	        this.qualityLevels_ = player.qualityLevels();
+	
+	        this.masterPlaylistController_.on('selectedinitialmedia', function () {
+	          handleHlsLoadedMetadata(_this4.qualityLevels_, _this4);
+	        });
+	
+	        this.playlists.on('mediachange', function () {
+	          handleHlsMediaChange(_this4.qualityLevels_, _this4.playlists);
+	        });
+	      }
 	    }
 	
 	    /**
@@ -48137,6 +47336,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	      if (this.masterPlaylistController_) {
 	        this.masterPlaylistController_.dispose();
+	      }
+	      if (this.qualityLevels_) {
+	        this.qualityLevels_.dispose();
 	      }
 	      this.tech_.audioTracks().removeEventListener('change', this.audioTrackChange_);
 	      _get(Object.getPrototypeOf(HlsHandler.prototype), 'dispose', this).call(this);
@@ -48248,6 +47450,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	HlsSourceHandler.canPlayType = function (type) {
+	  // No support for IE 10 or below
+	  if (_videoJs2['default'].browser.IE_VERSION && _videoJs2['default'].browser.IE_VERSION <= 10) {
+	    return false;
+	  }
+	
 	  var mpegurlRE = /^(audio|video|application)\/(x-|vnd\.apple\.)?mpegurl/i;
 	
 	  // favor native HLS support if it's available
@@ -48262,21 +47469,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	  _videoJs2['default'].URL = _videojsContribMediaSources.URL;
 	}
 	
+	var flashTech = _videoJs2['default'].getTech('Flash');
+	
 	// register source handlers with the appropriate techs
 	if (_videojsContribMediaSources.MediaSource.supportsNativeMediaSources()) {
-	  _videoJs2['default'].getComponent('Html5').registerSourceHandler(HlsSourceHandler('html5'), 0);
+	  _videoJs2['default'].getTech('Html5').registerSourceHandler(HlsSourceHandler('html5'), 0);
 	}
-	if (_globalWindow2['default'].Uint8Array) {
-	  _videoJs2['default'].getComponent('Flash').registerSourceHandler(HlsSourceHandler('flash'));
+	if (_globalWindow2['default'].Uint8Array && flashTech) {
+	  flashTech.registerSourceHandler(HlsSourceHandler('flash'));
 	}
 	
 	_videoJs2['default'].HlsHandler = HlsHandler;
 	_videoJs2['default'].HlsSourceHandler = HlsSourceHandler;
 	_videoJs2['default'].Hls = Hls;
+	if (!_videoJs2['default'].use) {
+	  _videoJs2['default'].registerComponent('Hls', Hls);
+	}
 	_videoJs2['default'].m3u8 = _m3u8Parser2['default'];
-	_videoJs2['default'].registerComponent('Hls', Hls);
 	_videoJs2['default'].options.hls = _videoJs2['default'].options.hls || {};
-	_videoJs2['default'].plugin('reloadSourceOnError', _reloadSourceOnError2['default']);
+	
+	if (_videoJs2['default'].registerPlugin) {
+	  _videoJs2['default'].registerPlugin('reloadSourceOnError', _reloadSourceOnError2['default']);
+	} else {
+	  _videoJs2['default'].plugin('reloadSourceOnError', _reloadSourceOnError2['default']);
+	}
 	
 	module.exports = {
 	  Hls: Hls,
@@ -48284,7 +47500,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  HlsSourceHandler: HlsSourceHandler
 	};
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./bin-utils":2,"./config":3,"./master-playlist-controller":4,"./playback-watcher":5,"./playlist":7,"./playlist-loader":6,"./reload-source-on-error":9,"./rendition-mixin":10,"./xhr":16,"aes-decrypter":20,"global/document":26,"global/window":27,"m3u8-parser":64,"videojs-contrib-media-sources":101}]},{},[104])(104)
+	},{"./bin-utils":2,"./config":3,"./master-playlist-controller":5,"./playback-watcher":6,"./playlist":8,"./playlist-loader":7,"./reload-source-on-error":10,"./rendition-mixin":11,"./xhr":17,"aes-decrypter":21,"global/document":27,"global/window":28,"m3u8-parser":29,"videojs-contrib-media-sources":68}]},{},[71])(71)
 	});
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
