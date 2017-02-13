@@ -18,7 +18,7 @@
     "gulp-eslint": "3.0.1",
     "gulp-sass": "2.3.2",
     "gulp-util": "3.0.7",
-    "hls.js": "0.6.17",
+    "hls.js": "0.6.21",
     "run-sequence": "1.2.1",
     "three": "0.82.1",
     "video.js": "5.16.0",
