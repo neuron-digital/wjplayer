@@ -30393,7 +30393,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var require;var require;/* WEBPACK VAR INJECTION */(function(global) {/**
 	 * videojs-contrib-hls
-	 * @version 5.1.1
+	 * @version 5.2.1
 	 * @copyright 2017 Brightcove, Inc
 	 * @license Apache-2.0
 	 */
@@ -30988,7 +30988,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (event.data.source === 'main') {
 	        _this.mainSegmentLoader_.handleDecrypted_(event.data);
 	      } else if (event.data.source === 'audio') {
-	        _this.audiosegmentloader_.handleDecrypted_(event.data);
+	        _this.audioSegmentLoader_.handleDecrypted_(event.data);
 	      }
 	    };
 	
@@ -31874,7 +31874,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	exports.MasterPlaylistController = MasterPlaylistController;
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./ad-cue-tags":1,"./decrypter-worker":4,"./playlist-loader":7,"./ranges":9,"./segment-loader":13,"./sync-controller":16,"videojs-contrib-media-sources/es5/codec-utils":60,"webworkify":70}],6:[function(require,module,exports){
+	},{"./ad-cue-tags":1,"./decrypter-worker":4,"./playlist-loader":7,"./ranges":9,"./segment-loader":13,"./sync-controller":16,"videojs-contrib-media-sources/es5/codec-utils":44,"webworkify":77}],6:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file playback-watcher.js
@@ -33851,7 +33851,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	exports['default'] = resolveUrl;
 	module.exports = exports['default'];
-	},{"global/window":28,"url-toolkit":57}],13:[function(require,module,exports){
+	},{"global/window":28,"url-toolkit":41}],13:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file segment-loader.js
@@ -35791,7 +35791,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	exports['default'] = SyncController;
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./playlist":8,"mux.js/lib/mp4/probe":51,"mux.js/lib/tools/ts-inspector.js":53}],17:[function(require,module,exports){
+	},{"./playlist":8,"mux.js/lib/mp4/probe":38,"mux.js/lib/tools/ts-inspector.js":39}],17:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file xhr.js
@@ -37644,151 +37644,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Copyright (c) 2016 Brightcove
 	 * All rights reserved.
 	 *
-	 * A stream-based aac to mp4 converter. This utility can be used to
-	 * deliver mp4s to a SourceBuffer on platforms that support native
-	 * Media Source Extensions.
-	 */
-	'use strict';
-	var Stream = require('../utils/stream.js');
-	
-	// Constants
-	var AacStream;
-	
-	/**
-	 * Splits an incoming stream of binary data into ADTS and ID3 Frames.
-	 */
-	
-	AacStream = function() {
-	  var
-	    everything = new Uint8Array(),
-	    timeStamp = 0;
-	
-	  AacStream.prototype.init.call(this);
-	
-	  this.setTimestamp = function(timestamp) {
-	    timeStamp = timestamp;
-	  };
-	
-	  this.parseId3TagSize = function(header, byteIndex) {
-	    var
-	      returnSize = (header[byteIndex + 6] << 21) |
-	                   (header[byteIndex + 7] << 14) |
-	                   (header[byteIndex + 8] << 7) |
-	                   (header[byteIndex + 9]),
-	      flags = header[byteIndex + 5],
-	      footerPresent = (flags & 16) >> 4;
-	
-	    if (footerPresent) {
-	      return returnSize + 20;
-	    }
-	    return returnSize + 10;
-	  };
-	
-	  this.parseAdtsSize = function(header, byteIndex) {
-	    var
-	      lowThree = (header[byteIndex + 5] & 0xE0) >> 5,
-	      middle = header[byteIndex + 4] << 3,
-	      highTwo = header[byteIndex + 3] & 0x3 << 11;
-	
-	    return (highTwo | middle) | lowThree;
-	  };
-	
-	  this.push = function(bytes) {
-	    var
-	      frameSize = 0,
-	      byteIndex = 0,
-	      bytesLeft,
-	      chunk,
-	      packet,
-	      tempLength;
-	
-	    // If there are bytes remaining from the last segment, prepend them to the
-	    // bytes that were pushed in
-	    if (everything.length) {
-	      tempLength = everything.length;
-	      everything = new Uint8Array(bytes.byteLength + tempLength);
-	      everything.set(everything.subarray(0, tempLength));
-	      everything.set(bytes, tempLength);
-	    } else {
-	      everything = bytes;
-	    }
-	
-	    while (everything.length - byteIndex >= 3) {
-	      if ((everything[byteIndex] === 'I'.charCodeAt(0)) &&
-	          (everything[byteIndex + 1] === 'D'.charCodeAt(0)) &&
-	          (everything[byteIndex + 2] === '3'.charCodeAt(0))) {
-	
-	        // Exit early because we don't have enough to parse
-	        // the ID3 tag header
-	        if (everything.length - byteIndex < 10) {
-	          break;
-	        }
-	
-	        // check framesize
-	        frameSize = this.parseId3TagSize(everything, byteIndex);
-	
-	        // Exit early if we don't have enough in the buffer
-	        // to emit a full packet
-	        if (frameSize > everything.length) {
-	          break;
-	        }
-	        chunk = {
-	          type: 'timed-metadata',
-	          data: everything.subarray(byteIndex, byteIndex + frameSize)
-	        };
-	        this.trigger('data', chunk);
-	        byteIndex += frameSize;
-	        continue;
-	      } else if ((everything[byteIndex] & 0xff === 0xff) &&
-	                 ((everything[byteIndex + 1] & 0xf0) === 0xf0)) {
-	
-	        // Exit early because we don't have enough to parse
-	        // the ADTS frame header
-	        if (everything.length - byteIndex < 7) {
-	          break;
-	        }
-	
-	        frameSize = this.parseAdtsSize(everything, byteIndex);
-	
-	        // Exit early if we don't have enough in the buffer
-	        // to emit a full packet
-	        if (frameSize > everything.length) {
-	          break;
-	        }
-	
-	        packet = {
-	          type: 'audio',
-	          data: everything.subarray(byteIndex, byteIndex + frameSize),
-	          pts: timeStamp,
-	          dts: timeStamp
-	        };
-	        this.trigger('data', packet);
-	        byteIndex += frameSize;
-	        continue;
-	      }
-	      byteIndex++;
-	    }
-	    bytesLeft = everything.length - byteIndex;
-	
-	    if (bytesLeft > 0) {
-	      everything = everything.subarray(byteIndex);
-	    } else {
-	      everything = new Uint8Array();
-	    }
-	  };
-	};
-	
-	AacStream.prototype = new Stream();
-	
-	module.exports = AacStream;
-	
-	},{"../utils/stream.js":56}],35:[function(require,module,exports){
-	/**
-	 * mux.js
-	 *
-	 * Copyright (c) 2016 Brightcove
-	 * All rights reserved.
-	 *
 	 * Utilities to detect basic properties and metadata about Aac data.
 	 */
 	'use strict';
@@ -37945,7 +37800,3981 @@ return /******/ (function(modules) { // webpackBootstrap
 	  parseAacTimestamp: parseAacTimestamp
 	};
 	
-	},{}],36:[function(require,module,exports){
+	},{}],35:[function(require,module,exports){
+	/**
+	 * mux.js
+	 *
+	 * Copyright (c) 2016 Brightcove
+	 * All rights reserved.
+	 *
+	 * Utilities to detect basic properties and metadata about TS Segments.
+	 */
+	'use strict';
+	
+	var StreamTypes = require('./stream-types.js');
+	
+	var parsePid = function(packet) {
+	  var pid = packet[1] & 0x1f;
+	  pid <<= 8;
+	  pid |= packet[2];
+	  return pid;
+	};
+	
+	var parsePayloadUnitStartIndicator = function(packet) {
+	  return !!(packet[1] & 0x40);
+	};
+	
+	var parseAdaptionField = function(packet) {
+	  var offset = 0;
+	  // if an adaption field is present, its length is specified by the
+	  // fifth byte of the TS packet header. The adaptation field is
+	  // used to add stuffing to PES packets that don't fill a complete
+	  // TS packet, and to specify some forms of timing and control data
+	  // that we do not currently use.
+	  if (((packet[3] & 0x30) >>> 4) > 0x01) {
+	    offset += packet[4] + 1;
+	  }
+	  return offset;
+	};
+	
+	var parseType = function(packet, pmtPid) {
+	  var pid = parsePid(packet);
+	  if (pid === 0) {
+	    return 'pat';
+	  } else if (pid === pmtPid) {
+	    return 'pmt';
+	  } else if (pmtPid) {
+	    return 'pes';
+	  }
+	  return null;
+	};
+	
+	var parsePat = function(packet) {
+	  var pusi = parsePayloadUnitStartIndicator(packet);
+	  var offset = 4 + parseAdaptionField(packet);
+	
+	  if (pusi) {
+	    offset += packet[offset] + 1;
+	  }
+	
+	  return (packet[offset + 10] & 0x1f) << 8 | packet[offset + 11];
+	};
+	
+	var parsePmt = function(packet) {
+	  var programMapTable = {};
+	  var pusi = parsePayloadUnitStartIndicator(packet);
+	  var payloadOffset = 4 + parseAdaptionField(packet);
+	
+	  if (pusi) {
+	    payloadOffset += packet[payloadOffset] + 1;
+	  }
+	
+	  // PMTs can be sent ahead of the time when they should actually
+	  // take effect. We don't believe this should ever be the case
+	  // for HLS but we'll ignore "forward" PMT declarations if we see
+	  // them. Future PMT declarations have the current_next_indicator
+	  // set to zero.
+	  if (!(packet[payloadOffset + 5] & 0x01)) {
+	    return;
+	  }
+	
+	  var sectionLength, tableEnd, programInfoLength;
+	  // the mapping table ends at the end of the current section
+	  sectionLength = (packet[payloadOffset + 1] & 0x0f) << 8 | packet[payloadOffset + 2];
+	  tableEnd = 3 + sectionLength - 4;
+	
+	  // to determine where the table is, we have to figure out how
+	  // long the program info descriptors are
+	  programInfoLength = (packet[payloadOffset + 10] & 0x0f) << 8 | packet[payloadOffset + 11];
+	
+	  // advance the offset to the first entry in the mapping table
+	  var offset = 12 + programInfoLength;
+	  while (offset < tableEnd) {
+	    var i = payloadOffset + offset;
+	    // add an entry that maps the elementary_pid to the stream_type
+	    programMapTable[(packet[i + 1] & 0x1F) << 8 | packet[i + 2]] = packet[i];
+	
+	    // move to the next table entry
+	    // skip past the elementary stream descriptors, if present
+	    offset += ((packet[i + 3] & 0x0F) << 8 | packet[i + 4]) + 5;
+	  }
+	  return programMapTable;
+	};
+	
+	var parsePesType = function(packet, programMapTable) {
+	  var pid = parsePid(packet);
+	  var type = programMapTable[pid];
+	  switch (type) {
+	    case StreamTypes.H264_STREAM_TYPE:
+	      return 'video';
+	    case StreamTypes.ADTS_STREAM_TYPE:
+	      return 'audio';
+	    case StreamTypes.METADATA_STREAM_TYPE:
+	      return 'timed-metadata';
+	    default:
+	      return null;
+	  }
+	};
+	
+	var parsePesTime = function(packet) {
+	  var pusi = parsePayloadUnitStartIndicator(packet);
+	  if (!pusi) {
+	    return null;
+	  }
+	
+	  var offset = 4 + parseAdaptionField(packet);
+	
+	  var pes = {};
+	  var ptsDtsFlags;
+	
+	  // PES packets may be annotated with a PTS value, or a PTS value
+	  // and a DTS value. Determine what combination of values is
+	  // available to work with.
+	  ptsDtsFlags = packet[offset + 7];
+	
+	  // PTS and DTS are normally stored as a 33-bit number.  Javascript
+	  // performs all bitwise operations on 32-bit integers but javascript
+	  // supports a much greater range (52-bits) of integer using standard
+	  // mathematical operations.
+	  // We construct a 31-bit value using bitwise operators over the 31
+	  // most significant bits and then multiply by 4 (equal to a left-shift
+	  // of 2) before we add the final 2 least significant bits of the
+	  // timestamp (equal to an OR.)
+	  if (ptsDtsFlags & 0xC0) {
+	    // the PTS and DTS are not written out directly. For information
+	    // on how they are encoded, see
+	    // http://dvd.sourceforge.net/dvdinfo/pes-hdr.html
+	    pes.pts = (packet[offset + 9] & 0x0E) << 27 |
+	      (packet[offset + 10] & 0xFF) << 20 |
+	      (packet[offset + 11] & 0xFE) << 12 |
+	      (packet[offset + 12] & 0xFF) <<  5 |
+	      (packet[offset + 13] & 0xFE) >>>  3;
+	    pes.pts *= 4; // Left shift by 2
+	    pes.pts += (packet[offset + 13] & 0x06) >>> 1; // OR by the two LSBs
+	    pes.dts = pes.pts;
+	    if (ptsDtsFlags & 0x40) {
+	      pes.dts = (packet[offset + 14] & 0x0E) << 27 |
+	        (packet[offset + 15] & 0xFF) << 20 |
+	        (packet[offset + 16] & 0xFE) << 12 |
+	        (packet[offset + 17] & 0xFF) << 5 |
+	        (packet[offset + 18] & 0xFE) >>> 3;
+	      pes.dts *= 4; // Left shift by 2
+	      pes.dts += (packet[offset + 18] & 0x06) >>> 1; // OR by the two LSBs
+	    }
+	  }
+	  return pes;
+	};
+	
+	var parseNalUnitType = function(type) {
+	  switch (type) {
+	    case 0x05:
+	      return 'slice_layer_without_partitioning_rbsp_idr';
+	    case 0x06:
+	      return 'sei_rbsp';
+	    case 0x07:
+	      return 'seq_parameter_set_rbsp';
+	    case 0x08:
+	      return 'pic_parameter_set_rbsp';
+	    case 0x09:
+	      return 'access_unit_delimiter_rbsp';
+	    default:
+	      return null;
+	  }
+	};
+	
+	var videoPacketContainsKeyFrame = function(packet) {
+	  var offset = 4 + parseAdaptionField(packet);
+	  var frameBuffer = packet.subarray(offset);
+	  var frameI = 0;
+	  var frameSyncPoint = 0;
+	  var foundKeyFrame = false;
+	  var nalType;
+	
+	  // advance the sync point to a NAL start, if necessary
+	  for (; frameSyncPoint < frameBuffer.byteLength - 3; frameSyncPoint++) {
+	    if (frameBuffer[frameSyncPoint + 2] === 1) {
+	      // the sync point is properly aligned
+	      frameI = frameSyncPoint + 5;
+	      break;
+	    }
+	  }
+	
+	  while (frameI < frameBuffer.byteLength) {
+	    // look at the current byte to determine if we've hit the end of
+	    // a NAL unit boundary
+	    switch (frameBuffer[frameI]) {
+	    case 0:
+	      // skip past non-sync sequences
+	      if (frameBuffer[frameI - 1] !== 0) {
+	        frameI += 2;
+	        break;
+	      } else if (frameBuffer[frameI - 2] !== 0) {
+	        frameI++;
+	        break;
+	      }
+	
+	      if (frameSyncPoint + 3 !== frameI - 2) {
+	        nalType = parseNalUnitType(frameBuffer[frameSyncPoint + 3] & 0x1f);
+	        if (nalType === 'slice_layer_without_partitioning_rbsp_idr') {
+	          foundKeyFrame = true;
+	        }
+	      }
+	
+	      // drop trailing zeroes
+	      do {
+	        frameI++;
+	      } while (frameBuffer[frameI] !== 1 && frameI < frameBuffer.length);
+	      frameSyncPoint = frameI - 2;
+	      frameI += 3;
+	      break;
+	    case 1:
+	      // skip past non-sync sequences
+	      if (frameBuffer[frameI - 1] !== 0 ||
+	          frameBuffer[frameI - 2] !== 0) {
+	        frameI += 3;
+	        break;
+	      }
+	
+	      nalType = parseNalUnitType(frameBuffer[frameSyncPoint + 3] & 0x1f);
+	      if (nalType === 'slice_layer_without_partitioning_rbsp_idr') {
+	        foundKeyFrame = true;
+	      }
+	      frameSyncPoint = frameI - 2;
+	      frameI += 3;
+	      break;
+	    default:
+	      // the current byte isn't a one or zero, so it cannot be part
+	      // of a sync sequence
+	      frameI += 3;
+	      break;
+	    }
+	  }
+	  frameBuffer = frameBuffer.subarray(frameSyncPoint);
+	  frameI -= frameSyncPoint;
+	  frameSyncPoint = 0;
+	  // parse the final nal
+	  if (frameBuffer && frameBuffer.byteLength > 3) {
+	    nalType = parseNalUnitType(frameBuffer[frameSyncPoint + 3] & 0x1f);
+	    if (nalType === 'slice_layer_without_partitioning_rbsp_idr') {
+	      foundKeyFrame = true;
+	    }
+	  }
+	
+	  return foundKeyFrame;
+	};
+	
+	
+	module.exports = {
+	  parseType: parseType,
+	  parsePat: parsePat,
+	  parsePmt: parsePmt,
+	  parsePayloadUnitStartIndicator: parsePayloadUnitStartIndicator,
+	  parsePesType: parsePesType,
+	  parsePesTime: parsePesTime,
+	  videoPacketContainsKeyFrame: videoPacketContainsKeyFrame
+	};
+	
+	},{"./stream-types.js":36}],36:[function(require,module,exports){
+	'use strict';
+	
+	module.exports = {
+	  H264_STREAM_TYPE: 0x1B,
+	  ADTS_STREAM_TYPE: 0x0F,
+	  METADATA_STREAM_TYPE: 0x15
+	};
+	
+	},{}],37:[function(require,module,exports){
+	/**
+	 * mux.js
+	 *
+	 * Copyright (c) 2016 Brightcove
+	 * All rights reserved.
+	 *
+	 * Accepts program elementary stream (PES) data events and corrects
+	 * decode and presentation time stamps to account for a rollover
+	 * of the 33 bit value.
+	 */
+	
+	'use strict';
+	
+	var Stream = require('../utils/stream');
+	
+	var MAX_TS = 8589934592;
+	
+	var RO_THRESH = 4294967296;
+	
+	var handleRollover = function(value, reference) {
+	  var direction = 1;
+	
+	  if (value > reference) {
+	    // If the current timestamp value is greater than our reference timestamp and we detect a
+	    // timestamp rollover, this means the roll over is happening in the opposite direction.
+	    // Example scenario: Enter a long stream/video just after a rollover occurred. The reference
+	    // point will be set to a small number, e.g. 1. The user then seeks backwards over the
+	    // rollover point. In loading this segment, the timestamp values will be very large,
+	    // e.g. 2^33 - 1. Since this comes before the data we loaded previously, we want to adjust
+	    // the time stamp to be `value - 2^33`.
+	    direction = -1;
+	  }
+	
+	  // Note: A seek forwards or back that is greater than the RO_THRESH (2^32, ~13 hours) will
+	  // cause an incorrect adjustment.
+	  while (Math.abs(reference - value) > RO_THRESH) {
+	    value += (direction * MAX_TS);
+	  }
+	
+	  return value;
+	};
+	
+	var TimestampRolloverStream = function(type) {
+	  var lastDTS, referenceDTS;
+	
+	  TimestampRolloverStream.prototype.init.call(this);
+	
+	  this.type_ = type;
+	
+	  this.push = function(data) {
+	    if (data.type !== this.type_) {
+	      return;
+	    }
+	
+	    if (referenceDTS === undefined) {
+	      referenceDTS = data.dts;
+	    }
+	
+	    data.dts = handleRollover(data.dts, referenceDTS);
+	    data.pts = handleRollover(data.pts, referenceDTS);
+	
+	    lastDTS = data.dts;
+	
+	    this.trigger('data', data);
+	  };
+	
+	  this.flush = function() {
+	    referenceDTS = lastDTS;
+	    this.trigger('done');
+	  };
+	
+	};
+	
+	TimestampRolloverStream.prototype = new Stream();
+	
+	module.exports = {
+	  TimestampRolloverStream: TimestampRolloverStream,
+	  handleRollover: handleRollover
+	};
+	
+	},{"../utils/stream":40}],38:[function(require,module,exports){
+	/**
+	 * mux.js
+	 *
+	 * Copyright (c) 2015 Brightcove
+	 * All rights reserved.
+	 *
+	 * Utilities to detect basic properties and metadata about MP4s.
+	 */
+	'use strict';
+	
+	var findBox, parseType, timescale, startTime;
+	
+	// Find the data for a box specified by its path
+	findBox = function(data, path) {
+	  var results = [],
+	      i, size, type, end, subresults;
+	
+	  if (!path.length) {
+	    // short-circuit the search for empty paths
+	    return null;
+	  }
+	
+	  for (i = 0; i < data.byteLength;) {
+	    size  = data[i]     << 24;
+	    size |= data[i + 1] << 16;
+	    size |= data[i + 2] << 8;
+	    size |= data[i + 3];
+	
+	    type = parseType(data.subarray(i + 4, i + 8));
+	
+	    end = size > 1 ? i + size : data.byteLength;
+	
+	    if (type === path[0]) {
+	      if (path.length === 1) {
+	        // this is the end of the path and we've found the box we were
+	        // looking for
+	        results.push(data.subarray(i + 8, end));
+	      } else {
+	        // recursively search for the next box along the path
+	        subresults = findBox(data.subarray(i + 8, end), path.slice(1));
+	        if (subresults.length) {
+	          results = results.concat(subresults);
+	        }
+	      }
+	    }
+	    i = end;
+	  }
+	
+	  // we've finished searching all of data
+	  return results;
+	};
+	
+	/**
+	 * Returns the string representation of an ASCII encoded four byte buffer.
+	 * @param buffer {Uint8Array} a four-byte buffer to translate
+	 * @return {string} the corresponding string
+	 */
+	parseType = function(buffer) {
+	  var result = '';
+	  result += String.fromCharCode(buffer[0]);
+	  result += String.fromCharCode(buffer[1]);
+	  result += String.fromCharCode(buffer[2]);
+	  result += String.fromCharCode(buffer[3]);
+	  return result;
+	};
+	
+	/**
+	 * Parses an MP4 initialization segment and extracts the timescale
+	 * values for any declared tracks. Timescale values indicate the
+	 * number of clock ticks per second to assume for time-based values
+	 * elsewhere in the MP4.
+	 *
+	 * To determine the start time of an MP4, you need two pieces of
+	 * information: the timescale unit and the earliest base media decode
+	 * time. Multiple timescales can be specified within an MP4 but the
+	 * base media decode time is always expressed in the timescale from
+	 * the media header box for the track:
+	 * ```
+	 * moov > trak > mdia > mdhd.timescale
+	 * ```
+	 * @param init {Uint8Array} the bytes of the init segment
+	 * @return {object} a hash of track ids to timescale values or null if
+	 * the init segment is malformed.
+	 */
+	timescale = function(init) {
+	  var
+	    result = {},
+	    traks = findBox(init, ['moov', 'trak']);
+	
+	  // mdhd timescale
+	  return traks.reduce(function(result, trak) {
+	    var tkhd, version, index, id, mdhd;
+	
+	    tkhd = findBox(trak, ['tkhd'])[0];
+	    if (!tkhd) {
+	      return null;
+	    }
+	    version = tkhd[0];
+	    index = version === 0 ? 12 : 20;
+	    id = tkhd[index]     << 24 |
+	         tkhd[index + 1] << 16 |
+	         tkhd[index + 2] <<  8 |
+	         tkhd[index + 3];
+	
+	    mdhd = findBox(trak, ['mdia', 'mdhd'])[0];
+	    if (!mdhd) {
+	      return null;
+	    }
+	    version = mdhd[0];
+	    index = version === 0 ? 12 : 20;
+	    result[id] = mdhd[index]     << 24 |
+	                 mdhd[index + 1] << 16 |
+	                 mdhd[index + 2] <<  8 |
+	                 mdhd[index + 3];
+	    return result;
+	  }, result);
+	};
+	
+	/**
+	 * Determine the base media decode start time, in seconds, for an MP4
+	 * fragment. If multiple fragments are specified, the earliest time is
+	 * returned.
+	 *
+	 * The base media decode time can be parsed from track fragment
+	 * metadata:
+	 * ```
+	 * moof > traf > tfdt.baseMediaDecodeTime
+	 * ```
+	 * It requires the timescale value from the mdhd to interpret.
+	 *
+	 * @param timescale {object} a hash of track ids to timescale values.
+	 * @return {number} the earliest base media decode start time for the
+	 * fragment, in seconds
+	 */
+	startTime = function(timescale, fragment) {
+	  var trafs, baseTimes, result;
+	
+	  // we need info from two childrend of each track fragment box
+	  trafs = findBox(fragment, ['moof', 'traf']);
+	
+	  // determine the start times for each track
+	  baseTimes = [].concat.apply([], trafs.map(function(traf) {
+	    return findBox(traf, ['tfhd']).map(function(tfhd) {
+	      var id, scale, baseTime;
+	
+	      // get the track id from the tfhd
+	      id = tfhd[4] << 24 |
+	           tfhd[5] << 16 |
+	           tfhd[6] << 8 |
+	           tfhd[7];
+	      // assume a 90kHz clock if no timescale was specified
+	      scale = timescale[id] || 90e3;
+	
+	      // get the base media decode time from the tfdt
+	      baseTime = findBox(traf, ['tfdt']).map(function(tfdt) {
+	        var version, result;
+	
+	        version = tfdt[0];
+	        result = tfdt[4] << 24 |
+	                 tfdt[5] << 16 |
+	                 tfdt[6] <<  8 |
+	                 tfdt[7];
+	        if (version ===  1) {
+	          result *= Math.pow(2, 32);
+	          result += tfdt[8]  << 24 |
+	                    tfdt[9]  << 16 |
+	                    tfdt[10] <<  8 |
+	                    tfdt[11];
+	        }
+	        return result;
+	      })[0];
+	      baseTime = baseTime || Infinity;
+	
+	      // convert base time to seconds
+	      return baseTime / scale;
+	    });
+	  }));
+	
+	  // return the minimum
+	  result = Math.min.apply(null, baseTimes);
+	  return isFinite(result) ? result : 0;
+	};
+	
+	module.exports = {
+	  parseType: parseType,
+	  timescale: timescale,
+	  startTime: startTime
+	};
+	
+	},{}],39:[function(require,module,exports){
+	/**
+	 * mux.js
+	 *
+	 * Copyright (c) 2016 Brightcove
+	 * All rights reserved.
+	 *
+	 * Parse mpeg2 transport stream packets to extract basic timing information
+	 */
+	'use strict';
+	
+	var StreamTypes = require('../m2ts/stream-types.js');
+	var handleRollover = require('../m2ts/timestamp-rollover-stream.js').handleRollover;
+	var probe = {};
+	probe.ts = require('../m2ts/probe.js');
+	probe.aac = require('../aac/probe.js');
+	
+	
+	var
+	  PES_TIMESCALE = 90000,
+	  MP2T_PACKET_LENGTH = 188, // bytes
+	  SYNC_BYTE = 0x47;
+	
+	var isLikelyAacData = function(data) {
+	  if ((data[0] === 'I'.charCodeAt(0)) &&
+	      (data[1] === 'D'.charCodeAt(0)) &&
+	      (data[2] === '3'.charCodeAt(0))) {
+	    return true;
+	  }
+	  return false;
+	};
+	
+	/**
+	 * walks through segment data looking for pat and pmt packets to parse out
+	 * program map table information
+	 */
+	var parsePsi_ = function(bytes, pmt) {
+	  var
+	    startIndex = 0,
+	    endIndex = MP2T_PACKET_LENGTH,
+	    packet, type;
+	
+	  while (endIndex < bytes.byteLength) {
+	    // Look for a pair of start and end sync bytes in the data..
+	    if (bytes[startIndex] === SYNC_BYTE && bytes[endIndex] === SYNC_BYTE) {
+	      // We found a packet
+	      packet = bytes.subarray(startIndex, endIndex);
+	      type = probe.ts.parseType(packet, pmt.pid);
+	
+	      switch (type) {
+	        case 'pat':
+	          if (!pmt.pid) {
+	            pmt.pid = probe.ts.parsePat(packet);
+	          }
+	          break;
+	        case 'pmt':
+	          if (!pmt.table) {
+	            pmt.table = probe.ts.parsePmt(packet);
+	          }
+	          break;
+	        default:
+	          break;
+	      }
+	
+	      // Found the pat and pmt, we can stop walking the segment
+	      if (pmt.pid && pmt.table) {
+	        return;
+	      }
+	
+	      startIndex += MP2T_PACKET_LENGTH;
+	      endIndex += MP2T_PACKET_LENGTH;
+	      continue;
+	    }
+	
+	    // If we get here, we have somehow become de-synchronized and we need to step
+	    // forward one byte at a time until we find a pair of sync bytes that denote
+	    // a packet
+	    startIndex++;
+	    endIndex++;
+	  }
+	};
+	
+	/**
+	 * walks through the segment data from the start and end to get timing information
+	 * for the first and last audio pes packets
+	 */
+	var parseAudioPes_ = function(bytes, pmt, result) {
+	  var
+	    startIndex = 0,
+	    endIndex = MP2T_PACKET_LENGTH,
+	    packet, type, pesType, pusi, parsed;
+	
+	  var endLoop = false;
+	
+	  // Start walking from start of segment to get first audio packet
+	  while (endIndex < bytes.byteLength) {
+	    // Look for a pair of start and end sync bytes in the data..
+	    if (bytes[startIndex] === SYNC_BYTE && bytes[endIndex] === SYNC_BYTE) {
+	      // We found a packet
+	      packet = bytes.subarray(startIndex, endIndex);
+	      type = probe.ts.parseType(packet, pmt.pid);
+	
+	      switch (type) {
+	        case 'pes':
+	          pesType = probe.ts.parsePesType(packet, pmt.table);
+	          pusi = probe.ts.parsePayloadUnitStartIndicator(packet);
+	          if (pesType === 'audio' && pusi) {
+	            parsed = probe.ts.parsePesTime(packet);
+	            parsed.type = 'audio';
+	            result.audio.push(parsed);
+	            endLoop = true;
+	          }
+	          break;
+	        default:
+	          break;
+	      }
+	
+	      if (endLoop) {
+	        break;
+	      }
+	
+	      startIndex += MP2T_PACKET_LENGTH;
+	      endIndex += MP2T_PACKET_LENGTH;
+	      continue;
+	    }
+	
+	    // If we get here, we have somehow become de-synchronized and we need to step
+	    // forward one byte at a time until we find a pair of sync bytes that denote
+	    // a packet
+	    startIndex++;
+	    endIndex++;
+	  }
+	
+	  // Start walking from end of segment to get last audio packet
+	  endIndex = bytes.byteLength;
+	  startIndex = endIndex - MP2T_PACKET_LENGTH;
+	  endLoop = false;
+	  while (startIndex >= 0) {
+	    // Look for a pair of start and end sync bytes in the data..
+	    if (bytes[startIndex] === SYNC_BYTE && bytes[endIndex] === SYNC_BYTE) {
+	      // We found a packet
+	      packet = bytes.subarray(startIndex, endIndex);
+	      type = probe.ts.parseType(packet, pmt.pid);
+	
+	      switch (type) {
+	        case 'pes':
+	          pesType = probe.ts.parsePesType(packet, pmt.table);
+	          pusi = probe.ts.parsePayloadUnitStartIndicator(packet);
+	          if (pesType === 'audio' && pusi) {
+	            parsed = probe.ts.parsePesTime(packet);
+	            parsed.type = 'audio';
+	            result.audio.push(parsed);
+	            endLoop = true;
+	          }
+	          break;
+	        default:
+	          break;
+	      }
+	
+	      if (endLoop) {
+	        break;
+	      }
+	
+	      startIndex -= MP2T_PACKET_LENGTH;
+	      endIndex -= MP2T_PACKET_LENGTH;
+	      continue;
+	    }
+	
+	    // If we get here, we have somehow become de-synchronized and we need to step
+	    // forward one byte at a time until we find a pair of sync bytes that denote
+	    // a packet
+	    startIndex--;
+	    endIndex--;
+	  }
+	};
+	
+	/**
+	 * walks through the segment data from the start and end to get timing information
+	 * for the first and last video pes packets as well as timing information for the first
+	 * key frame.
+	 */
+	var parseVideoPes_ = function(bytes, pmt, result) {
+	  var
+	    startIndex = 0,
+	    endIndex = MP2T_PACKET_LENGTH,
+	    packet, type, pesType, pusi, parsed, frame, i, pes;
+	
+	  var endLoop = false;
+	
+	  var currentFrame = {
+	    data: [],
+	    size: 0
+	  };
+	
+	  // Start walking from start of segment to get first video packet
+	  while (endIndex < bytes.byteLength) {
+	    // Look for a pair of start and end sync bytes in the data..
+	    if (bytes[startIndex] === SYNC_BYTE && bytes[endIndex] === SYNC_BYTE) {
+	      // We found a packet
+	      packet = bytes.subarray(startIndex, endIndex);
+	      type = probe.ts.parseType(packet, pmt.pid);
+	
+	      switch (type) {
+	        case 'pes':
+	          pesType = probe.ts.parsePesType(packet, pmt.table);
+	          pusi = probe.ts.parsePayloadUnitStartIndicator(packet);
+	          if (pesType === 'video') {
+	            if (pusi && !endLoop) {
+	              parsed = probe.ts.parsePesTime(packet);
+	              parsed.type = 'video';
+	              result.video.push(parsed);
+	              endLoop = true;
+	            }
+	            if (!result.firstKeyFrame) {
+	              if (pusi) {
+	                if (currentFrame.size !== 0) {
+	                  frame = new Uint8Array(currentFrame.size);
+	                  i = 0;
+	                  while (currentFrame.data.length) {
+	                    pes = currentFrame.data.shift();
+	                    frame.set(pes, i);
+	                    i += pes.byteLength;
+	                  }
+	                  if (probe.ts.videoPacketContainsKeyFrame(frame)) {
+	                    result.firstKeyFrame = probe.ts.parsePesTime(frame);
+	                    result.firstKeyFrame.type = 'video';
+	                  }
+	                  currentFrame.size = 0;
+	                }
+	              }
+	              currentFrame.data.push(packet);
+	              currentFrame.size += packet.byteLength;
+	            }
+	          }
+	          break;
+	        default:
+	          break;
+	      }
+	
+	      if (endLoop && result.firstKeyFrame) {
+	        break;
+	      }
+	
+	      startIndex += MP2T_PACKET_LENGTH;
+	      endIndex += MP2T_PACKET_LENGTH;
+	      continue;
+	    }
+	
+	    // If we get here, we have somehow become de-synchronized and we need to step
+	    // forward one byte at a time until we find a pair of sync bytes that denote
+	    // a packet
+	    startIndex++;
+	    endIndex++;
+	  }
+	
+	  // Start walking from end of segment to get last video packet
+	  endIndex = bytes.byteLength;
+	  startIndex = endIndex - MP2T_PACKET_LENGTH;
+	  endLoop = false;
+	  while (startIndex >= 0) {
+	    // Look for a pair of start and end sync bytes in the data..
+	    if (bytes[startIndex] === SYNC_BYTE && bytes[endIndex] === SYNC_BYTE) {
+	      // We found a packet
+	      packet = bytes.subarray(startIndex, endIndex);
+	      type = probe.ts.parseType(packet, pmt.pid);
+	
+	      switch (type) {
+	        case 'pes':
+	          pesType = probe.ts.parsePesType(packet, pmt.table);
+	          pusi = probe.ts.parsePayloadUnitStartIndicator(packet);
+	          if (pesType === 'video' && pusi) {
+	              parsed = probe.ts.parsePesTime(packet);
+	              parsed.type = 'video';
+	              result.video.push(parsed);
+	            endLoop = true;
+	          }
+	          break;
+	        default:
+	          break;
+	      }
+	
+	      if (endLoop) {
+	        break;
+	      }
+	
+	      startIndex -= MP2T_PACKET_LENGTH;
+	      endIndex -= MP2T_PACKET_LENGTH;
+	      continue;
+	    }
+	
+	    // If we get here, we have somehow become de-synchronized and we need to step
+	    // forward one byte at a time until we find a pair of sync bytes that denote
+	    // a packet
+	    startIndex--;
+	    endIndex--;
+	  }
+	};
+	
+	/**
+	 * Adjusts the timestamp information for the segment to account for
+	 * rollover and convert to seconds based on pes packet timescale (90khz clock)
+	 */
+	var adjustTimestamp_ = function(segmentInfo, baseTimestamp) {
+	  if (segmentInfo.audio && segmentInfo.audio.length) {
+	    var audioBaseTimestamp = baseTimestamp;
+	    if (typeof audioBaseTimestamp === 'undefined') {
+	      audioBaseTimestamp = segmentInfo.audio[0].dts;
+	    }
+	    segmentInfo.audio.forEach(function(info) {
+	      info.dts = handleRollover(info.dts, audioBaseTimestamp);
+	      info.pts = handleRollover(info.pts, audioBaseTimestamp);
+	      // time in seconds
+	      info.dtsTime = info.dts / PES_TIMESCALE;
+	      info.ptsTime = info.pts / PES_TIMESCALE;
+	    });
+	  }
+	
+	  if (segmentInfo.video && segmentInfo.video.length) {
+	    var videoBaseTimestamp = baseTimestamp;
+	    if (typeof videoBaseTimestamp === 'undefined') {
+	      videoBaseTimestamp = segmentInfo.video[0].dts;
+	    }
+	    segmentInfo.video.forEach(function(info) {
+	      info.dts = handleRollover(info.dts, videoBaseTimestamp);
+	      info.pts = handleRollover(info.pts, videoBaseTimestamp);
+	      // time in seconds
+	      info.dtsTime = info.dts / PES_TIMESCALE;
+	      info.ptsTime = info.pts / PES_TIMESCALE;
+	    });
+	    if (segmentInfo.firstKeyFrame) {
+	      var frame = segmentInfo.firstKeyFrame;
+	      frame.dts = handleRollover(frame.dts, videoBaseTimestamp);
+	      frame.pts = handleRollover(frame.pts, videoBaseTimestamp);
+	      // time in seconds
+	      frame.dtsTime = frame.dts / PES_TIMESCALE;
+	      frame.ptsTime = frame.dts / PES_TIMESCALE;
+	    }
+	  }
+	};
+	
+	/**
+	 * inspects the aac data stream for start and end time information
+	 */
+	var inspectAac_ = function(bytes) {
+	  var
+	    endLoop = false,
+	    audioCount = 0,
+	    sampleRate = null,
+	    timestamp = null,
+	    frameSize = 0,
+	    byteIndex = 0,
+	    packet;
+	
+	  while (bytes.length - byteIndex >= 3) {
+	    var type = probe.aac.parseType(bytes, byteIndex);
+	    switch (type) {
+	      case 'timed-metadata':
+	        // Exit early because we don't have enough to parse
+	        // the ID3 tag header
+	        if (bytes.length - byteIndex < 10) {
+	          endLoop = true;
+	          break;
+	        }
+	
+	        frameSize = probe.aac.parseId3TagSize(bytes, byteIndex);
+	
+	        // Exit early if we don't have enough in the buffer
+	        // to emit a full packet
+	        if (frameSize > bytes.length) {
+	          endLoop = true;
+	          break;
+	        }
+	        if (timestamp === null) {
+	          packet = bytes.subarray(byteIndex, byteIndex + frameSize);
+	          timestamp = probe.aac.parseAacTimestamp(packet);
+	        }
+	        byteIndex += frameSize;
+	        break;
+	      case 'audio':
+	        // Exit early because we don't have enough to parse
+	        // the ADTS frame header
+	        if (bytes.length - byteIndex < 7) {
+	          endLoop = true;
+	          break;
+	        }
+	
+	        frameSize = probe.aac.parseAdtsSize(bytes, byteIndex);
+	
+	        // Exit early if we don't have enough in the buffer
+	        // to emit a full packet
+	        if (frameSize > bytes.length) {
+	          endLoop = true;
+	          break;
+	        }
+	        if (sampleRate === null) {
+	          packet = bytes.subarray(byteIndex, byteIndex + frameSize);
+	          sampleRate = probe.aac.parseSampleRate(packet);
+	        }
+	        audioCount++;
+	        byteIndex += frameSize;
+	        break;
+	      default:
+	        byteIndex++;
+	        break;
+	    }
+	    if (endLoop) {
+	      return null;
+	    }
+	  }
+	  if (sampleRate === null || timestamp === null) {
+	    return null;
+	  }
+	
+	  var audioTimescale = PES_TIMESCALE / sampleRate;
+	
+	  var result = {
+	    audio: [
+	      {
+	        type: 'audio',
+	        dts: timestamp,
+	        pts: timestamp
+	      },
+	      {
+	        type: 'audio',
+	        dts: timestamp + (audioCount * 1024 * audioTimescale),
+	        pts: timestamp + (audioCount * 1024 * audioTimescale)
+	      }
+	    ]
+	  };
+	
+	  return result;
+	};
+	
+	/**
+	 * inspects the transport stream segment data for start and end time information
+	 * of the audio and video tracks (when present) as well as the first key frame's
+	 * start time.
+	 */
+	var inspectTs_ = function(bytes) {
+	  var pmt = {
+	    pid: null,
+	    table: null
+	  };
+	
+	  var result = {};
+	
+	  parsePsi_(bytes, pmt);
+	
+	  for (var pid in pmt.table) {
+	    if (pmt.table.hasOwnProperty(pid)) {
+	      var type = pmt.table[pid];
+	      switch (type) {
+	        case StreamTypes.H264_STREAM_TYPE:
+	          result.video = [];
+	          parseVideoPes_(bytes, pmt, result);
+	          if (result.video.length === 0) {
+	            delete result.video;
+	          }
+	          break;
+	        case StreamTypes.ADTS_STREAM_TYPE:
+	          result.audio = [];
+	          parseAudioPes_(bytes, pmt, result);
+	          if (result.audio.length === 0) {
+	            delete result.audio;
+	          }
+	          break;
+	        default:
+	          break;
+	      }
+	    }
+	  }
+	  return result;
+	};
+	
+	/**
+	 * Inspects segment byte data and returns an object with start and end timing information
+	 *
+	 * @param {Uint8Array} bytes The segment byte data
+	 * @param {Number} baseTimestamp Relative reference timestamp used when adjusting frame
+	 *  timestamps for rollover. This value must be in 90khz clock.
+	 * @return {Object} Object containing start and end frame timing info of segment.
+	 */
+	var inspect = function(bytes, baseTimestamp) {
+	  var isAacData = isLikelyAacData(bytes);
+	
+	  var result;
+	
+	  if (isAacData) {
+	    result = inspectAac_(bytes);
+	  } else {
+	    result = inspectTs_(bytes);
+	  }
+	
+	  if (!result || (!result.audio && !result.video)) {
+	    return null;
+	  }
+	
+	  adjustTimestamp_(result, baseTimestamp);
+	
+	  return result;
+	};
+	
+	module.exports = {
+	  inspect: inspect
+	};
+	
+	},{"../aac/probe.js":34,"../m2ts/probe.js":35,"../m2ts/stream-types.js":36,"../m2ts/timestamp-rollover-stream.js":37}],40:[function(require,module,exports){
+	/**
+	 * mux.js
+	 *
+	 * Copyright (c) 2014 Brightcove
+	 * All rights reserved.
+	 *
+	 * A lightweight readable stream implemention that handles event dispatching.
+	 * Objects that inherit from streams should call init in their constructors.
+	 */
+	'use strict';
+	
+	var Stream = function() {
+	  this.init = function() {
+	    var listeners = {};
+	    /**
+	     * Add a listener for a specified event type.
+	     * @param type {string} the event name
+	     * @param listener {function} the callback to be invoked when an event of
+	     * the specified type occurs
+	     */
+	    this.on = function(type, listener) {
+	      if (!listeners[type]) {
+	        listeners[type] = [];
+	      }
+	      listeners[type] = listeners[type].concat(listener);
+	    };
+	    /**
+	     * Remove a listener for a specified event type.
+	     * @param type {string} the event name
+	     * @param listener {function} a function previously registered for this
+	     * type of event through `on`
+	     */
+	    this.off = function(type, listener) {
+	      var index;
+	      if (!listeners[type]) {
+	        return false;
+	      }
+	      index = listeners[type].indexOf(listener);
+	      listeners[type] = listeners[type].slice();
+	      listeners[type].splice(index, 1);
+	      return index > -1;
+	    };
+	    /**
+	     * Trigger an event of the specified type on this stream. Any additional
+	     * arguments to this function are passed as parameters to event listeners.
+	     * @param type {string} the event name
+	     */
+	    this.trigger = function(type) {
+	      var callbacks, i, length, args;
+	      callbacks = listeners[type];
+	      if (!callbacks) {
+	        return;
+	      }
+	      // Slicing the arguments on every invocation of this method
+	      // can add a significant amount of overhead. Avoid the
+	      // intermediate object creation for the common case of a
+	      // single callback argument
+	      if (arguments.length === 2) {
+	        length = callbacks.length;
+	        for (i = 0; i < length; ++i) {
+	          callbacks[i].call(this, arguments[1]);
+	        }
+	      } else {
+	        args = [];
+	        i = arguments.length;
+	        for (i = 1; i < arguments.length; ++i) {
+	          args.push(arguments[i]);
+	        }
+	        length = callbacks.length;
+	        for (i = 0; i < length; ++i) {
+	          callbacks[i].apply(this, args);
+	        }
+	      }
+	    };
+	    /**
+	     * Destroys the stream and cleans up.
+	     */
+	    this.dispose = function() {
+	      listeners = {};
+	    };
+	  };
+	};
+	
+	/**
+	 * Forwards all `data` events on this stream to the destination stream. The
+	 * destination stream should provide a method `push` to receive the data
+	 * events as they arrive.
+	 * @param destination {stream} the stream that will receive all `data` events
+	 * @param autoFlush {boolean} if false, we will not call `flush` on the destination
+	 *                            when the current stream emits a 'done' event
+	 * @see http://nodejs.org/api/stream.html#stream_readable_pipe_destination_options
+	 */
+	Stream.prototype.pipe = function(destination) {
+	  this.on('data', function(data) {
+	    destination.push(data);
+	  });
+	
+	  this.on('done', function(flushSource) {
+	    destination.flush(flushSource);
+	  });
+	
+	  return destination;
+	};
+	
+	// Default stream functions that are expected to be overridden to perform
+	// actual work. These are provided by the prototype as a sort of no-op
+	// implementation so that we don't have to check for their existence in the
+	// `pipe` function above.
+	Stream.prototype.push = function(data) {
+	  this.trigger('data', data);
+	};
+	
+	Stream.prototype.flush = function(flushSource) {
+	  this.trigger('done', flushSource);
+	};
+	
+	module.exports = Stream;
+	
+	},{}],41:[function(require,module,exports){
+	/* jshint ignore:start */
+	(function(root) { 
+	/* jshint ignore:end */
+	
+	  var HASH_SPLIT = /^([^#]*)(.*)$/;
+	  var QUERY_SPLIT = /^([^\?]*)(.*)$/;
+	  var DOMAIN_SPLIT = /^(([a-z]+:\/\/)?[^:\/]+(?::[0-9]+)?)?(\/?.*)$/i;
+	
+	  var URLToolkit = {
+	    // build an absolute URL from a relative one using the provided baseURL
+	    // if relativeURL is an absolute URL it will be returned as is.
+	    buildAbsoluteURL: function(baseURL, relativeURL) {
+	      // remove any remaining space and CRLF
+	      relativeURL = relativeURL.trim();
+	      if (/^[a-z]+:/i.test(relativeURL)) {
+	        // complete url, not relative
+	        return relativeURL;
+	      }
+	
+	      var relativeURLQuery = null;
+	      var relativeURLHash = null;
+	
+	      var relativeURLHashSplit = HASH_SPLIT.exec(relativeURL);
+	      if (relativeURLHashSplit) {
+	        relativeURLHash = relativeURLHashSplit[2];
+	        relativeURL = relativeURLHashSplit[1];
+	      }
+	      var relativeURLQuerySplit = QUERY_SPLIT.exec(relativeURL);
+	      if (relativeURLQuerySplit) {
+	        relativeURLQuery = relativeURLQuerySplit[2];
+	        relativeURL = relativeURLQuerySplit[1];
+	      }
+	
+	      var baseURLHashSplit = HASH_SPLIT.exec(baseURL);
+	      if (baseURLHashSplit) {
+	        baseURL = baseURLHashSplit[1];
+	      }
+	      var baseURLQuerySplit = QUERY_SPLIT.exec(baseURL);
+	      if (baseURLQuerySplit) {
+	        baseURL = baseURLQuerySplit[1];
+	      }
+	
+	      var baseURLDomainSplit = DOMAIN_SPLIT.exec(baseURL);
+	      if (!baseURLDomainSplit) {
+	        throw new Error('Error trying to parse base URL.');
+	      }
+	      
+	      // e.g. 'http://', 'https://', ''
+	      var baseURLProtocol = baseURLDomainSplit[2] || '';
+	      // e.g. 'http://example.com', '//example.com', 'example.com', ''
+	      var baseURLProtocolDomain = baseURLDomainSplit[1] || '';
+	      // e.g. '/a/b/c/playlist.m3u8', 'a/b/c/playlist.m3u8'
+	      var baseURLPath = baseURLDomainSplit[3];
+	      if (baseURLPath.indexOf('/') !== 0 && baseURLProtocolDomain !== '') {
+	        // this handles a base url of http://example.com (missing last slash)
+	        baseURLPath = '/'+baseURLPath;
+	      }
+	
+	      var builtURL = null;
+	      if (/^\/\//.test(relativeURL)) {
+	        // relative url starts wth '//' so copy protocol (which may be '' if baseUrl didn't provide one)
+	        builtURL = baseURLProtocol+URLToolkit.buildAbsolutePath('', relativeURL.substring(2));
+	      }
+	      else if (/^\//.test(relativeURL)) {
+	        // relative url starts with '/' so start from root of domain
+	        builtURL = baseURLProtocolDomain+'/'+URLToolkit.buildAbsolutePath('', relativeURL.substring(1));
+	      }
+	      else {
+	        builtURL = URLToolkit.buildAbsolutePath(baseURLProtocolDomain+baseURLPath, relativeURL);
+	      }
+	
+	      // put the query and hash parts back
+	      if (relativeURLQuery) {
+	        builtURL += relativeURLQuery;
+	      }
+	      if (relativeURLHash) {
+	        builtURL += relativeURLHash;
+	      }
+	      return builtURL;
+	    },
+	
+	    // build an absolute path using the provided basePath
+	    // adapted from https://developer.mozilla.org/en-US/docs/Web/API/document/cookie#Using_relative_URLs_in_the_path_parameter
+	    // this does not handle the case where relativePath is "/" or "//". These cases should be handled outside this.
+	    buildAbsolutePath: function(basePath, relativePath) {
+	      var sRelPath = relativePath;
+	      var nUpLn, sDir = '', sPath = basePath.replace(/[^\/]*$/, sRelPath.replace(/(\/|^)(?:\.?\/+)+/g, '$1'));
+	      for (var nEnd, nStart = 0; nEnd = sPath.indexOf('/../', nStart), nEnd > -1; nStart = nEnd + nUpLn) {
+	        nUpLn = /^\/(?:\.\.\/)*/.exec(sPath.slice(nEnd))[0].length;
+	        sDir = (sDir + sPath.substring(nStart, nEnd)).replace(new RegExp('(?:\\\/+[^\\\/]*){0,' + ((nUpLn - 1) / 3) + '}$'), '/');
+	      }
+	      return sDir + sPath.substr(nStart);
+	    }
+	  };
+	
+	/* jshint ignore:start */
+	  if(typeof exports === 'object' && typeof module === 'object')
+	    module.exports = URLToolkit;
+	  else if(typeof define === 'function' && define.amd)
+	    define([], function() { return URLToolkit; });
+	  else if(typeof exports === 'object')
+	    exports["URLToolkit"] = URLToolkit;
+	  else
+	    root["URLToolkit"] = URLToolkit;
+	})(this);
+	/* jshint ignore:end */
+	
+	},{}],42:[function(require,module,exports){
+	(function (global){
+	/**
+	 * @file add-text-track-data.js
+	 */
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	var _globalWindow = require('global/window');
+	
+	var _globalWindow2 = _interopRequireDefault(_globalWindow);
+	
+	var _videoJs = (typeof window !== "undefined" ? window['videojs'] : typeof global !== "undefined" ? global['videojs'] : null);
+	
+	var _videoJs2 = _interopRequireDefault(_videoJs);
+	
+	/**
+	 * Define properties on a cue for backwards compatability,
+	 * but warn the user that the way that they are using it
+	 * is depricated and will be removed at a later date.
+	 *
+	 * @param {Cue} cue the cue to add the properties on
+	 * @private
+	 */
+	var deprecateOldCue = function deprecateOldCue(cue) {
+	  Object.defineProperties(cue.frame, {
+	    id: {
+	      get: function get() {
+	        _videoJs2['default'].log.warn('cue.frame.id is deprecated. Use cue.value.key instead.');
+	        return cue.value.key;
+	      }
+	    },
+	    value: {
+	      get: function get() {
+	        _videoJs2['default'].log.warn('cue.frame.value is deprecated. Use cue.value.data instead.');
+	        return cue.value.data;
+	      }
+	    },
+	    privateData: {
+	      get: function get() {
+	        _videoJs2['default'].log.warn('cue.frame.privateData is deprecated. Use cue.value.data instead.');
+	        return cue.value.data;
+	      }
+	    }
+	  });
+	};
+	
+	var durationOfVideo = function durationOfVideo(duration) {
+	  var dur = undefined;
+	
+	  if (isNaN(duration) || Math.abs(duration) === Infinity) {
+	    dur = Number.MAX_VALUE;
+	  } else {
+	    dur = duration;
+	  }
+	  return dur;
+	};
+	/**
+	 * Add text track data to a source handler given the captions and
+	 * metadata from the buffer.
+	 *
+	 * @param {Object} sourceHandler the flash or virtual source buffer
+	 * @param {Array} captionArray an array of caption data
+	 * @param {Array} cue an array of meta data
+	 * @private
+	 */
+	var addTextTrackData = function addTextTrackData(sourceHandler, captionArray, metadataArray) {
+	  var Cue = _globalWindow2['default'].WebKitDataCue || _globalWindow2['default'].VTTCue;
+	
+	  if (captionArray) {
+	    captionArray.forEach(function (caption) {
+	      this.inbandTextTrack_.addCue(new Cue(caption.startTime + this.timestampOffset, caption.endTime + this.timestampOffset, caption.text));
+	    }, sourceHandler);
+	  }
+	
+	  if (metadataArray) {
+	    var videoDuration = durationOfVideo(sourceHandler.mediaSource_.duration);
+	
+	    metadataArray.forEach(function (metadata) {
+	      var time = metadata.cueTime + this.timestampOffset;
+	
+	      metadata.frames.forEach(function (frame) {
+	        var cue = new Cue(time, time, frame.value || frame.url || frame.data || '');
+	
+	        cue.frame = frame;
+	        cue.value = frame;
+	        deprecateOldCue(cue);
+	
+	        this.metadataTrack_.addCue(cue);
+	      }, this);
+	    }, sourceHandler);
+	
+	    // Updating the metadeta cues so that
+	    // the endTime of each cue is the startTime of the next cue
+	    // the endTime of last cue is the duration of the video
+	    if (sourceHandler.metadataTrack_ && sourceHandler.metadataTrack_.cues && sourceHandler.metadataTrack_.cues.length) {
+	      var cues = sourceHandler.metadataTrack_.cues;
+	      var cuesArray = [];
+	
+	      for (var j = 0; j < cues.length; j++) {
+	        cuesArray.push(cues[j]);
+	      }
+	      cuesArray.sort(function (first, second) {
+	        return first.startTime - second.startTime;
+	      });
+	
+	      for (var i = 0; i < cuesArray.length - 1; i++) {
+	        if (cuesArray[i].endTime !== cuesArray[i + 1].startTime) {
+	          cuesArray[i].endTime = cuesArray[i + 1].startTime;
+	        }
+	      }
+	      cuesArray[cuesArray.length - 1].endTime = videoDuration;
+	    }
+	  }
+	};
+	
+	exports['default'] = {
+	  addTextTrackData: addTextTrackData,
+	  durationOfVideo: durationOfVideo
+	};
+	module.exports = exports['default'];
+	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+	},{"global/window":28}],43:[function(require,module,exports){
+	/**
+	 * Remove the text track from the player if one with matching kind and
+	 * label properties already exists on the player
+	 *
+	 * @param {Object} player the video.js player object
+	 * @param {String} kind to be considered the text track's `kind` must match
+	 * @param {String} label to be considered the text track's `label` must match
+	 * @private
+	 */
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	var removeExistingTrack = function removeExistingTrack(player, kind, label) {
+	  var tracks = player.remoteTextTracks() || [];
+	
+	  for (var i = 0; i < tracks.length; i++) {
+	    var track = tracks[i];
+	
+	    if (track.kind === kind && track.label === label) {
+	      player.removeRemoteTextTrack(track);
+	    }
+	  }
+	};
+	
+	exports.removeExistingTrack = removeExistingTrack;
+	/**
+	 * Cleaup text tracks on video.js if they exist
+	 *
+	 * @param {Object} player the video.js player object
+	 * @private
+	 */
+	var cleanupTextTracks = function cleanupTextTracks(player) {
+	  removeExistingTrack(player, 'captions', 'cc1');
+	  removeExistingTrack(player, 'metadata', 'Timed Metadata');
+	};
+	exports.cleanupTextTracks = cleanupTextTracks;
+	},{}],44:[function(require,module,exports){
+	/**
+	 * @file codec-utils.js
+	 */
+	
+	/**
+	 * Check if a codec string refers to an audio codec.
+	 *
+	 * @param {String} codec codec string to check
+	 * @return {Boolean} if this is an audio codec
+	 * @private
+	 */
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	var isAudioCodec = function isAudioCodec(codec) {
+	  return (/mp4a\.\d+.\d+/i.test(codec)
+	  );
+	};
+	
+	/**
+	 * Check if a codec string refers to a video codec.
+	 *
+	 * @param {String} codec codec string to check
+	 * @return {Boolean} if this is a video codec
+	 * @private
+	 */
+	var isVideoCodec = function isVideoCodec(codec) {
+	  return (/avc1\.[\da-f]+/i.test(codec)
+	  );
+	};
+	
+	/**
+	 * Parse a content type header into a type and parameters
+	 * object
+	 *
+	 * @param {String} type the content type header
+	 * @return {Object} the parsed content-type
+	 * @private
+	 */
+	var parseContentType = function parseContentType(type) {
+	  var object = { type: '', parameters: {} };
+	  var parameters = type.trim().split(';');
+	
+	  // first parameter should always be content-type
+	  object.type = parameters.shift().trim();
+	  parameters.forEach(function (parameter) {
+	    var pair = parameter.trim().split('=');
+	
+	    if (pair.length > 1) {
+	      var _name = pair[0].replace(/"/g, '').trim();
+	      var value = pair[1].replace(/"/g, '').trim();
+	
+	      object.parameters[_name] = value;
+	    }
+	  });
+	
+	  return object;
+	};
+	
+	/**
+	 * Replace the old apple-style `avc1.<dd>.<dd>` codec string with the standard
+	 * `avc1.<hhhhhh>`
+	 *
+	 * @param {Array} codecs an array of codec strings to fix
+	 * @return {Array} the translated codec array
+	 * @private
+	 */
+	var translateLegacyCodecs = function translateLegacyCodecs(codecs) {
+	  return codecs.map(function (codec) {
+	    return codec.replace(/avc1\.(\d+)\.(\d+)/i, function (orig, profile, avcLevel) {
+	      var profileHex = ('00' + Number(profile).toString(16)).slice(-2);
+	      var avcLevelHex = ('00' + Number(avcLevel).toString(16)).slice(-2);
+	
+	      return 'avc1.' + profileHex + '00' + avcLevelHex;
+	    });
+	  });
+	};
+	
+	exports['default'] = {
+	  isAudioCodec: isAudioCodec,
+	  parseContentType: parseContentType,
+	  isVideoCodec: isVideoCodec,
+	  translateLegacyCodecs: translateLegacyCodecs
+	};
+	module.exports = exports['default'];
+	},{}],45:[function(require,module,exports){
+	/**
+	 * @file create-text-tracks-if-necessary.js
+	 */
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	
+	var _cleanupTextTracks = require('./cleanup-text-tracks');
+	
+	/**
+	 * Create text tracks on video.js if they exist on a segment.
+	 *
+	 * @param {Object} sourceBuffer the VSB or FSB
+	 * @param {Object} mediaSource the HTML or Flash media source
+	 * @param {Object} segment the segment that may contain the text track
+	 * @private
+	 */
+	var createTextTracksIfNecessary = function createTextTracksIfNecessary(sourceBuffer, mediaSource, segment) {
+	  var player = mediaSource.player_;
+	
+	  // create an in-band caption track if one is present in the segment
+	  if (segment.captions && segment.captions.length && !sourceBuffer.inbandTextTrack_) {
+	    (0, _cleanupTextTracks.removeExistingTrack)(player, 'captions', 'cc1');
+	    sourceBuffer.inbandTextTrack_ = player.addRemoteTextTrack({
+	      kind: 'captions',
+	      label: 'cc1'
+	    }, false).track;
+	  }
+	
+	  if (segment.metadata && segment.metadata.length && !sourceBuffer.metadataTrack_) {
+	    (0, _cleanupTextTracks.removeExistingTrack)(player, 'metadata', 'Timed Metadata', true);
+	    sourceBuffer.metadataTrack_ = player.addRemoteTextTrack({
+	      kind: 'metadata',
+	      label: 'Timed Metadata'
+	    }, false).track;
+	    sourceBuffer.metadataTrack_.inBandMetadataTrackDispatchType = segment.metadata.dispatchType;
+	  }
+	};
+	
+	exports['default'] = createTextTracksIfNecessary;
+	module.exports = exports['default'];
+	},{"./cleanup-text-tracks":43}],46:[function(require,module,exports){
+	/**
+	 * @file flash-constants.js
+	 */
+	/**
+	 * The maximum size in bytes for append operations to the video.js
+	 * SWF. Calling through to Flash blocks and can be expensive so
+	 * we chunk data and pass through 4KB at a time, yielding to the
+	 * browser between chunks. This gives a theoretical maximum rate of
+	 * 1MB/s into Flash. Any higher and we begin to drop frames and UI
+	 * responsiveness suffers.
+	 *
+	 * @private
+	 */
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var flashConstants = {
+	  // times in milliseconds
+	  TIME_BETWEEN_CHUNKS: 1,
+	  BYTES_PER_CHUNK: 1024 * 32
+	};
+	
+	exports["default"] = flashConstants;
+	module.exports = exports["default"];
+	},{}],47:[function(require,module,exports){
+	(function (global){
+	/**
+	 * @file flash-media-source.js
+	 */
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var _globalDocument = require('global/document');
+	
+	var _globalDocument2 = _interopRequireDefault(_globalDocument);
+	
+	var _videoJs = (typeof window !== "undefined" ? window['videojs'] : typeof global !== "undefined" ? global['videojs'] : null);
+	
+	var _videoJs2 = _interopRequireDefault(_videoJs);
+	
+	var _flashSourceBuffer = require('./flash-source-buffer');
+	
+	var _flashSourceBuffer2 = _interopRequireDefault(_flashSourceBuffer);
+	
+	var _flashConstants = require('./flash-constants');
+	
+	var _flashConstants2 = _interopRequireDefault(_flashConstants);
+	
+	var _codecUtils = require('./codec-utils');
+	
+	var _cleanupTextTracks = require('./cleanup-text-tracks');
+	
+	/**
+	 * A flash implmentation of HTML MediaSources and a polyfill
+	 * for browsers that don't support native or HTML MediaSources..
+	 *
+	 * @link https://developer.mozilla.org/en-US/docs/Web/API/MediaSource
+	 * @class FlashMediaSource
+	 * @extends videojs.EventTarget
+	 */
+	
+	var FlashMediaSource = (function (_videojs$EventTarget) {
+	  _inherits(FlashMediaSource, _videojs$EventTarget);
+	
+	  function FlashMediaSource() {
+	    var _this = this;
+	
+	    _classCallCheck(this, FlashMediaSource);
+	
+	    _get(Object.getPrototypeOf(FlashMediaSource.prototype), 'constructor', this).call(this);
+	    this.sourceBuffers = [];
+	    this.readyState = 'closed';
+	
+	    this.on(['sourceopen', 'webkitsourceopen'], function (event) {
+	      // find the swf where we will push media data
+	      _this.swfObj = _globalDocument2['default'].getElementById(event.swfId);
+	      _this.player_ = (0, _videoJs2['default'])(_this.swfObj.parentNode);
+	      _this.tech_ = _this.swfObj.tech;
+	      _this.readyState = 'open';
+	
+	      _this.tech_.on('seeking', function () {
+	        var i = _this.sourceBuffers.length;
+	
+	        while (i--) {
+	          _this.sourceBuffers[i].abort();
+	        }
+	      });
+	
+	      if (_this.tech_.hls) {
+	        _this.tech_.hls.on('dispose', function () {
+	          (0, _cleanupTextTracks.cleanupTextTracks)(_this.player_);
+	        });
+	      }
+	
+	      // trigger load events
+	      if (_this.swfObj) {
+	        _this.swfObj.vjs_load();
+	      }
+	    });
+	  }
+	
+	  /**
+	    * Set or return the presentation duration.
+	    *
+	    * @param {Double} value the duration of the media in seconds
+	    * @param {Double} the current presentation duration
+	    * @link http://www.w3.org/TR/media-source/#widl-MediaSource-duration
+	    */
+	
+	  /**
+	   * We have this function so that the html and flash interfaces
+	   * are the same.
+	   *
+	   * @private
+	   */
+	
+	  _createClass(FlashMediaSource, [{
+	    key: 'addSeekableRange_',
+	    value: function addSeekableRange_() {}
+	    // intentional no-op
+	
+	    /**
+	     * Create a new flash source buffer and add it to our flash media source.
+	     *
+	     * @link https://developer.mozilla.org/en-US/docs/Web/API/MediaSource/addSourceBuffer
+	     * @param {String} type the content-type of the source
+	     * @return {Object} the flash source buffer
+	     */
+	
+	  }, {
+	    key: 'addSourceBuffer',
+	    value: function addSourceBuffer(type) {
+	      var parsedType = (0, _codecUtils.parseContentType)(type);
+	      var sourceBuffer = undefined;
+	
+	      // if this is an FLV type, we'll push data to flash
+	      if (parsedType.type === 'video/mp2t') {
+	        // Flash source buffers
+	        sourceBuffer = new _flashSourceBuffer2['default'](this);
+	      } else {
+	        throw new Error('NotSupportedError (Video.js)');
+	      }
+	
+	      this.sourceBuffers.push(sourceBuffer);
+	      return sourceBuffer;
+	    }
+	
+	    /**
+	     * Signals the end of the stream.
+	     *
+	     * @link https://w3c.github.io/media-source/#widl-MediaSource-endOfStream-void-EndOfStreamError-error
+	     * @param {String=} error Signals that a playback error
+	     * has occurred. If specified, it must be either "network" or
+	     * "decode".
+	     */
+	  }, {
+	    key: 'endOfStream',
+	    value: function endOfStream(error) {
+	      if (error === 'network') {
+	        // MEDIA_ERR_NETWORK
+	        this.tech_.error(2);
+	      } else if (error === 'decode') {
+	        // MEDIA_ERR_DECODE
+	        this.tech_.error(3);
+	      }
+	      if (this.readyState !== 'ended') {
+	        this.readyState = 'ended';
+	        this.swfObj.vjs_endOfStream();
+	      }
+	    }
+	  }]);
+	
+	  return FlashMediaSource;
+	})(_videoJs2['default'].EventTarget);
+	
+	exports['default'] = FlashMediaSource;
+	try {
+	  Object.defineProperty(FlashMediaSource.prototype, 'duration', {
+	    /**
+	     * Return the presentation duration.
+	     *
+	     * @return {Double} the duration of the media in seconds
+	     * @link http://www.w3.org/TR/media-source/#widl-MediaSource-duration
+	     */
+	    get: function get() {
+	      if (!this.swfObj) {
+	        return NaN;
+	      }
+	      // get the current duration from the SWF
+	      return this.swfObj.vjs_getProperty('duration');
+	    },
+	    /**
+	     * Set the presentation duration.
+	     *
+	     * @param {Double} value the duration of the media in seconds
+	     * @return {Double} the duration of the media in seconds
+	     * @link http://www.w3.org/TR/media-source/#widl-MediaSource-duration
+	     */
+	    set: function set(value) {
+	      var i = undefined;
+	      var oldDuration = this.swfObj.vjs_getProperty('duration');
+	
+	      this.swfObj.vjs_setProperty('duration', value);
+	
+	      if (value < oldDuration) {
+	        // In MSE, this triggers the range removal algorithm which causes
+	        // an update to occur
+	        for (i = 0; i < this.sourceBuffers.length; i++) {
+	          this.sourceBuffers[i].remove(value, oldDuration);
+	        }
+	      }
+	
+	      return value;
+	    }
+	  });
+	} catch (e) {
+	  // IE8 throws if defineProperty is called on a non-DOM node. We
+	  // don't support IE8 but we shouldn't throw an error if loaded
+	  // there.
+	  FlashMediaSource.prototype.duration = NaN;
+	}
+	
+	for (var property in _flashConstants2['default']) {
+	  FlashMediaSource[property] = _flashConstants2['default'][property];
+	}
+	module.exports = exports['default'];
+	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+	},{"./cleanup-text-tracks":43,"./codec-utils":44,"./flash-constants":46,"./flash-source-buffer":48,"global/document":27}],48:[function(require,module,exports){
+	(function (global){
+	/**
+	 * @file flash-source-buffer.js
+	 */
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var _globalWindow = require('global/window');
+	
+	var _globalWindow2 = _interopRequireDefault(_globalWindow);
+	
+	var _videoJs = (typeof window !== "undefined" ? window['videojs'] : typeof global !== "undefined" ? global['videojs'] : null);
+	
+	var _videoJs2 = _interopRequireDefault(_videoJs);
+	
+	var _muxJsLibFlv = require('mux.js/lib/flv');
+	
+	var _muxJsLibFlv2 = _interopRequireDefault(_muxJsLibFlv);
+	
+	var _removeCuesFromTrack = require('./remove-cues-from-track');
+	
+	var _removeCuesFromTrack2 = _interopRequireDefault(_removeCuesFromTrack);
+	
+	var _createTextTracksIfNecessary = require('./create-text-tracks-if-necessary');
+	
+	var _createTextTracksIfNecessary2 = _interopRequireDefault(_createTextTracksIfNecessary);
+	
+	var _addTextTrackData = require('./add-text-track-data');
+	
+	var _flashTransmuxerWorker = require('./flash-transmuxer-worker');
+	
+	var _flashTransmuxerWorker2 = _interopRequireDefault(_flashTransmuxerWorker);
+	
+	var _webworkify = require('webworkify');
+	
+	var _webworkify2 = _interopRequireDefault(_webworkify);
+	
+	var _flashConstants = require('./flash-constants');
+	
+	var _flashConstants2 = _interopRequireDefault(_flashConstants);
+	
+	/**
+	 * A wrapper around the setTimeout function that uses
+	 * the flash constant time between ticks value.
+	 *
+	 * @param {Function} func the function callback to run
+	 * @private
+	 */
+	var scheduleTick = function scheduleTick(func) {
+	  // Chrome doesn't invoke requestAnimationFrame callbacks
+	  // in background tabs, so use setTimeout.
+	  _globalWindow2['default'].setTimeout(func, _flashConstants2['default'].TIME_BETWEEN_CHUNKS);
+	};
+	
+	/**
+	 * Generates a random string of max length 6
+	 *
+	 * @return {String} the randomly generated string
+	 * @function generateRandomString
+	 * @private
+	 */
+	var generateRandomString = function generateRandomString() {
+	  return Math.random().toString(36).slice(2, 8);
+	};
+	
+	/**
+	 * Round a number to a specified number of places much like
+	 * toFixed but return a number instead of a string representation.
+	 *
+	 * @param {Number} num A number
+	 * @param {Number} places The number of decimal places which to
+	 * round
+	 * @private
+	 */
+	var toDecimalPlaces = function toDecimalPlaces(num, places) {
+	  if (typeof places !== 'number' || places < 0) {
+	    places = 0;
+	  }
+	
+	  var scale = Math.pow(10, places);
+	
+	  return Math.round(num * scale) / scale;
+	};
+	
+	/**
+	 * A SourceBuffer implementation for Flash rather than HTML.
+	 *
+	 * @link https://developer.mozilla.org/en-US/docs/Web/API/MediaSource
+	 * @param {Object} mediaSource the flash media source
+	 * @class FlashSourceBuffer
+	 * @extends videojs.EventTarget
+	 */
+	
+	var FlashSourceBuffer = (function (_videojs$EventTarget) {
+	  _inherits(FlashSourceBuffer, _videojs$EventTarget);
+	
+	  function FlashSourceBuffer(mediaSource) {
+	    var _this = this;
+	
+	    _classCallCheck(this, FlashSourceBuffer);
+	
+	    _get(Object.getPrototypeOf(FlashSourceBuffer.prototype), 'constructor', this).call(this);
+	    var encodedHeader = undefined;
+	
+	    // Start off using the globally defined value but refine
+	    // as we append data into flash
+	    this.chunkSize_ = _flashConstants2['default'].BYTES_PER_CHUNK;
+	
+	    // byte arrays queued to be appended
+	    this.buffer_ = [];
+	
+	    // the total number of queued bytes
+	    this.bufferSize_ = 0;
+	
+	    // to be able to determine the correct position to seek to, we
+	    // need to retain information about the mapping between the
+	    // media timeline and PTS values
+	    this.basePtsOffset_ = NaN;
+	
+	    this.mediaSource_ = mediaSource;
+	
+	    // indicates whether the asynchronous continuation of an operation
+	    // is still being processed
+	    // see https://w3c.github.io/media-source/#widl-SourceBuffer-updating
+	    this.updating = false;
+	    this.timestampOffset_ = 0;
+	
+	    encodedHeader = _globalWindow2['default'].btoa(String.fromCharCode.apply(null, Array.prototype.slice.call(_muxJsLibFlv2['default'].getFlvHeader())));
+	
+	    // create function names with added randomness for the global callbacks flash will use
+	    // to get data from javascript into the swf. Random strings are added as a safety
+	    // measure for pages with multiple players since these functions will be global
+	    // instead of per instance. When making a call to the swf, the browser generates a
+	    // try catch code snippet, but just takes the function name and writes out an unquoted
+	    // call to that function. If the player id has any special characters, this will result
+	    // in an error, so safePlayerId replaces all special characters to '_'
+	    var safePlayerId = this.mediaSource_.player_.id().replace(/[^a-zA-Z0-9]/g, '_');
+	
+	    this.flashEncodedHeaderName_ = 'vjs_flashEncodedHeader_' + safePlayerId + generateRandomString();
+	    this.flashEncodedDataName_ = 'vjs_flashEncodedData_' + safePlayerId + generateRandomString();
+	
+	    _globalWindow2['default'][this.flashEncodedHeaderName_] = function () {
+	      delete _globalWindow2['default'][_this.flashEncodedHeaderName_];
+	      return encodedHeader;
+	    };
+	
+	    this.mediaSource_.swfObj.vjs_appendChunkReady(this.flashEncodedHeaderName_);
+	
+	    // TS to FLV transmuxer
+	    this.transmuxer_ = (0, _webworkify2['default'])(_flashTransmuxerWorker2['default']);
+	    this.transmuxer_.postMessage({ action: 'init', options: {} });
+	    this.transmuxer_.onmessage = function (event) {
+	      if (event.data.action === 'data') {
+	        _this.receiveBuffer_(event.data.segment);
+	      }
+	    };
+	
+	    this.one('updateend', function () {
+	      _this.mediaSource_.tech_.trigger('loadedmetadata');
+	    });
+	
+	    Object.defineProperty(this, 'timestampOffset', {
+	      get: function get() {
+	        return this.timestampOffset_;
+	      },
+	      set: function set(val) {
+	        if (typeof val === 'number' && val >= 0) {
+	          this.timestampOffset_ = val;
+	          // We have to tell flash to expect a discontinuity
+	          this.mediaSource_.swfObj.vjs_discontinuity();
+	          // the media <-> PTS mapping must be re-established after
+	          // the discontinuity
+	          this.basePtsOffset_ = NaN;
+	
+	          this.transmuxer_.postMessage({ action: 'reset' });
+	        }
+	      }
+	    });
+	
+	    Object.defineProperty(this, 'buffered', {
+	      get: function get() {
+	        if (!this.mediaSource_ || !this.mediaSource_.swfObj || !('vjs_getProperty' in this.mediaSource_.swfObj)) {
+	          return _videoJs2['default'].createTimeRange();
+	        }
+	
+	        var buffered = this.mediaSource_.swfObj.vjs_getProperty('buffered');
+	
+	        if (buffered && buffered.length) {
+	          buffered[0][0] = toDecimalPlaces(buffered[0][0], 3);
+	          buffered[0][1] = toDecimalPlaces(buffered[0][1], 3);
+	        }
+	        return _videoJs2['default'].createTimeRanges(buffered);
+	      }
+	    });
+	
+	    // On a seek we remove all text track data since flash has no concept
+	    // of a buffered-range and everything else is reset on seek
+	    this.mediaSource_.player_.on('seeked', function () {
+	      (0, _removeCuesFromTrack2['default'])(0, Infinity, _this.metadataTrack_);
+	      (0, _removeCuesFromTrack2['default'])(0, Infinity, _this.inbandTextTrack_);
+	    });
+	
+	    this.mediaSource_.player_.tech_.hls.on('dispose', function () {
+	      _this.transmuxer_.terminate();
+	    });
+	  }
+	
+	  /**
+	   * Append bytes to the sourcebuffers buffer, in this case we
+	   * have to append it to swf object.
+	   *
+	   * @link https://developer.mozilla.org/en-US/docs/Web/API/SourceBuffer/appendBuffer
+	   * @param {Array} bytes
+	   */
+	
+	  _createClass(FlashSourceBuffer, [{
+	    key: 'appendBuffer',
+	    value: function appendBuffer(bytes) {
+	      var error = undefined;
+	
+	      if (this.updating) {
+	        error = new Error('SourceBuffer.append() cannot be called ' + 'while an update is in progress');
+	        error.name = 'InvalidStateError';
+	        error.code = 11;
+	        throw error;
+	      }
+	      this.updating = true;
+	      this.mediaSource_.readyState = 'open';
+	      this.trigger({ type: 'update' });
+	
+	      this.transmuxer_.postMessage({
+	        action: 'push',
+	        data: bytes.buffer,
+	        byteOffset: bytes.byteOffset,
+	        byteLength: bytes.byteLength
+	      }, [bytes.buffer]);
+	      this.transmuxer_.postMessage({ action: 'flush' });
+	    }
+	
+	    /**
+	     * Reset the parser and remove any data queued to be sent to the SWF.
+	     *
+	     * @link https://developer.mozilla.org/en-US/docs/Web/API/SourceBuffer/abort
+	     */
+	  }, {
+	    key: 'abort',
+	    value: function abort() {
+	      this.buffer_ = [];
+	      this.bufferSize_ = 0;
+	      this.mediaSource_.swfObj.vjs_abort();
+	
+	      // report any outstanding updates have ended
+	      if (this.updating) {
+	        this.updating = false;
+	        this.trigger({ type: 'updateend' });
+	      }
+	    }
+	
+	    /**
+	     * Flash cannot remove ranges already buffered in the NetStream
+	     * but seeking clears the buffer entirely. For most purposes,
+	     * having this operation act as a no-op is acceptable.
+	     *
+	     * @link https://developer.mozilla.org/en-US/docs/Web/API/SourceBuffer/remove
+	     * @param {Double} start start of the section to remove
+	     * @param {Double} end end of the section to remove
+	     */
+	  }, {
+	    key: 'remove',
+	    value: function remove(start, end) {
+	      (0, _removeCuesFromTrack2['default'])(start, end, this.metadataTrack_);
+	      (0, _removeCuesFromTrack2['default'])(start, end, this.inbandTextTrack_);
+	      this.trigger({ type: 'update' });
+	      this.trigger({ type: 'updateend' });
+	    }
+	
+	    /**
+	     * Receive a buffer from the flv.
+	     *
+	     * @param {Object} segment
+	     * @private
+	     */
+	  }, {
+	    key: 'receiveBuffer_',
+	    value: function receiveBuffer_(segment) {
+	      var _this2 = this;
+	
+	      // create an in-band caption track if one is present in the segment
+	      (0, _createTextTracksIfNecessary2['default'])(this, this.mediaSource_, segment);
+	      (0, _addTextTrackData.addTextTrackData)(this, segment.captions, segment.metadata);
+	
+	      // Do this asynchronously since convertTagsToData_ can be time consuming
+	      scheduleTick(function () {
+	        var flvBytes = _this2.convertTagsToData_(segment);
+	
+	        if (_this2.buffer_.length === 0) {
+	          scheduleTick(_this2.processBuffer_.bind(_this2));
+	        }
+	
+	        if (flvBytes) {
+	          _this2.buffer_.push(flvBytes);
+	          _this2.bufferSize_ += flvBytes.byteLength;
+	        }
+	      });
+	    }
+	
+	    /**
+	     * Append a portion of the current buffer to the SWF.
+	     *
+	     * @private
+	     */
+	  }, {
+	    key: 'processBuffer_',
+	    value: function processBuffer_() {
+	      var _this3 = this;
+	
+	      var chunkSize = _flashConstants2['default'].BYTES_PER_CHUNK;
+	
+	      if (!this.buffer_.length) {
+	        if (this.updating !== false) {
+	          this.updating = false;
+	          this.trigger({ type: 'updateend' });
+	        }
+	        // do nothing if the buffer is empty
+	        return;
+	      }
+	
+	      // concatenate appends up to the max append size
+	      var chunk = this.buffer_[0].subarray(0, chunkSize);
+	
+	      // requeue any bytes that won't make it this round
+	      if (chunk.byteLength < chunkSize || this.buffer_[0].byteLength === chunkSize) {
+	        this.buffer_.shift();
+	      } else {
+	        this.buffer_[0] = this.buffer_[0].subarray(chunkSize);
+	      }
+	
+	      this.bufferSize_ -= chunk.byteLength;
+	
+	      // base64 encode the bytes
+	      var binary = [];
+	      var length = chunk.byteLength;
+	
+	      for (var i = 0; i < length; i++) {
+	        binary.push(String.fromCharCode(chunk[i]));
+	      }
+	      var b64str = _globalWindow2['default'].btoa(binary.join(''));
+	
+	      _globalWindow2['default'][this.flashEncodedDataName_] = function () {
+	        // schedule another processBuffer to process any left over data or to
+	        // trigger updateend
+	        scheduleTick(_this3.processBuffer_.bind(_this3));
+	        delete _globalWindow2['default'][_this3.flashEncodedDataName_];
+	        return b64str;
+	      };
+	
+	      // Notify the swf that segment data is ready to be appended
+	      this.mediaSource_.swfObj.vjs_appendChunkReady(this.flashEncodedDataName_);
+	    }
+	
+	    /**
+	     * Turns an array of flv tags into a Uint8Array representing the
+	     * flv data. Also removes any tags that are before the current
+	     * time so that playback begins at or slightly after the right
+	     * place on a seek
+	     *
+	     * @private
+	     * @param {Object} segmentData object of segment data
+	     */
+	  }, {
+	    key: 'convertTagsToData_',
+	    value: function convertTagsToData_(segmentData) {
+	      var segmentByteLength = 0;
+	      var tech = this.mediaSource_.tech_;
+	      var targetPts = 0;
+	      var segment = undefined;
+	      var filteredAudioTags = [];
+	      var filteredVideoTags = [];
+	      var videoTags = segmentData.tags.videoTags;
+	      var audioTags = segmentData.tags.audioTags;
+	
+	      // Establish the media timeline to PTS translation if we don't
+	      // have one already
+	      if (isNaN(this.basePtsOffset_) && (videoTags.length || audioTags.length)) {
+	        // We know there is at least one video or audio tag, but since we may not have both,
+	        // we use pts: Infinity for the missing tag. The will force the following Math.min
+	        // call will to use the proper pts value since it will always be less than Infinity
+	        var firstVideoTag = videoTags[0] || { pts: Infinity };
+	        var firstAudioTag = audioTags[0] || { pts: Infinity };
+	
+	        this.basePtsOffset_ = Math.min(firstAudioTag.pts, firstVideoTag.pts);
+	      }
+	
+	      if (tech.buffered().length) {
+	        targetPts = tech.buffered().end(0) - this.timestampOffset;
+	      }
+	
+	      // Trim to currentTime if it's ahead of buffered or buffered doesn't exist
+	      if (tech.seeking()) {
+	        targetPts = Math.max(targetPts, tech.currentTime() - this.timestampOffset);
+	      }
+	
+	      // PTS values are represented in milliseconds
+	      targetPts *= 1e3;
+	      targetPts += this.basePtsOffset_;
+	
+	      // skip tags with a presentation time less than the seek target/end of buffer
+	      for (var i = 0; i < audioTags.length; i++) {
+	        if (audioTags[i].pts >= targetPts) {
+	          filteredAudioTags.push(audioTags[i]);
+	        }
+	      }
+	
+	      // filter complete GOPs with a presentation time less than the seek target/end of buffer
+	      var startIndex = 0;
+	
+	      while (startIndex < videoTags.length) {
+	        var startTag = videoTags[startIndex];
+	
+	        if (startTag.pts >= targetPts) {
+	          filteredVideoTags.push(startTag);
+	        } else if (startTag.keyFrame) {
+	          var nextIndex = startIndex + 1;
+	          var foundNextKeyFrame = false;
+	
+	          while (nextIndex < videoTags.length) {
+	            var nextTag = videoTags[nextIndex];
+	
+	            if (nextTag.pts >= targetPts) {
+	              break;
+	            } else if (nextTag.keyFrame) {
+	              foundNextKeyFrame = true;
+	              break;
+	            } else {
+	              nextIndex++;
+	            }
+	          }
+	
+	          if (foundNextKeyFrame) {
+	            // we found another key frame before the targetPts. This means it is safe
+	            // to drop this entire GOP
+	            startIndex = nextIndex;
+	          } else {
+	            // we reached the target pts or the end of the tag list before finding the
+	            // next key frame. We want to append all the tags from the current key frame
+	            // startTag to the targetPts to prevent trimming part of a GOP
+	            while (startIndex < nextIndex) {
+	              filteredVideoTags.push(videoTags[startIndex]);
+	              startIndex++;
+	            }
+	          }
+	          continue;
+	        }
+	        startIndex++;
+	      }
+	
+	      var tags = this.getOrderedTags_(filteredVideoTags, filteredAudioTags);
+	
+	      if (tags.length === 0) {
+	        return;
+	      }
+	
+	      // concatenate the bytes into a single segment
+	      for (var i = 0; i < tags.length; i++) {
+	        segmentByteLength += tags[i].bytes.byteLength;
+	      }
+	      segment = new Uint8Array(segmentByteLength);
+	      for (var i = 0, j = 0; i < tags.length; i++) {
+	        segment.set(tags[i].bytes, j);
+	        j += tags[i].bytes.byteLength;
+	      }
+	
+	      return segment;
+	    }
+	
+	    /**
+	     * Assemble the FLV tags in decoder order.
+	     *
+	     * @private
+	     * @param {Array} videoTags list of video tags
+	     * @param {Array} audioTags list of audio tags
+	     */
+	  }, {
+	    key: 'getOrderedTags_',
+	    value: function getOrderedTags_(videoTags, audioTags) {
+	      var tag = undefined;
+	      var tags = [];
+	
+	      while (videoTags.length || audioTags.length) {
+	        if (!videoTags.length) {
+	          // only audio tags remain
+	          tag = audioTags.shift();
+	        } else if (!audioTags.length) {
+	          // only video tags remain
+	          tag = videoTags.shift();
+	        } else if (audioTags[0].dts < videoTags[0].dts) {
+	          // audio should be decoded next
+	          tag = audioTags.shift();
+	        } else {
+	          // video should be decoded next
+	          tag = videoTags.shift();
+	        }
+	
+	        tags.push(tag);
+	      }
+	
+	      return tags;
+	    }
+	  }]);
+	
+	  return FlashSourceBuffer;
+	})(_videoJs2['default'].EventTarget);
+	
+	exports['default'] = FlashSourceBuffer;
+	module.exports = exports['default'];
+	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+	},{"./add-text-track-data":42,"./create-text-tracks-if-necessary":45,"./flash-constants":46,"./flash-transmuxer-worker":49,"./remove-cues-from-track":51,"global/window":28,"mux.js/lib/flv":62,"webworkify":76}],49:[function(require,module,exports){
+	/**
+	 * @file flash-transmuxer-worker.js
+	 */
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	
+	var _globalWindow = require('global/window');
+	
+	var _globalWindow2 = _interopRequireDefault(_globalWindow);
+	
+	var _muxJsLibFlv = require('mux.js/lib/flv');
+	
+	var _muxJsLibFlv2 = _interopRequireDefault(_muxJsLibFlv);
+	
+	/**
+	 * Re-emits transmuxer events by converting them into messages to the
+	 * world outside the worker.
+	 *
+	 * @param {Object} transmuxer the transmuxer to wire events on
+	 * @private
+	 */
+	var wireTransmuxerEvents = function wireTransmuxerEvents(transmuxer) {
+	  transmuxer.on('data', function (segment) {
+	    _globalWindow2['default'].postMessage({
+	      action: 'data',
+	      segment: segment
+	    });
+	  });
+	
+	  transmuxer.on('done', function (data) {
+	    _globalWindow2['default'].postMessage({ action: 'done' });
+	  });
+	};
+	
+	/**
+	 * All incoming messages route through this hash. If no function exists
+	 * to handle an incoming message, then we ignore the message.
+	 *
+	 * @class MessageHandlers
+	 * @param {Object} options the options to initialize with
+	 */
+	
+	var MessageHandlers = (function () {
+	  function MessageHandlers(options) {
+	    _classCallCheck(this, MessageHandlers);
+	
+	    this.options = options || {};
+	    this.init();
+	  }
+	
+	  /**
+	   * Our web wroker interface so that things can talk to mux.js
+	   * that will be running in a web worker. The scope is passed to this by
+	   * webworkify.
+	   *
+	   * @param {Object} self the scope for the web worker
+	   */
+	
+	  /**
+	   * initialize our web worker and wire all the events.
+	   */
+	
+	  _createClass(MessageHandlers, [{
+	    key: 'init',
+	    value: function init() {
+	      if (this.transmuxer) {
+	        this.transmuxer.dispose();
+	      }
+	      this.transmuxer = new _muxJsLibFlv2['default'].Transmuxer(this.options);
+	      wireTransmuxerEvents(this.transmuxer);
+	    }
+	
+	    /**
+	     * Adds data (a ts segment) to the start of the transmuxer pipeline for
+	     * processing.
+	     *
+	     * @param {ArrayBuffer} data data to push into the muxer
+	     */
+	  }, {
+	    key: 'push',
+	    value: function push(data) {
+	      // Cast array buffer to correct type for transmuxer
+	      var segment = new Uint8Array(data.data, data.byteOffset, data.byteLength);
+	
+	      this.transmuxer.push(segment);
+	    }
+	
+	    /**
+	     * Recreate the transmuxer so that the next segment added via `push`
+	     * start with a fresh transmuxer.
+	     */
+	  }, {
+	    key: 'reset',
+	    value: function reset() {
+	      this.init();
+	    }
+	
+	    /**
+	     * Forces the pipeline to finish processing the last segment and emit its
+	     * results.
+	     */
+	  }, {
+	    key: 'flush',
+	    value: function flush() {
+	      this.transmuxer.flush();
+	    }
+	  }]);
+	
+	  return MessageHandlers;
+	})();
+	
+	var Worker = function Worker(self) {
+	  self.onmessage = function (event) {
+	    if (event.data.action === 'init' && event.data.options) {
+	      this.messageHandlers = new MessageHandlers(event.data.options);
+	      return;
+	    }
+	
+	    if (!this.messageHandlers) {
+	      this.messageHandlers = new MessageHandlers();
+	    }
+	
+	    if (event.data && event.data.action && event.data.action !== 'init') {
+	      if (this.messageHandlers[event.data.action]) {
+	        this.messageHandlers[event.data.action](event.data);
+	      }
+	    }
+	  };
+	};
+	
+	exports['default'] = function (self) {
+	  return new Worker(self);
+	};
+	
+	module.exports = exports['default'];
+	},{"global/window":28,"mux.js/lib/flv":62}],50:[function(require,module,exports){
+	(function (global){
+	/**
+	 * @file html-media-source.js
+	 */
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var _globalWindow = require('global/window');
+	
+	var _globalWindow2 = _interopRequireDefault(_globalWindow);
+	
+	var _globalDocument = require('global/document');
+	
+	var _globalDocument2 = _interopRequireDefault(_globalDocument);
+	
+	var _videoJs = (typeof window !== "undefined" ? window['videojs'] : typeof global !== "undefined" ? global['videojs'] : null);
+	
+	var _videoJs2 = _interopRequireDefault(_videoJs);
+	
+	var _virtualSourceBuffer = require('./virtual-source-buffer');
+	
+	var _virtualSourceBuffer2 = _interopRequireDefault(_virtualSourceBuffer);
+	
+	var _addTextTrackData = require('./add-text-track-data');
+	
+	var _codecUtils = require('./codec-utils');
+	
+	var _cleanupTextTracks = require('./cleanup-text-tracks');
+	
+	/**
+	 * Our MediaSource implementation in HTML, mimics native
+	 * MediaSource where/if possible.
+	 *
+	 * @link https://developer.mozilla.org/en-US/docs/Web/API/MediaSource
+	 * @class HtmlMediaSource
+	 * @extends videojs.EventTarget
+	 */
+	
+	var HtmlMediaSource = (function (_videojs$EventTarget) {
+	  _inherits(HtmlMediaSource, _videojs$EventTarget);
+	
+	  function HtmlMediaSource() {
+	    var _this = this;
+	
+	    _classCallCheck(this, HtmlMediaSource);
+	
+	    _get(Object.getPrototypeOf(HtmlMediaSource.prototype), 'constructor', this).call(this);
+	    var property = undefined;
+	
+	    this.nativeMediaSource_ = new _globalWindow2['default'].MediaSource();
+	    // delegate to the native MediaSource's methods by default
+	    for (property in this.nativeMediaSource_) {
+	      if (!(property in HtmlMediaSource.prototype) && typeof this.nativeMediaSource_[property] === 'function') {
+	        this[property] = this.nativeMediaSource_[property].bind(this.nativeMediaSource_);
+	      }
+	    }
+	
+	    // emulate `duration` and `seekable` until seeking can be
+	    // handled uniformly for live streams
+	    // see https://github.com/w3c/media-source/issues/5
+	    this.duration_ = NaN;
+	    Object.defineProperty(this, 'duration', {
+	      get: function get() {
+	        if (this.duration_ === Infinity) {
+	          return this.duration_;
+	        }
+	        return this.nativeMediaSource_.duration;
+	      },
+	      set: function set(duration) {
+	        this.duration_ = duration;
+	        if (duration !== Infinity) {
+	          this.nativeMediaSource_.duration = duration;
+	          return;
+	        }
+	      }
+	    });
+	    Object.defineProperty(this, 'seekable', {
+	      get: function get() {
+	        if (this.duration_ === Infinity) {
+	          return _videoJs2['default'].createTimeRanges([[0, this.nativeMediaSource_.duration]]);
+	        }
+	        return this.nativeMediaSource_.seekable;
+	      }
+	    });
+	
+	    Object.defineProperty(this, 'readyState', {
+	      get: function get() {
+	        return this.nativeMediaSource_.readyState;
+	      }
+	    });
+	
+	    Object.defineProperty(this, 'activeSourceBuffers', {
+	      get: function get() {
+	        return this.activeSourceBuffers_;
+	      }
+	    });
+	
+	    // the list of virtual and native SourceBuffers created by this
+	    // MediaSource
+	    this.sourceBuffers = [];
+	
+	    this.activeSourceBuffers_ = [];
+	
+	    /**
+	     * update the list of active source buffers based upon various
+	     * imformation from HLS and video.js
+	     *
+	     * @private
+	     */
+	    this.updateActiveSourceBuffers_ = function () {
+	      // Retain the reference but empty the array
+	      _this.activeSourceBuffers_.length = 0;
+	
+	      // By default, the audio in the combined virtual source buffer is enabled
+	      // and the audio-only source buffer (if it exists) is disabled.
+	      var combined = false;
+	      var audioOnly = true;
+	
+	      // TODO: maybe we can store the sourcebuffers on the track objects?
+	      // safari may do something like this
+	      for (var i = 0; i < _this.player_.audioTracks().length; i++) {
+	        var track = _this.player_.audioTracks()[i];
+	
+	        if (track.enabled && track.kind !== 'main') {
+	          // The enabled track is an alternate audio track so disable the audio in
+	          // the combined source buffer and enable the audio-only source buffer.
+	          combined = true;
+	          audioOnly = false;
+	          break;
+	        }
+	      }
+	
+	      // Since we currently support a max of two source buffers, add all of the source
+	      // buffers (in order).
+	      _this.sourceBuffers.forEach(function (sourceBuffer) {
+	        /* eslinst-disable */
+	        // TODO once codecs are required, we can switch to using the codecs to determine
+	        //      what stream is the video stream, rather than relying on videoTracks
+	        /* eslinst-enable */
+	
+	        sourceBuffer.appendAudioInitSegment_ = true;
+	
+	        if (sourceBuffer.videoCodec_ && sourceBuffer.audioCodec_) {
+	          // combined
+	          sourceBuffer.audioDisabled_ = combined;
+	        } else if (sourceBuffer.videoCodec_ && !sourceBuffer.audioCodec_) {
+	          // If the "combined" source buffer is video only, then we do not want
+	          // disable the audio-only source buffer (this is mostly for demuxed
+	          // audio and video hls)
+	          sourceBuffer.audioDisabled_ = true;
+	          audioOnly = false;
+	        } else if (!sourceBuffer.videoCodec_ && sourceBuffer.audioCodec_) {
+	          // audio only
+	          sourceBuffer.audioDisabled_ = audioOnly;
+	          if (audioOnly) {
+	            return;
+	          }
+	        }
+	
+	        _this.activeSourceBuffers_.push(sourceBuffer);
+	      });
+	    };
+	
+	    this.onPlayerMediachange_ = function () {
+	      _this.sourceBuffers.forEach(function (sourceBuffer) {
+	        sourceBuffer.appendAudioInitSegment_ = true;
+	      });
+	    };
+	
+	    // Re-emit MediaSource events on the polyfill
+	    ['sourceopen', 'sourceclose', 'sourceended'].forEach(function (eventName) {
+	      this.nativeMediaSource_.addEventListener(eventName, this.trigger.bind(this));
+	    }, this);
+	
+	    // capture the associated player when the MediaSource is
+	    // successfully attached
+	    this.on('sourceopen', function (event) {
+	      // Get the player this MediaSource is attached to
+	      var video = _globalDocument2['default'].querySelector('[src="' + _this.url_ + '"]');
+	
+	      if (!video) {
+	        return;
+	      }
+	
+	      _this.player_ = (0, _videoJs2['default'])(video.parentNode);
+	
+	      if (_this.player_.audioTracks && _this.player_.audioTracks()) {
+	        _this.player_.audioTracks().on('change', _this.updateActiveSourceBuffers_);
+	        _this.player_.audioTracks().on('addtrack', _this.updateActiveSourceBuffers_);
+	        _this.player_.audioTracks().on('removetrack', _this.updateActiveSourceBuffers_);
+	      }
+	
+	      _this.player_.on('mediachange', _this.onPlayerMediachange_);
+	    });
+	
+	    this.on('sourceended', function (event) {
+	      var duration = (0, _addTextTrackData.durationOfVideo)(_this.duration);
+	
+	      for (var i = 0; i < _this.sourceBuffers.length; i++) {
+	        var sourcebuffer = _this.sourceBuffers[i];
+	        var cues = sourcebuffer.metadataTrack_ && sourcebuffer.metadataTrack_.cues;
+	
+	        if (cues && cues.length) {
+	          cues[cues.length - 1].endTime = duration;
+	        }
+	      }
+	    });
+	
+	    // explicitly terminate any WebWorkers that were created
+	    // by SourceHandlers
+	    this.on('sourceclose', function (event) {
+	      this.sourceBuffers.forEach(function (sourceBuffer) {
+	        if (sourceBuffer.transmuxer_) {
+	          sourceBuffer.transmuxer_.terminate();
+	        }
+	      });
+	
+	      this.sourceBuffers.length = 0;
+	      if (!this.player_) {
+	        return;
+	      }
+	
+	      (0, _cleanupTextTracks.cleanupTextTracks)(this.player_);
+	
+	      if (this.player_.audioTracks && this.player_.audioTracks()) {
+	        this.player_.audioTracks().off('change', this.updateActiveSourceBuffers_);
+	        this.player_.audioTracks().off('addtrack', this.updateActiveSourceBuffers_);
+	        this.player_.audioTracks().off('removetrack', this.updateActiveSourceBuffers_);
+	      }
+	
+	      // We can only change this if the player hasn't been disposed of yet
+	      // because `off` eventually tries to use the el_ property. If it has
+	      // been disposed of, then don't worry about it because there are no
+	      // event handlers left to unbind anyway
+	      if (this.player_.el_) {
+	        this.player_.off('mediachange', this.onPlayerMediachange_);
+	      }
+	    });
+	  }
+	
+	  /**
+	   * Add a range that that can now be seeked to.
+	   *
+	   * @param {Double} start where to start the addition
+	   * @param {Double} end where to end the addition
+	   * @private
+	   */
+	
+	  _createClass(HtmlMediaSource, [{
+	    key: 'addSeekableRange_',
+	    value: function addSeekableRange_(start, end) {
+	      var error = undefined;
+	
+	      if (this.duration !== Infinity) {
+	        error = new Error('MediaSource.addSeekableRange() can only be invoked ' + 'when the duration is Infinity');
+	        error.name = 'InvalidStateError';
+	        error.code = 11;
+	        throw error;
+	      }
+	
+	      if (end > this.nativeMediaSource_.duration || isNaN(this.nativeMediaSource_.duration)) {
+	        this.nativeMediaSource_.duration = end;
+	      }
+	    }
+	
+	    /**
+	     * Add a source buffer to the media source.
+	     *
+	     * @link https://developer.mozilla.org/en-US/docs/Web/API/MediaSource/addSourceBuffer
+	     * @param {String} type the content-type of the content
+	     * @return {Object} the created source buffer
+	     */
+	  }, {
+	    key: 'addSourceBuffer',
+	    value: function addSourceBuffer(type) {
+	      var buffer = undefined;
+	      var parsedType = (0, _codecUtils.parseContentType)(type);
+	
+	      // Create a VirtualSourceBuffer to transmux MPEG-2 transport
+	      // stream segments into fragmented MP4s
+	      if (/^(video|audio)\/mp2t$/i.test(parsedType.type)) {
+	        var codecs = [];
+	
+	        if (parsedType.parameters && parsedType.parameters.codecs) {
+	          codecs = parsedType.parameters.codecs.split(',');
+	          codecs = (0, _codecUtils.translateLegacyCodecs)(codecs);
+	          codecs = codecs.filter(function (codec) {
+	            return (0, _codecUtils.isAudioCodec)(codec) || (0, _codecUtils.isVideoCodec)(codec);
+	          });
+	        }
+	
+	        if (codecs.length === 0) {
+	          codecs = ['avc1.4d400d', 'mp4a.40.2'];
+	        }
+	
+	        buffer = new _virtualSourceBuffer2['default'](this, codecs);
+	
+	        if (this.sourceBuffers.length !== 0) {
+	          // If another VirtualSourceBuffer already exists, then we are creating a
+	          // SourceBuffer for an alternate audio track and therefore we know that
+	          // the source has both an audio and video track.
+	          // That means we should trigger the manual creation of the real
+	          // SourceBuffers instead of waiting for the transmuxer to return data
+	          this.sourceBuffers[0].createRealSourceBuffers_();
+	          buffer.createRealSourceBuffers_();
+	
+	          // Automatically disable the audio on the first source buffer if
+	          // a second source buffer is ever created
+	          this.sourceBuffers[0].audioDisabled_ = true;
+	        }
+	      } else {
+	        // delegate to the native implementation
+	        buffer = this.nativeMediaSource_.addSourceBuffer(type);
+	      }
+	
+	      this.sourceBuffers.push(buffer);
+	      return buffer;
+	    }
+	  }]);
+	
+	  return HtmlMediaSource;
+	})(_videoJs2['default'].EventTarget);
+	
+	exports['default'] = HtmlMediaSource;
+	module.exports = exports['default'];
+	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+	},{"./add-text-track-data":42,"./cleanup-text-tracks":43,"./codec-utils":44,"./virtual-source-buffer":54,"global/document":27,"global/window":28}],51:[function(require,module,exports){
+	/**
+	 * @file remove-cues-from-track.js
+	 */
+	
+	/**
+	 * Remove cues from a track on video.js.
+	 *
+	 * @param {Double} start start of where we should remove the cue
+	 * @param {Double} end end of where the we should remove the cue
+	 * @param {Object} track the text track to remove the cues from
+	 * @private
+	 */
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var removeCuesFromTrack = function removeCuesFromTrack(start, end, track) {
+	  var i = undefined;
+	  var cue = undefined;
+	
+	  if (!track) {
+	    return;
+	  }
+	
+	  if (!track.cues) {
+	    return;
+	  }
+	
+	  i = track.cues.length;
+	
+	  while (i--) {
+	    cue = track.cues[i];
+	
+	    // Remove any overlapping cue
+	    if (cue.startTime <= end && cue.endTime >= start) {
+	      track.removeCue(cue);
+	    }
+	  }
+	};
+	
+	exports["default"] = removeCuesFromTrack;
+	module.exports = exports["default"];
+	},{}],52:[function(require,module,exports){
+	/**
+	 * @file transmuxer-worker.js
+	 */
+	
+	/**
+	 * videojs-contrib-media-sources
+	 *
+	 * Copyright (c) 2015 Brightcove
+	 * All rights reserved.
+	 *
+	 * Handles communication between the browser-world and the mux.js
+	 * transmuxer running inside of a WebWorker by exposing a simple
+	 * message-based interface to a Transmuxer object.
+	 */
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	
+	var _globalWindow = require('global/window');
+	
+	var _globalWindow2 = _interopRequireDefault(_globalWindow);
+	
+	var _muxJsLibMp4 = require('mux.js/lib/mp4');
+	
+	var _muxJsLibMp42 = _interopRequireDefault(_muxJsLibMp4);
+	
+	/**
+	 * Re-emits transmuxer events by converting them into messages to the
+	 * world outside the worker.
+	 *
+	 * @param {Object} transmuxer the transmuxer to wire events on
+	 * @private
+	 */
+	var wireTransmuxerEvents = function wireTransmuxerEvents(transmuxer) {
+	  transmuxer.on('data', function (segment) {
+	    // transfer ownership of the underlying ArrayBuffer
+	    // instead of doing a copy to save memory
+	    // ArrayBuffers are transferable but generic TypedArrays are not
+	    // @link https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers#Passing_data_by_transferring_ownership_(transferable_objects)
+	    var initArray = segment.initSegment;
+	
+	    segment.initSegment = {
+	      data: initArray.buffer,
+	      byteOffset: initArray.byteOffset,
+	      byteLength: initArray.byteLength
+	    };
+	
+	    var typedArray = segment.data;
+	
+	    segment.data = typedArray.buffer;
+	    _globalWindow2['default'].postMessage({
+	      action: 'data',
+	      segment: segment,
+	      byteOffset: typedArray.byteOffset,
+	      byteLength: typedArray.byteLength
+	    }, [segment.data]);
+	  });
+	
+	  if (transmuxer.captionStream) {
+	    transmuxer.captionStream.on('data', function (caption) {
+	      _globalWindow2['default'].postMessage({
+	        action: 'caption',
+	        data: caption
+	      });
+	    });
+	  }
+	
+	  transmuxer.on('done', function (data) {
+	    _globalWindow2['default'].postMessage({ action: 'done' });
+	  });
+	};
+	
+	/**
+	 * All incoming messages route through this hash. If no function exists
+	 * to handle an incoming message, then we ignore the message.
+	 *
+	 * @class MessageHandlers
+	 * @param {Object} options the options to initialize with
+	 */
+	
+	var MessageHandlers = (function () {
+	  function MessageHandlers(options) {
+	    _classCallCheck(this, MessageHandlers);
+	
+	    this.options = options || {};
+	    this.init();
+	  }
+	
+	  /**
+	   * Our web wroker interface so that things can talk to mux.js
+	   * that will be running in a web worker. the scope is passed to this by
+	   * webworkify.
+	   *
+	   * @param {Object} self the scope for the web worker
+	   */
+	
+	  /**
+	   * initialize our web worker and wire all the events.
+	   */
+	
+	  _createClass(MessageHandlers, [{
+	    key: 'init',
+	    value: function init() {
+	      if (this.transmuxer) {
+	        this.transmuxer.dispose();
+	      }
+	      this.transmuxer = new _muxJsLibMp42['default'].Transmuxer(this.options);
+	      wireTransmuxerEvents(this.transmuxer);
+	    }
+	
+	    /**
+	     * Adds data (a ts segment) to the start of the transmuxer pipeline for
+	     * processing.
+	     *
+	     * @param {ArrayBuffer} data data to push into the muxer
+	     */
+	  }, {
+	    key: 'push',
+	    value: function push(data) {
+	      // Cast array buffer to correct type for transmuxer
+	      var segment = new Uint8Array(data.data, data.byteOffset, data.byteLength);
+	
+	      this.transmuxer.push(segment);
+	    }
+	
+	    /**
+	     * Recreate the transmuxer so that the next segment added via `push`
+	     * start with a fresh transmuxer.
+	     */
+	  }, {
+	    key: 'reset',
+	    value: function reset() {
+	      this.init();
+	    }
+	
+	    /**
+	     * Set the value that will be used as the `baseMediaDecodeTime` time for the
+	     * next segment pushed in. Subsequent segments will have their `baseMediaDecodeTime`
+	     * set relative to the first based on the PTS values.
+	     *
+	     * @param {Object} data used to set the timestamp offset in the muxer
+	     */
+	  }, {
+	    key: 'setTimestampOffset',
+	    value: function setTimestampOffset(data) {
+	      var timestampOffset = data.timestampOffset || 0;
+	
+	      this.transmuxer.setBaseMediaDecodeTime(Math.round(timestampOffset * 90000));
+	    }
+	  }, {
+	    key: 'setAudioAppendStart',
+	    value: function setAudioAppendStart(data) {
+	      this.transmuxer.setAudioAppendStart(Math.ceil(data.appendStart * 90000));
+	    }
+	
+	    /**
+	     * Forces the pipeline to finish processing the last segment and emit it's
+	     * results.
+	     *
+	     * @param {Object} data event data, not really used
+	     */
+	  }, {
+	    key: 'flush',
+	    value: function flush(data) {
+	      this.transmuxer.flush();
+	    }
+	  }]);
+	
+	  return MessageHandlers;
+	})();
+	
+	var Worker = function Worker(self) {
+	  self.onmessage = function (event) {
+	    if (event.data.action === 'init' && event.data.options) {
+	      this.messageHandlers = new MessageHandlers(event.data.options);
+	      return;
+	    }
+	
+	    if (!this.messageHandlers) {
+	      this.messageHandlers = new MessageHandlers();
+	    }
+	
+	    if (event.data && event.data.action && event.data.action !== 'init') {
+	      if (this.messageHandlers[event.data.action]) {
+	        this.messageHandlers[event.data.action](event.data);
+	      }
+	    }
+	  };
+	};
+	
+	exports['default'] = function (self) {
+	  return new Worker(self);
+	};
+	
+	module.exports = exports['default'];
+	},{"global/window":28,"mux.js/lib/mp4":70}],53:[function(require,module,exports){
+	(function (global){
+	/**
+	 * @file videojs-contrib-media-sources.js
+	 */
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	var _globalWindow = require('global/window');
+	
+	var _globalWindow2 = _interopRequireDefault(_globalWindow);
+	
+	var _flashMediaSource = require('./flash-media-source');
+	
+	var _flashMediaSource2 = _interopRequireDefault(_flashMediaSource);
+	
+	var _htmlMediaSource = require('./html-media-source');
+	
+	var _htmlMediaSource2 = _interopRequireDefault(_htmlMediaSource);
+	
+	var _videoJs = (typeof window !== "undefined" ? window['videojs'] : typeof global !== "undefined" ? global['videojs'] : null);
+	
+	var _videoJs2 = _interopRequireDefault(_videoJs);
+	
+	var urlCount = 0;
+	
+	// ------------
+	// Media Source
+	// ------------
+	
+	var defaults = {
+	  // how to determine the MediaSource implementation to use. There
+	  // are three available modes:
+	  // - auto: use native MediaSources where available and Flash
+	  //   everywhere else
+	  // - html5: always use native MediaSources
+	  // - flash: always use the Flash MediaSource polyfill
+	  mode: 'auto'
+	};
+	
+	// store references to the media sources so they can be connected
+	// to a video element (a swf object)
+	// TODO: can we store this somewhere local to this module?
+	_videoJs2['default'].mediaSources = {};
+	
+	/**
+	 * Provide a method for a swf object to notify JS that a
+	 * media source is now open.
+	 *
+	 * @param {String} msObjectURL string referencing the MSE Object URL
+	 * @param {String} swfId the swf id
+	 */
+	var open = function open(msObjectURL, swfId) {
+	  var mediaSource = _videoJs2['default'].mediaSources[msObjectURL];
+	
+	  if (mediaSource) {
+	    mediaSource.trigger({ type: 'sourceopen', swfId: swfId });
+	  } else {
+	    throw new Error('Media Source not found (Video.js)');
+	  }
+	};
+	
+	/**
+	 * Check to see if the native MediaSource object exists and supports
+	 * an MP4 container with both H.264 video and AAC-LC audio.
+	 *
+	 * @return {Boolean} if  native media sources are supported
+	 */
+	var supportsNativeMediaSources = function supportsNativeMediaSources() {
+	  return !!_globalWindow2['default'].MediaSource && !!_globalWindow2['default'].MediaSource.isTypeSupported && _globalWindow2['default'].MediaSource.isTypeSupported('video/mp4;codecs="avc1.4d400d,mp4a.40.2"');
+	};
+	
+	/**
+	 * An emulation of the MediaSource API so that we can support
+	 * native and non-native functionality such as flash and
+	 * video/mp2t videos. returns an instance of HtmlMediaSource or
+	 * FlashMediaSource depending on what is supported and what options
+	 * are passed in.
+	 *
+	 * @link https://developer.mozilla.org/en-US/docs/Web/API/MediaSource/MediaSource
+	 * @param {Object} options options to use during setup.
+	 */
+	var MediaSource = function MediaSource(options) {
+	  var settings = _videoJs2['default'].mergeOptions(defaults, options);
+	
+	  this.MediaSource = {
+	    open: open,
+	    supportsNativeMediaSources: supportsNativeMediaSources
+	  };
+	
+	  // determine whether HTML MediaSources should be used
+	  if (settings.mode === 'html5' || settings.mode === 'auto' && supportsNativeMediaSources()) {
+	    return new _htmlMediaSource2['default']();
+	  }
+	
+	  // otherwise, emulate them through the SWF
+	  return new _flashMediaSource2['default']();
+	};
+	
+	exports.MediaSource = MediaSource;
+	MediaSource.open = open;
+	MediaSource.supportsNativeMediaSources = supportsNativeMediaSources;
+	
+	/**
+	 * A wrapper around the native URL for our MSE object
+	 * implementation, this object is exposed under videojs.URL
+	 *
+	 * @link https://developer.mozilla.org/en-US/docs/Web/API/URL/URL
+	 */
+	var URL = {
+	  /**
+	   * A wrapper around the native createObjectURL for our objects.
+	   * This function maps a native or emulated mediaSource to a blob
+	   * url so that it can be loaded into video.js
+	   *
+	   * @link https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL
+	   * @param {MediaSource} object the object to create a blob url to
+	   */
+	  createObjectURL: function createObjectURL(object) {
+	    var objectUrlPrefix = 'blob:vjs-media-source/';
+	    var url = undefined;
+	
+	    // use the native MediaSource to generate an object URL
+	    if (object instanceof _htmlMediaSource2['default']) {
+	      url = _globalWindow2['default'].URL.createObjectURL(object.nativeMediaSource_);
+	      object.url_ = url;
+	      return url;
+	    }
+	    // if the object isn't an emulated MediaSource, delegate to the
+	    // native implementation
+	    if (!(object instanceof _flashMediaSource2['default'])) {
+	      url = _globalWindow2['default'].URL.createObjectURL(object);
+	      object.url_ = url;
+	      return url;
+	    }
+	
+	    // build a URL that can be used to map back to the emulated
+	    // MediaSource
+	    url = objectUrlPrefix + urlCount;
+	
+	    urlCount++;
+	
+	    // setup the mapping back to object
+	    _videoJs2['default'].mediaSources[url] = object;
+	
+	    return url;
+	  }
+	};
+	
+	exports.URL = URL;
+	_videoJs2['default'].MediaSource = MediaSource;
+	_videoJs2['default'].URL = URL;
+	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+	},{"./flash-media-source":47,"./html-media-source":50,"global/window":28}],54:[function(require,module,exports){
+	(function (global){
+	/**
+	 * @file virtual-source-buffer.js
+	 */
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var _videoJs = (typeof window !== "undefined" ? window['videojs'] : typeof global !== "undefined" ? global['videojs'] : null);
+	
+	var _videoJs2 = _interopRequireDefault(_videoJs);
+	
+	var _createTextTracksIfNecessary = require('./create-text-tracks-if-necessary');
+	
+	var _createTextTracksIfNecessary2 = _interopRequireDefault(_createTextTracksIfNecessary);
+	
+	var _removeCuesFromTrack = require('./remove-cues-from-track');
+	
+	var _removeCuesFromTrack2 = _interopRequireDefault(_removeCuesFromTrack);
+	
+	var _addTextTrackData = require('./add-text-track-data');
+	
+	var _webworkify = require('webworkify');
+	
+	var _webworkify2 = _interopRequireDefault(_webworkify);
+	
+	var _transmuxerWorker = require('./transmuxer-worker');
+	
+	var _transmuxerWorker2 = _interopRequireDefault(_transmuxerWorker);
+	
+	var _codecUtils = require('./codec-utils');
+	
+	/**
+	 * VirtualSourceBuffers exist so that we can transmux non native formats
+	 * into a native format, but keep the same api as a native source buffer.
+	 * It creates a transmuxer, that works in its own thread (a web worker) and
+	 * that transmuxer muxes the data into a native format. VirtualSourceBuffer will
+	 * then send all of that data to the naive sourcebuffer so that it is
+	 * indestinguishable from a natively supported format.
+	 *
+	 * @param {HtmlMediaSource} mediaSource the parent mediaSource
+	 * @param {Array} codecs array of codecs that we will be dealing with
+	 * @class VirtualSourceBuffer
+	 * @extends video.js.EventTarget
+	 */
+	
+	var VirtualSourceBuffer = (function (_videojs$EventTarget) {
+	  _inherits(VirtualSourceBuffer, _videojs$EventTarget);
+	
+	  function VirtualSourceBuffer(mediaSource, codecs) {
+	    var _this = this;
+	
+	    _classCallCheck(this, VirtualSourceBuffer);
+	
+	    _get(Object.getPrototypeOf(VirtualSourceBuffer.prototype), 'constructor', this).call(this, _videoJs2['default'].EventTarget);
+	    this.timestampOffset_ = 0;
+	    this.pendingBuffers_ = [];
+	    this.bufferUpdating_ = false;
+	    this.mediaSource_ = mediaSource;
+	    this.codecs_ = codecs;
+	    this.audioCodec_ = null;
+	    this.videoCodec_ = null;
+	    this.audioDisabled_ = false;
+	    this.appendAudioInitSegment_ = true;
+	
+	    var options = {
+	      remux: false
+	    };
+	
+	    this.codecs_.forEach(function (codec) {
+	      if ((0, _codecUtils.isAudioCodec)(codec)) {
+	        _this.audioCodec_ = codec;
+	      } else if ((0, _codecUtils.isVideoCodec)(codec)) {
+	        _this.videoCodec_ = codec;
+	      }
+	    });
+	
+	    // append muxed segments to their respective native buffers as
+	    // soon as they are available
+	    this.transmuxer_ = (0, _webworkify2['default'])(_transmuxerWorker2['default']);
+	    this.transmuxer_.postMessage({ action: 'init', options: options });
+	
+	    this.transmuxer_.onmessage = function (event) {
+	      if (event.data.action === 'data') {
+	        return _this.data_(event);
+	      }
+	
+	      if (event.data.action === 'done') {
+	        return _this.done_(event);
+	      }
+	    };
+	
+	    // this timestampOffset is a property with the side-effect of resetting
+	    // baseMediaDecodeTime in the transmuxer on the setter
+	    Object.defineProperty(this, 'timestampOffset', {
+	      get: function get() {
+	        return this.timestampOffset_;
+	      },
+	      set: function set(val) {
+	        if (typeof val === 'number' && val >= 0) {
+	          this.timestampOffset_ = val;
+	          this.appendAudioInitSegment_ = true;
+	
+	          // We have to tell the transmuxer to set the baseMediaDecodeTime to
+	          // the desired timestampOffset for the next segment
+	          this.transmuxer_.postMessage({
+	            action: 'setTimestampOffset',
+	            timestampOffset: val
+	          });
+	        }
+	      }
+	    });
+	
+	    // setting the append window affects both source buffers
+	    Object.defineProperty(this, 'appendWindowStart', {
+	      get: function get() {
+	        return (this.videoBuffer_ || this.audioBuffer_).appendWindowStart;
+	      },
+	      set: function set(start) {
+	        if (this.videoBuffer_) {
+	          this.videoBuffer_.appendWindowStart = start;
+	        }
+	        if (this.audioBuffer_) {
+	          this.audioBuffer_.appendWindowStart = start;
+	        }
+	      }
+	    });
+	
+	    // this buffer is "updating" if either of its native buffers are
+	    Object.defineProperty(this, 'updating', {
+	      get: function get() {
+	        return !!(this.bufferUpdating_ || !this.audioDisabled_ && this.audioBuffer_ && this.audioBuffer_.updating || this.videoBuffer_ && this.videoBuffer_.updating);
+	      }
+	    });
+	
+	    // the buffered property is the intersection of the buffered
+	    // ranges of the native source buffers
+	    Object.defineProperty(this, 'buffered', {
+	      get: function get() {
+	        var start = null;
+	        var end = null;
+	        var arity = 0;
+	        var extents = [];
+	        var ranges = [];
+	
+	        // neither buffer has been created yet
+	        if (!this.videoBuffer_ && !this.audioBuffer_) {
+	          return _videoJs2['default'].createTimeRange();
+	        }
+	
+	        // only one buffer is configured
+	        if (!this.videoBuffer_) {
+	          return this.audioBuffer_.buffered;
+	        }
+	        if (!this.audioBuffer_) {
+	          return this.videoBuffer_.buffered;
+	        }
+	
+	        // both buffers are configured
+	        if (this.audioDisabled_) {
+	          return this.videoBuffer_.buffered;
+	        }
+	
+	        // both buffers are empty
+	        if (this.videoBuffer_.buffered.length === 0 && this.audioBuffer_.buffered.length === 0) {
+	          return _videoJs2['default'].createTimeRange();
+	        }
+	
+	        // Handle the case where we have both buffers and create an
+	        // intersection of the two
+	        var videoBuffered = this.videoBuffer_.buffered;
+	        var audioBuffered = this.audioBuffer_.buffered;
+	        var count = videoBuffered.length;
+	
+	        // A) Gather up all start and end times
+	        while (count--) {
+	          extents.push({ time: videoBuffered.start(count), type: 'start' });
+	          extents.push({ time: videoBuffered.end(count), type: 'end' });
+	        }
+	        count = audioBuffered.length;
+	        while (count--) {
+	          extents.push({ time: audioBuffered.start(count), type: 'start' });
+	          extents.push({ time: audioBuffered.end(count), type: 'end' });
+	        }
+	        // B) Sort them by time
+	        extents.sort(function (a, b) {
+	          return a.time - b.time;
+	        });
+	
+	        // C) Go along one by one incrementing arity for start and decrementing
+	        //    arity for ends
+	        for (count = 0; count < extents.length; count++) {
+	          if (extents[count].type === 'start') {
+	            arity++;
+	
+	            // D) If arity is ever incremented to 2 we are entering an
+	            //    overlapping range
+	            if (arity === 2) {
+	              start = extents[count].time;
+	            }
+	          } else if (extents[count].type === 'end') {
+	            arity--;
+	
+	            // E) If arity is ever decremented to 1 we leaving an
+	            //    overlapping range
+	            if (arity === 1) {
+	              end = extents[count].time;
+	            }
+	          }
+	
+	          // F) Record overlapping ranges
+	          if (start !== null && end !== null) {
+	            ranges.push([start, end]);
+	            start = null;
+	            end = null;
+	          }
+	        }
+	
+	        return _videoJs2['default'].createTimeRanges(ranges);
+	      }
+	    });
+	  }
+	
+	  /**
+	   * When we get a data event from the transmuxer
+	   * we call this function and handle the data that
+	   * was sent to us
+	   *
+	   * @private
+	   * @param {Event} event the data event from the transmuxer
+	   */
+	
+	  _createClass(VirtualSourceBuffer, [{
+	    key: 'data_',
+	    value: function data_(event) {
+	      var segment = event.data.segment;
+	
+	      // Cast ArrayBuffer to TypedArray
+	      segment.data = new Uint8Array(segment.data, event.data.byteOffset, event.data.byteLength);
+	
+	      segment.initSegment = new Uint8Array(segment.initSegment.data, segment.initSegment.byteOffset, segment.initSegment.byteLength);
+	
+	      (0, _createTextTracksIfNecessary2['default'])(this, this.mediaSource_, segment);
+	
+	      // Add the segments to the pendingBuffers array
+	      this.pendingBuffers_.push(segment);
+	      return;
+	    }
+	
+	    /**
+	     * When we get a done event from the transmuxer
+	     * we call this function and we process all
+	     * of the pending data that we have been saving in the
+	     * data_ function
+	     *
+	     * @private
+	     * @param {Event} event the done event from the transmuxer
+	     */
+	  }, {
+	    key: 'done_',
+	    value: function done_(event) {
+	      // All buffers should have been flushed from the muxer
+	      // start processing anything we have received
+	      this.processPendingSegments_();
+	      return;
+	    }
+	
+	    /**
+	     * Create our internal native audio/video source buffers and add
+	     * event handlers to them with the following conditions:
+	     * 1. they do not already exist on the mediaSource
+	     * 2. this VSB has a codec for them
+	     *
+	     * @private
+	     */
+	  }, {
+	    key: 'createRealSourceBuffers_',
+	    value: function createRealSourceBuffers_() {
+	      var _this2 = this;
+	
+	      var types = ['audio', 'video'];
+	
+	      types.forEach(function (type) {
+	        // Don't create a SourceBuffer of this type if we don't have a
+	        // codec for it
+	        if (!_this2[type + 'Codec_']) {
+	          return;
+	        }
+	
+	        // Do nothing if a SourceBuffer of this type already exists
+	        if (_this2[type + 'Buffer_']) {
+	          return;
+	        }
+	
+	        var buffer = null;
+	
+	        // If the mediasource already has a SourceBuffer for the codec
+	        // use that
+	        if (_this2.mediaSource_[type + 'Buffer_']) {
+	          buffer = _this2.mediaSource_[type + 'Buffer_'];
+	        } else {
+	          buffer = _this2.mediaSource_.nativeMediaSource_.addSourceBuffer(type + '/mp4;codecs="' + _this2[type + 'Codec_'] + '"');
+	          _this2.mediaSource_[type + 'Buffer_'] = buffer;
+	        }
+	
+	        _this2[type + 'Buffer_'] = buffer;
+	
+	        // Wire up the events to the SourceBuffer
+	        ['update', 'updatestart', 'updateend'].forEach(function (event) {
+	          buffer.addEventListener(event, function () {
+	            // if audio is disabled
+	            if (type === 'audio' && _this2.audioDisabled_) {
+	              return;
+	            }
+	
+	            var shouldTrigger = types.every(function (t) {
+	              // skip checking audio's updating status if audio
+	              // is not enabled
+	              if (t === 'audio' && _this2.audioDisabled_) {
+	                return true;
+	              }
+	              // if the other type if updating we don't trigger
+	              if (type !== t && _this2[t + 'Buffer_'] && _this2[t + 'Buffer_'].updating) {
+	                return false;
+	              }
+	              return true;
+	            });
+	
+	            if (shouldTrigger) {
+	              return _this2.trigger(event);
+	            }
+	          });
+	        });
+	      });
+	    }
+	
+	    /**
+	     * Emulate the native mediasource function, but our function will
+	     * send all of the proposed segments to the transmuxer so that we
+	     * can transmux them before we append them to our internal
+	     * native source buffers in the correct format.
+	     *
+	     * @link https://developer.mozilla.org/en-US/docs/Web/API/SourceBuffer/appendBuffer
+	     * @param {Uint8Array} segment the segment to append to the buffer
+	     */
+	  }, {
+	    key: 'appendBuffer',
+	    value: function appendBuffer(segment) {
+	      // Start the internal "updating" state
+	      this.bufferUpdating_ = true;
+	
+	      if (this.audioBuffer_ && this.audioBuffer_.buffered.length) {
+	        var audioBuffered = this.audioBuffer_.buffered;
+	
+	        this.transmuxer_.postMessage({
+	          action: 'setAudioAppendStart',
+	          appendStart: audioBuffered.end(audioBuffered.length - 1)
+	        });
+	      }
+	
+	      this.transmuxer_.postMessage({
+	        action: 'push',
+	        // Send the typed-array of data as an ArrayBuffer so that
+	        // it can be sent as a "Transferable" and avoid the costly
+	        // memory copy
+	        data: segment.buffer,
+	
+	        // To recreate the original typed-array, we need information
+	        // about what portion of the ArrayBuffer it was a view into
+	        byteOffset: segment.byteOffset,
+	        byteLength: segment.byteLength
+	      }, [segment.buffer]);
+	      this.transmuxer_.postMessage({ action: 'flush' });
+	    }
+	
+	    /**
+	     * Emulate the native mediasource function and remove parts
+	     * of the buffer from any of our internal buffers that exist
+	     *
+	     * @link https://developer.mozilla.org/en-US/docs/Web/API/SourceBuffer/remove
+	     * @param {Double} start position to start the remove at
+	     * @param {Double} end position to end the remove at
+	     */
+	  }, {
+	    key: 'remove',
+	    value: function remove(start, end) {
+	      if (this.videoBuffer_) {
+	        this.videoBuffer_.remove(start, end);
+	      }
+	      if (this.audioBuffer_) {
+	        this.audioBuffer_.remove(start, end);
+	      }
+	
+	      // Remove Metadata Cues (id3)
+	      (0, _removeCuesFromTrack2['default'])(start, end, this.metadataTrack_);
+	
+	      // Remove Any Captions
+	      (0, _removeCuesFromTrack2['default'])(start, end, this.inbandTextTrack_);
+	    }
+	
+	    /**
+	     * Process any segments that the muxer has output
+	     * Concatenate segments together based on type and append them into
+	     * their respective sourceBuffers
+	     *
+	     * @private
+	     */
+	  }, {
+	    key: 'processPendingSegments_',
+	    value: function processPendingSegments_() {
+	      var sortedSegments = {
+	        video: {
+	          segments: [],
+	          bytes: 0
+	        },
+	        audio: {
+	          segments: [],
+	          bytes: 0
+	        },
+	        captions: [],
+	        metadata: []
+	      };
+	
+	      // Sort segments into separate video/audio arrays and
+	      // keep track of their total byte lengths
+	      sortedSegments = this.pendingBuffers_.reduce(function (segmentObj, segment) {
+	        var type = segment.type;
+	        var data = segment.data;
+	        var initSegment = segment.initSegment;
+	
+	        segmentObj[type].segments.push(data);
+	        segmentObj[type].bytes += data.byteLength;
+	
+	        segmentObj[type].initSegment = initSegment;
+	
+	        // Gather any captions into a single array
+	        if (segment.captions) {
+	          segmentObj.captions = segmentObj.captions.concat(segment.captions);
+	        }
+	
+	        if (segment.info) {
+	          segmentObj[type].info = segment.info;
+	        }
+	
+	        // Gather any metadata into a single array
+	        if (segment.metadata) {
+	          segmentObj.metadata = segmentObj.metadata.concat(segment.metadata);
+	        }
+	
+	        return segmentObj;
+	      }, sortedSegments);
+	
+	      // Create the real source buffers if they don't exist by now since we
+	      // finally are sure what tracks are contained in the source
+	      if (!this.videoBuffer_ && !this.audioBuffer_) {
+	        // Remove any codecs that may have been specified by default but
+	        // are no longer applicable now
+	        if (sortedSegments.video.bytes === 0) {
+	          this.videoCodec_ = null;
+	        }
+	        if (sortedSegments.audio.bytes === 0) {
+	          this.audioCodec_ = null;
+	        }
+	
+	        this.createRealSourceBuffers_();
+	      }
+	
+	      if (sortedSegments.audio.info) {
+	        this.mediaSource_.trigger({ type: 'audioinfo', info: sortedSegments.audio.info });
+	      }
+	      if (sortedSegments.video.info) {
+	        this.mediaSource_.trigger({ type: 'videoinfo', info: sortedSegments.video.info });
+	      }
+	
+	      if (this.appendAudioInitSegment_) {
+	        if (!this.audioDisabled_ && this.audioBuffer_) {
+	          sortedSegments.audio.segments.unshift(sortedSegments.audio.initSegment);
+	          sortedSegments.audio.bytes += sortedSegments.audio.initSegment.byteLength;
+	        }
+	        this.appendAudioInitSegment_ = false;
+	      }
+	
+	      // Merge multiple video and audio segments into one and append
+	      if (this.videoBuffer_) {
+	        sortedSegments.video.segments.unshift(sortedSegments.video.initSegment);
+	        sortedSegments.video.bytes += sortedSegments.video.initSegment.byteLength;
+	        this.concatAndAppendSegments_(sortedSegments.video, this.videoBuffer_);
+	        // TODO: are video tracks the only ones with text tracks?
+	        (0, _addTextTrackData.addTextTrackData)(this, sortedSegments.captions, sortedSegments.metadata);
+	      }
+	      if (!this.audioDisabled_ && this.audioBuffer_) {
+	        this.concatAndAppendSegments_(sortedSegments.audio, this.audioBuffer_);
+	      }
+	
+	      this.pendingBuffers_.length = 0;
+	
+	      // We are no longer in the internal "updating" state
+	      this.bufferUpdating_ = false;
+	    }
+	
+	    /**
+	     * Combine all segments into a single Uint8Array and then append them
+	     * to the destination buffer
+	     *
+	     * @param {Object} segmentObj
+	     * @param {SourceBuffer} destinationBuffer native source buffer to append data to
+	     * @private
+	     */
+	  }, {
+	    key: 'concatAndAppendSegments_',
+	    value: function concatAndAppendSegments_(segmentObj, destinationBuffer) {
+	      var offset = 0;
+	      var tempBuffer = undefined;
+	
+	      if (segmentObj.bytes) {
+	        tempBuffer = new Uint8Array(segmentObj.bytes);
+	
+	        // Combine the individual segments into one large typed-array
+	        segmentObj.segments.forEach(function (segment) {
+	          tempBuffer.set(segment, offset);
+	          offset += segment.byteLength;
+	        });
+	
+	        try {
+	          destinationBuffer.appendBuffer(tempBuffer);
+	        } catch (error) {
+	          if (this.mediaSource_.player_) {
+	            this.mediaSource_.player_.error({
+	              code: -3,
+	              type: 'APPEND_BUFFER_ERR',
+	              message: error.message,
+	              originalError: error
+	            });
+	          }
+	        }
+	      }
+	    }
+	
+	    /**
+	     * Emulate the native mediasource function. abort any soureBuffer
+	     * actions and throw out any un-appended data.
+	     *
+	     * @link https://developer.mozilla.org/en-US/docs/Web/API/SourceBuffer/abort
+	     */
+	  }, {
+	    key: 'abort',
+	    value: function abort() {
+	      if (this.videoBuffer_) {
+	        this.videoBuffer_.abort();
+	      }
+	      if (this.audioBuffer_) {
+	        this.audioBuffer_.abort();
+	      }
+	      if (this.transmuxer_) {
+	        this.transmuxer_.postMessage({ action: 'reset' });
+	      }
+	      this.pendingBuffers_.length = 0;
+	      this.bufferUpdating_ = false;
+	    }
+	  }]);
+	
+	  return VirtualSourceBuffer;
+	})(_videoJs2['default'].EventTarget);
+	
+	exports['default'] = VirtualSourceBuffer;
+	module.exports = exports['default'];
+	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+	},{"./add-text-track-data":42,"./codec-utils":44,"./create-text-tracks-if-necessary":45,"./remove-cues-from-track":51,"./transmuxer-worker":52,"webworkify":76}],55:[function(require,module,exports){
+	/**
+	 * mux.js
+	 *
+	 * Copyright (c) 2016 Brightcove
+	 * All rights reserved.
+	 *
+	 * A stream-based aac to mp4 converter. This utility can be used to
+	 * deliver mp4s to a SourceBuffer on platforms that support native
+	 * Media Source Extensions.
+	 */
+	'use strict';
+	var Stream = require('../utils/stream.js');
+	
+	// Constants
+	var AacStream;
+	
+	/**
+	 * Splits an incoming stream of binary data into ADTS and ID3 Frames.
+	 */
+	
+	AacStream = function() {
+	  var
+	    everything = new Uint8Array(),
+	    timeStamp = 0;
+	
+	  AacStream.prototype.init.call(this);
+	
+	  this.setTimestamp = function(timestamp) {
+	    timeStamp = timestamp;
+	  };
+	
+	  this.parseId3TagSize = function(header, byteIndex) {
+	    var
+	      returnSize = (header[byteIndex + 6] << 21) |
+	                   (header[byteIndex + 7] << 14) |
+	                   (header[byteIndex + 8] << 7) |
+	                   (header[byteIndex + 9]),
+	      flags = header[byteIndex + 5],
+	      footerPresent = (flags & 16) >> 4;
+	
+	    if (footerPresent) {
+	      return returnSize + 20;
+	    }
+	    return returnSize + 10;
+	  };
+	
+	  this.parseAdtsSize = function(header, byteIndex) {
+	    var
+	      lowThree = (header[byteIndex + 5] & 0xE0) >> 5,
+	      middle = header[byteIndex + 4] << 3,
+	      highTwo = header[byteIndex + 3] & 0x3 << 11;
+	
+	    return (highTwo | middle) | lowThree;
+	  };
+	
+	  this.push = function(bytes) {
+	    var
+	      frameSize = 0,
+	      byteIndex = 0,
+	      bytesLeft,
+	      chunk,
+	      packet,
+	      tempLength;
+	
+	    // If there are bytes remaining from the last segment, prepend them to the
+	    // bytes that were pushed in
+	    if (everything.length) {
+	      tempLength = everything.length;
+	      everything = new Uint8Array(bytes.byteLength + tempLength);
+	      everything.set(everything.subarray(0, tempLength));
+	      everything.set(bytes, tempLength);
+	    } else {
+	      everything = bytes;
+	    }
+	
+	    while (everything.length - byteIndex >= 3) {
+	      if ((everything[byteIndex] === 'I'.charCodeAt(0)) &&
+	          (everything[byteIndex + 1] === 'D'.charCodeAt(0)) &&
+	          (everything[byteIndex + 2] === '3'.charCodeAt(0))) {
+	
+	        // Exit early because we don't have enough to parse
+	        // the ID3 tag header
+	        if (everything.length - byteIndex < 10) {
+	          break;
+	        }
+	
+	        // check framesize
+	        frameSize = this.parseId3TagSize(everything, byteIndex);
+	
+	        // Exit early if we don't have enough in the buffer
+	        // to emit a full packet
+	        if (frameSize > everything.length) {
+	          break;
+	        }
+	        chunk = {
+	          type: 'timed-metadata',
+	          data: everything.subarray(byteIndex, byteIndex + frameSize)
+	        };
+	        this.trigger('data', chunk);
+	        byteIndex += frameSize;
+	        continue;
+	      } else if ((everything[byteIndex] & 0xff === 0xff) &&
+	                 ((everything[byteIndex + 1] & 0xf0) === 0xf0)) {
+	
+	        // Exit early because we don't have enough to parse
+	        // the ADTS frame header
+	        if (everything.length - byteIndex < 7) {
+	          break;
+	        }
+	
+	        frameSize = this.parseAdtsSize(everything, byteIndex);
+	
+	        // Exit early if we don't have enough in the buffer
+	        // to emit a full packet
+	        if (frameSize > everything.length) {
+	          break;
+	        }
+	
+	        packet = {
+	          type: 'audio',
+	          data: everything.subarray(byteIndex, byteIndex + frameSize),
+	          pts: timeStamp,
+	          dts: timeStamp
+	        };
+	        this.trigger('data', packet);
+	        byteIndex += frameSize;
+	        continue;
+	      }
+	      byteIndex++;
+	    }
+	    bytesLeft = everything.length - byteIndex;
+	
+	    if (bytesLeft > 0) {
+	      everything = everything.subarray(byteIndex);
+	    } else {
+	      everything = new Uint8Array();
+	    }
+	  };
+	};
+	
+	AacStream.prototype = new Stream();
+	
+	module.exports = AacStream;
+	
+	},{"../utils/stream.js":75}],56:[function(require,module,exports){
 	'use strict';
 	
 	var Stream = require('../utils/stream.js');
@@ -38079,7 +41908,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	module.exports = AdtsStream;
 	
-	},{"../utils/stream.js":56}],37:[function(require,module,exports){
+	},{"../utils/stream.js":75}],57:[function(require,module,exports){
 	'use strict';
 	
 	var Stream = require('../utils/stream.js');
@@ -38499,7 +42328,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  NalByteStream: NalByteStream
 	};
 	
-	},{"../utils/exp-golomb.js":55,"../utils/stream.js":56}],38:[function(require,module,exports){
+	},{"../utils/exp-golomb.js":74,"../utils/stream.js":75}],58:[function(require,module,exports){
 	var highPrefix = [33, 16, 5, 32, 164, 27];
 	var lowPrefix = [33, 65, 108, 84, 1, 2, 4, 8, 168, 2, 4, 8, 17, 191, 252];
 	var zeroFill = function(count) {
@@ -38536,7 +42365,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	module.exports = makeTable(coneOfSilence);
 	
-	},{}],39:[function(require,module,exports){
+	},{}],59:[function(require,module,exports){
 	'use strict';
 	
 	var Stream = require('../utils/stream.js');
@@ -38681,7 +42510,69 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	module.exports = CoalesceStream;
 	
-	},{"../utils/stream.js":56}],40:[function(require,module,exports){
+	},{"../utils/stream.js":75}],60:[function(require,module,exports){
+	'use strict';
+	
+	var FlvTag = require('./flv-tag.js');
+	
+	// For information on the FLV format, see
+	// http://download.macromedia.com/f4v/video_file_format_spec_v10_1.pdf.
+	// Technically, this function returns the header and a metadata FLV tag
+	// if duration is greater than zero
+	// duration in seconds
+	// @return {object} the bytes of the FLV header as a Uint8Array
+	var getFlvHeader = function(duration, audio, video) { // :ByteArray {
+	  var
+	    headBytes = new Uint8Array(3 + 1 + 1 + 4),
+	    head = new DataView(headBytes.buffer),
+	    metadata,
+	    result,
+	    metadataLength;
+	
+	  // default arguments
+	  duration = duration || 0;
+	  audio = audio === undefined ? true : audio;
+	  video = video === undefined ? true : video;
+	
+	  // signature
+	  head.setUint8(0, 0x46); // 'F'
+	  head.setUint8(1, 0x4c); // 'L'
+	  head.setUint8(2, 0x56); // 'V'
+	
+	  // version
+	  head.setUint8(3, 0x01);
+	
+	  // flags
+	  head.setUint8(4, (audio ? 0x04 : 0x00) | (video ? 0x01 : 0x00));
+	
+	  // data offset, should be 9 for FLV v1
+	  head.setUint32(5, headBytes.byteLength);
+	
+	  // init the first FLV tag
+	  if (duration <= 0) {
+	    // no duration available so just write the first field of the first
+	    // FLV tag
+	    result = new Uint8Array(headBytes.byteLength + 4);
+	    result.set(headBytes);
+	    result.set([0, 0, 0, 0], headBytes.byteLength);
+	    return result;
+	  }
+	
+	  // write out the duration metadata tag
+	  metadata = new FlvTag(FlvTag.METADATA_TAG);
+	  metadata.pts = metadata.dts = 0;
+	  metadata.writeMetaDataDouble('duration', duration);
+	  metadataLength = metadata.finalize().length;
+	  result = new Uint8Array(headBytes.byteLength + metadataLength);
+	  result.set(headBytes);
+	  result.set(head.byteLength, metadataLength);
+	
+	  return result;
+	};
+	
+	module.exports = getFlvHeader;
+	
+	},{"./flv-tag.js":61}],61:[function(require,module,exports){
 	/**
 	 * An object that stores the bytes of an FLV tag and methods for
 	 * querying and manipulating that data.
@@ -39055,13 +42946,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	module.exports = FlvTag;
 	
-	},{}],41:[function(require,module,exports){
+	},{}],62:[function(require,module,exports){
 	module.exports = {
 	  tag: require('./flv-tag'),
-	  Transmuxer: require('./transmuxer')
+	  Transmuxer: require('./transmuxer'),
+	  getFlvHeader: require('./flv-header')
 	};
 	
-	},{"./flv-tag":40,"./transmuxer":42}],42:[function(require,module,exports){
+	},{"./flv-header":60,"./flv-tag":61,"./transmuxer":64}],63:[function(require,module,exports){
+	'use strict';
+	
+	var TagList = function() {
+	  var self = this;
+	
+	  this.list = [];
+	
+	  this.push = function(tag) {
+	    this.list.push({
+	      bytes: tag.bytes,
+	      dts: tag.dts,
+	      pts: tag.pts
+	    });
+	  };
+	
+	  Object.defineProperty(this, 'length', {
+	    get: function() {
+	      return self.list.length;
+	    }
+	  });
+	};
+	
+	module.exports = TagList;
+	
+	},{}],64:[function(require,module,exports){
 	'use strict';
 	
 	var Stream = require('../utils/stream.js');
@@ -39070,6 +42987,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var AdtsStream = require('../codecs/adts.js');
 	var H264Stream = require('../codecs/h264').H264Stream;
 	var CoalesceStream = require('./coalesce-stream.js');
+	var TagList = require('./tag-list.js');
 	
 	var
 	  Transmuxer,
@@ -39177,7 +43095,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  };
 	
 	  this.flush = function() {
-	    var currentFrame, adtsFrame, lastMetaPts, tags = [];
+	    var currentFrame, adtsFrame, lastMetaPts, tags = new TagList();
 	    // return early if no audio data has been observed
 	    if (adtsFrames.length === 0) {
 	      this.trigger('done', 'AudioSegmentStream');
@@ -39204,7 +43122,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // Is AAC always 16 bit?
 	        adtsFrame.writeMetaDataDouble('audiosamplesize', 16);
 	
-	        tags.push(adtsFrame);
+	        tags.push(adtsFrame.finalize());
 	
 	        oldExtraData = track.extraData;
 	
@@ -39219,7 +43137,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        adtsFrame.position += 2;
 	        adtsFrame.length = Math.max(adtsFrame.length, adtsFrame.position);
 	
-	        tags.push(adtsFrame);
+	        tags.push(adtsFrame.finalize());
 	
 	        lastMetaPts = currentFrame.pts;
 	      }
@@ -39229,11 +43147,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      adtsFrame.writeBytes(currentFrame.data);
 	
-	      tags.push(adtsFrame);
+	      tags.push(adtsFrame.finalize());
 	    }
 	
 	    oldExtraData = null;
-	    this.trigger('data', {track: track, tags: tags});
+	    this.trigger('data', {track: track, tags: tags.list});
 	
 	    this.trigger('done', 'AudioSegmentStream');
 	  };
@@ -39260,13 +43178,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (config && track && track.newMetadata &&
 	        (frame.keyFrame || tags.length === 0)) {
 	      // Push extra data on every IDR frame in case we did a stream change + seek
-	      tags.push(metaDataTag(config, frame.dts));
-	      tags.push(extraDataTag(track, frame.dts));
+	      tags.push(metaDataTag(config, frame.dts).finalize());
+	      tags.push(extraDataTag(track, frame.dts).finalize());
 	      track.newMetadata = false;
 	    }
 	
 	    frame.endNalUnit();
-	    tags.push(frame);
+	    tags.push(frame.finalize());
 	    h264Frame = null;
 	  };
 	
@@ -39283,7 +43201,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  this.flush = function() {
 	    var
 	      currentNal,
-	      tags = [];
+	      tags = new TagList();
 	
 	    // Throw away nalUnits at the start of the byte stream until we find
 	    // the first AUD
@@ -39339,7 +43257,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.finishFrame(tags, h264Frame);
 	    }
 	
-	    this.trigger('data', {track: track, tags: tags});
+	    this.trigger('data', {track: track, tags: tags.list});
 	
 	    // Continue with the flush process now
 	    this.trigger('done', 'VideoSegmentStream');
@@ -39467,68 +43385,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	  coalesceStream.on('done', function() {
 	    self.trigger('done');
 	  });
-	
-	  // For information on the FLV format, see
-	  // http://download.macromedia.com/f4v/video_file_format_spec_v10_1.pdf.
-	  // Technically, this function returns the header and a metadata FLV tag
-	  // if duration is greater than zero
-	  // duration in seconds
-	  // @return {object} the bytes of the FLV header as a Uint8Array
-	  this.getFlvHeader = function(duration, audio, video) { // :ByteArray {
-	    var
-	      headBytes = new Uint8Array(3 + 1 + 1 + 4),
-	      head = new DataView(headBytes.buffer),
-	      metadata,
-	      result,
-	      metadataLength;
-	
-	    // default arguments
-	    duration = duration || 0;
-	    audio = audio === undefined ? true : audio;
-	    video = video === undefined ? true : video;
-	
-	    // signature
-	    head.setUint8(0, 0x46); // 'F'
-	    head.setUint8(1, 0x4c); // 'L'
-	    head.setUint8(2, 0x56); // 'V'
-	
-	    // version
-	    head.setUint8(3, 0x01);
-	
-	    // flags
-	    head.setUint8(4, (audio ? 0x04 : 0x00) | (video ? 0x01 : 0x00));
-	
-	    // data offset, should be 9 for FLV v1
-	    head.setUint32(5, headBytes.byteLength);
-	
-	    // init the first FLV tag
-	    if (duration <= 0) {
-	      // no duration available so just write the first field of the first
-	      // FLV tag
-	      result = new Uint8Array(headBytes.byteLength + 4);
-	      result.set(headBytes);
-	      result.set([0, 0, 0, 0], headBytes.byteLength);
-	      return result;
-	    }
-	
-	    // write out the duration metadata tag
-	    metadata = new FlvTag(FlvTag.METADATA_TAG);
-	    metadata.pts = metadata.dts = 0;
-	    metadata.writeMetaDataDouble('duration', duration);
-	    metadataLength = metadata.finalize().length;
-	    result = new Uint8Array(headBytes.byteLength + metadataLength);
-	    result.set(headBytes);
-	    result.set(head.byteLength, metadataLength);
-	
-	    return result;
-	  };
 	};
 	Transmuxer.prototype = new Stream();
 	
 	// forward compatibility
 	module.exports = Transmuxer;
 	
-	},{"../codecs/adts.js":36,"../codecs/h264":37,"../m2ts/m2ts.js":44,"../utils/stream.js":56,"./coalesce-stream.js":39,"./flv-tag.js":40}],43:[function(require,module,exports){
+	},{"../codecs/adts.js":56,"../codecs/h264":57,"../m2ts/m2ts.js":66,"../utils/stream.js":75,"./coalesce-stream.js":59,"./flv-tag.js":61,"./tag-list.js":63}],65:[function(require,module,exports){
 	/**
 	 * mux.js
 	 *
@@ -39994,7 +43857,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  Cea608Stream: Cea608Stream
 	};
 	
-	},{"../utils/stream":56}],44:[function(require,module,exports){
+	},{"../utils/stream":75}],66:[function(require,module,exports){
 	/**
 	 * mux.js
 	 *
@@ -40455,7 +44318,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	module.exports = m2ts;
 	
-	},{"../utils/stream.js":56,"./caption-stream":43,"./metadata-stream":45,"./stream-types":47,"./stream-types.js":47,"./timestamp-rollover-stream":48}],45:[function(require,module,exports){
+	},{"../utils/stream.js":75,"./caption-stream":65,"./metadata-stream":67,"./stream-types":68,"./stream-types.js":68,"./timestamp-rollover-stream":69}],67:[function(require,module,exports){
 	/**
 	 * Accepts program elementary stream (PES) data events and parses out
 	 * ID3 metadata from them, if present.
@@ -40705,371 +44568,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	module.exports = MetadataStream;
 	
-	},{"../utils/stream":56,"./stream-types":47}],46:[function(require,module,exports){
-	/**
-	 * mux.js
-	 *
-	 * Copyright (c) 2016 Brightcove
-	 * All rights reserved.
-	 *
-	 * Utilities to detect basic properties and metadata about TS Segments.
-	 */
-	'use strict';
-	
-	var StreamTypes = require('./stream-types.js');
-	
-	var parsePid = function(packet) {
-	  var pid = packet[1] & 0x1f;
-	  pid <<= 8;
-	  pid |= packet[2];
-	  return pid;
-	};
-	
-	var parsePayloadUnitStartIndicator = function(packet) {
-	  return !!(packet[1] & 0x40);
-	};
-	
-	var parseAdaptionField = function(packet) {
-	  var offset = 0;
-	  // if an adaption field is present, its length is specified by the
-	  // fifth byte of the TS packet header. The adaptation field is
-	  // used to add stuffing to PES packets that don't fill a complete
-	  // TS packet, and to specify some forms of timing and control data
-	  // that we do not currently use.
-	  if (((packet[3] & 0x30) >>> 4) > 0x01) {
-	    offset += packet[4] + 1;
-	  }
-	  return offset;
-	};
-	
-	var parseType = function(packet, pmtPid) {
-	  var pid = parsePid(packet);
-	  if (pid === 0) {
-	    return 'pat';
-	  } else if (pid === pmtPid) {
-	    return 'pmt';
-	  } else if (pmtPid) {
-	    return 'pes';
-	  }
-	  return null;
-	};
-	
-	var parsePat = function(packet) {
-	  var pusi = parsePayloadUnitStartIndicator(packet);
-	  var offset = 4 + parseAdaptionField(packet);
-	
-	  if (pusi) {
-	    offset += packet[offset] + 1;
-	  }
-	
-	  return (packet[offset + 10] & 0x1f) << 8 | packet[offset + 11];
-	};
-	
-	var parsePmt = function(packet) {
-	  var programMapTable = {};
-	  var pusi = parsePayloadUnitStartIndicator(packet);
-	  var payloadOffset = 4 + parseAdaptionField(packet);
-	
-	  if (pusi) {
-	    payloadOffset += packet[payloadOffset] + 1;
-	  }
-	
-	  // PMTs can be sent ahead of the time when they should actually
-	  // take effect. We don't believe this should ever be the case
-	  // for HLS but we'll ignore "forward" PMT declarations if we see
-	  // them. Future PMT declarations have the current_next_indicator
-	  // set to zero.
-	  if (!(packet[payloadOffset + 5] & 0x01)) {
-	    return;
-	  }
-	
-	  var sectionLength, tableEnd, programInfoLength;
-	  // the mapping table ends at the end of the current section
-	  sectionLength = (packet[payloadOffset + 1] & 0x0f) << 8 | packet[payloadOffset + 2];
-	  tableEnd = 3 + sectionLength - 4;
-	
-	  // to determine where the table is, we have to figure out how
-	  // long the program info descriptors are
-	  programInfoLength = (packet[payloadOffset + 10] & 0x0f) << 8 | packet[payloadOffset + 11];
-	
-	  // advance the offset to the first entry in the mapping table
-	  var offset = 12 + programInfoLength;
-	  while (offset < tableEnd) {
-	    var i = payloadOffset + offset;
-	    // add an entry that maps the elementary_pid to the stream_type
-	    programMapTable[(packet[i + 1] & 0x1F) << 8 | packet[i + 2]] = packet[i];
-	
-	    // move to the next table entry
-	    // skip past the elementary stream descriptors, if present
-	    offset += ((packet[i + 3] & 0x0F) << 8 | packet[i + 4]) + 5;
-	  }
-	  return programMapTable;
-	};
-	
-	var parsePesType = function(packet, programMapTable) {
-	  var pid = parsePid(packet);
-	  var type = programMapTable[pid];
-	  switch (type) {
-	    case StreamTypes.H264_STREAM_TYPE:
-	      return 'video';
-	    case StreamTypes.ADTS_STREAM_TYPE:
-	      return 'audio';
-	    case StreamTypes.METADATA_STREAM_TYPE:
-	      return 'timed-metadata';
-	    default:
-	      return null;
-	  }
-	};
-	
-	var parsePesTime = function(packet) {
-	  var pusi = parsePayloadUnitStartIndicator(packet);
-	  if (!pusi) {
-	    return null;
-	  }
-	
-	  var offset = 4 + parseAdaptionField(packet);
-	
-	  var pes = {};
-	  var ptsDtsFlags;
-	
-	  // PES packets may be annotated with a PTS value, or a PTS value
-	  // and a DTS value. Determine what combination of values is
-	  // available to work with.
-	  ptsDtsFlags = packet[offset + 7];
-	
-	  // PTS and DTS are normally stored as a 33-bit number.  Javascript
-	  // performs all bitwise operations on 32-bit integers but javascript
-	  // supports a much greater range (52-bits) of integer using standard
-	  // mathematical operations.
-	  // We construct a 31-bit value using bitwise operators over the 31
-	  // most significant bits and then multiply by 4 (equal to a left-shift
-	  // of 2) before we add the final 2 least significant bits of the
-	  // timestamp (equal to an OR.)
-	  if (ptsDtsFlags & 0xC0) {
-	    // the PTS and DTS are not written out directly. For information
-	    // on how they are encoded, see
-	    // http://dvd.sourceforge.net/dvdinfo/pes-hdr.html
-	    pes.pts = (packet[offset + 9] & 0x0E) << 27 |
-	      (packet[offset + 10] & 0xFF) << 20 |
-	      (packet[offset + 11] & 0xFE) << 12 |
-	      (packet[offset + 12] & 0xFF) <<  5 |
-	      (packet[offset + 13] & 0xFE) >>>  3;
-	    pes.pts *= 4; // Left shift by 2
-	    pes.pts += (packet[offset + 13] & 0x06) >>> 1; // OR by the two LSBs
-	    pes.dts = pes.pts;
-	    if (ptsDtsFlags & 0x40) {
-	      pes.dts = (packet[offset + 14] & 0x0E) << 27 |
-	        (packet[offset + 15] & 0xFF) << 20 |
-	        (packet[offset + 16] & 0xFE) << 12 |
-	        (packet[offset + 17] & 0xFF) << 5 |
-	        (packet[offset + 18] & 0xFE) >>> 3;
-	      pes.dts *= 4; // Left shift by 2
-	      pes.dts += (packet[offset + 18] & 0x06) >>> 1; // OR by the two LSBs
-	    }
-	  }
-	  return pes;
-	};
-	
-	var parseNalUnitType = function(type) {
-	  switch (type) {
-	    case 0x05:
-	      return 'slice_layer_without_partitioning_rbsp_idr';
-	    case 0x06:
-	      return 'sei_rbsp';
-	    case 0x07:
-	      return 'seq_parameter_set_rbsp';
-	    case 0x08:
-	      return 'pic_parameter_set_rbsp';
-	    case 0x09:
-	      return 'access_unit_delimiter_rbsp';
-	    default:
-	      return null;
-	  }
-	};
-	
-	var videoPacketContainsKeyFrame = function(packet) {
-	  var offset = 4 + parseAdaptionField(packet);
-	  var frameBuffer = packet.subarray(offset);
-	  var frameI = 0;
-	  var frameSyncPoint = 0;
-	  var foundKeyFrame = false;
-	  var nalType;
-	
-	  // advance the sync point to a NAL start, if necessary
-	  for (; frameSyncPoint < frameBuffer.byteLength - 3; frameSyncPoint++) {
-	    if (frameBuffer[frameSyncPoint + 2] === 1) {
-	      // the sync point is properly aligned
-	      frameI = frameSyncPoint + 5;
-	      break;
-	    }
-	  }
-	
-	  while (frameI < frameBuffer.byteLength) {
-	    // look at the current byte to determine if we've hit the end of
-	    // a NAL unit boundary
-	    switch (frameBuffer[frameI]) {
-	    case 0:
-	      // skip past non-sync sequences
-	      if (frameBuffer[frameI - 1] !== 0) {
-	        frameI += 2;
-	        break;
-	      } else if (frameBuffer[frameI - 2] !== 0) {
-	        frameI++;
-	        break;
-	      }
-	
-	      if (frameSyncPoint + 3 !== frameI - 2) {
-	        nalType = parseNalUnitType(frameBuffer[frameSyncPoint + 3] & 0x1f);
-	        if (nalType === 'slice_layer_without_partitioning_rbsp_idr') {
-	          foundKeyFrame = true;
-	        }
-	      }
-	
-	      // drop trailing zeroes
-	      do {
-	        frameI++;
-	      } while (frameBuffer[frameI] !== 1 && frameI < frameBuffer.length);
-	      frameSyncPoint = frameI - 2;
-	      frameI += 3;
-	      break;
-	    case 1:
-	      // skip past non-sync sequences
-	      if (frameBuffer[frameI - 1] !== 0 ||
-	          frameBuffer[frameI - 2] !== 0) {
-	        frameI += 3;
-	        break;
-	      }
-	
-	      nalType = parseNalUnitType(frameBuffer[frameSyncPoint + 3] & 0x1f);
-	      if (nalType === 'slice_layer_without_partitioning_rbsp_idr') {
-	        foundKeyFrame = true;
-	      }
-	      frameSyncPoint = frameI - 2;
-	      frameI += 3;
-	      break;
-	    default:
-	      // the current byte isn't a one or zero, so it cannot be part
-	      // of a sync sequence
-	      frameI += 3;
-	      break;
-	    }
-	  }
-	  frameBuffer = frameBuffer.subarray(frameSyncPoint);
-	  frameI -= frameSyncPoint;
-	  frameSyncPoint = 0;
-	  // parse the final nal
-	  if (frameBuffer && frameBuffer.byteLength > 3) {
-	    nalType = parseNalUnitType(frameBuffer[frameSyncPoint + 3] & 0x1f);
-	    if (nalType === 'slice_layer_without_partitioning_rbsp_idr') {
-	      foundKeyFrame = true;
-	    }
-	  }
-	
-	  return foundKeyFrame;
-	};
-	
-	
-	module.exports = {
-	  parseType: parseType,
-	  parsePat: parsePat,
-	  parsePmt: parsePmt,
-	  parsePayloadUnitStartIndicator: parsePayloadUnitStartIndicator,
-	  parsePesType: parsePesType,
-	  parsePesTime: parsePesTime,
-	  videoPacketContainsKeyFrame: videoPacketContainsKeyFrame
-	};
-	
-	},{"./stream-types.js":47}],47:[function(require,module,exports){
-	'use strict';
-	
-	module.exports = {
-	  H264_STREAM_TYPE: 0x1B,
-	  ADTS_STREAM_TYPE: 0x0F,
-	  METADATA_STREAM_TYPE: 0x15
-	};
-	
-	},{}],48:[function(require,module,exports){
-	/**
-	 * mux.js
-	 *
-	 * Copyright (c) 2016 Brightcove
-	 * All rights reserved.
-	 *
-	 * Accepts program elementary stream (PES) data events and corrects
-	 * decode and presentation time stamps to account for a rollover
-	 * of the 33 bit value.
-	 */
-	
-	'use strict';
-	
-	var Stream = require('../utils/stream');
-	
-	var MAX_TS = 8589934592;
-	
-	var RO_THRESH = 4294967296;
-	
-	var handleRollover = function(value, reference) {
-	  var direction = 1;
-	
-	  if (value > reference) {
-	    // If the current timestamp value is greater than our reference timestamp and we detect a
-	    // timestamp rollover, this means the roll over is happening in the opposite direction.
-	    // Example scenario: Enter a long stream/video just after a rollover occurred. The reference
-	    // point will be set to a small number, e.g. 1. The user then seeks backwards over the
-	    // rollover point. In loading this segment, the timestamp values will be very large,
-	    // e.g. 2^33 - 1. Since this comes before the data we loaded previously, we want to adjust
-	    // the time stamp to be `value - 2^33`.
-	    direction = -1;
-	  }
-	
-	  // Note: A seek forwards or back that is greater than the RO_THRESH (2^32, ~13 hours) will
-	  // cause an incorrect adjustment.
-	  while (Math.abs(reference - value) > RO_THRESH) {
-	    value += (direction * MAX_TS);
-	  }
-	
-	  return value;
-	};
-	
-	var TimestampRolloverStream = function(type) {
-	  var lastDTS, referenceDTS;
-	
-	  TimestampRolloverStream.prototype.init.call(this);
-	
-	  this.type_ = type;
-	
-	  this.push = function(data) {
-	    if (data.type !== this.type_) {
-	      return;
-	    }
-	
-	    if (referenceDTS === undefined) {
-	      referenceDTS = data.dts;
-	    }
-	
-	    data.dts = handleRollover(data.dts, referenceDTS);
-	    data.pts = handleRollover(data.pts, referenceDTS);
-	
-	    lastDTS = data.dts;
-	
-	    this.trigger('data', data);
-	  };
-	
-	  this.flush = function() {
-	    referenceDTS = lastDTS;
-	    this.trigger('done');
-	  };
-	
-	};
-	
-	TimestampRolloverStream.prototype = new Stream();
-	
-	module.exports = {
-	  TimestampRolloverStream: TimestampRolloverStream,
-	  handleRollover: handleRollover
-	};
-	
-	},{"../utils/stream":56}],49:[function(require,module,exports){
+	},{"../utils/stream":75,"./stream-types":68}],68:[function(require,module,exports){
+	arguments[4][36][0].apply(exports,arguments)
+	},{"dup":36}],69:[function(require,module,exports){
+	arguments[4][37][0].apply(exports,arguments)
+	},{"../utils/stream":75,"dup":37}],70:[function(require,module,exports){
 	module.exports = {
 	  generator: require('./mp4-generator'),
 	  Transmuxer: require('./transmuxer').Transmuxer,
@@ -41077,7 +44580,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  VideoSegmentStream: require('./transmuxer').VideoSegmentStream
 	};
 	
-	},{"./mp4-generator":50,"./transmuxer":52}],50:[function(require,module,exports){
+	},{"./mp4-generator":71,"./transmuxer":72}],71:[function(require,module,exports){
 	/**
 	 * mux.js
 	 *
@@ -41849,197 +45352,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	};
 	
-	},{}],51:[function(require,module,exports){
-	/**
-	 * mux.js
-	 *
-	 * Copyright (c) 2015 Brightcove
-	 * All rights reserved.
-	 *
-	 * Utilities to detect basic properties and metadata about MP4s.
-	 */
-	'use strict';
-	
-	var findBox, parseType, timescale, startTime;
-	
-	// Find the data for a box specified by its path
-	findBox = function(data, path) {
-	  var results = [],
-	      i, size, type, end, subresults;
-	
-	  if (!path.length) {
-	    // short-circuit the search for empty paths
-	    return null;
-	  }
-	
-	  for (i = 0; i < data.byteLength;) {
-	    size  = data[i]     << 24;
-	    size |= data[i + 1] << 16;
-	    size |= data[i + 2] << 8;
-	    size |= data[i + 3];
-	
-	    type = parseType(data.subarray(i + 4, i + 8));
-	
-	    end = size > 1 ? i + size : data.byteLength;
-	
-	    if (type === path[0]) {
-	      if (path.length === 1) {
-	        // this is the end of the path and we've found the box we were
-	        // looking for
-	        results.push(data.subarray(i + 8, end));
-	      } else {
-	        // recursively search for the next box along the path
-	        subresults = findBox(data.subarray(i + 8, end), path.slice(1));
-	        if (subresults.length) {
-	          results = results.concat(subresults);
-	        }
-	      }
-	    }
-	    i = end;
-	  }
-	
-	  // we've finished searching all of data
-	  return results;
-	};
-	
-	/**
-	 * Returns the string representation of an ASCII encoded four byte buffer.
-	 * @param buffer {Uint8Array} a four-byte buffer to translate
-	 * @return {string} the corresponding string
-	 */
-	parseType = function(buffer) {
-	  var result = '';
-	  result += String.fromCharCode(buffer[0]);
-	  result += String.fromCharCode(buffer[1]);
-	  result += String.fromCharCode(buffer[2]);
-	  result += String.fromCharCode(buffer[3]);
-	  return result;
-	};
-	
-	/**
-	 * Parses an MP4 initialization segment and extracts the timescale
-	 * values for any declared tracks. Timescale values indicate the
-	 * number of clock ticks per second to assume for time-based values
-	 * elsewhere in the MP4.
-	 *
-	 * To determine the start time of an MP4, you need two pieces of
-	 * information: the timescale unit and the earliest base media decode
-	 * time. Multiple timescales can be specified within an MP4 but the
-	 * base media decode time is always expressed in the timescale from
-	 * the media header box for the track:
-	 * ```
-	 * moov > trak > mdia > mdhd.timescale
-	 * ```
-	 * @param init {Uint8Array} the bytes of the init segment
-	 * @return {object} a hash of track ids to timescale values or null if
-	 * the init segment is malformed.
-	 */
-	timescale = function(init) {
-	  var
-	    result = {},
-	    traks = findBox(init, ['moov', 'trak']);
-	
-	  // mdhd timescale
-	  return traks.reduce(function(result, trak) {
-	    var tkhd, version, index, id, mdhd;
-	
-	    tkhd = findBox(trak, ['tkhd'])[0];
-	    if (!tkhd) {
-	      return null;
-	    }
-	    version = tkhd[0];
-	    index = version === 0 ? 12 : 20;
-	    id = tkhd[index]     << 24 |
-	         tkhd[index + 1] << 16 |
-	         tkhd[index + 2] <<  8 |
-	         tkhd[index + 3];
-	
-	    mdhd = findBox(trak, ['mdia', 'mdhd'])[0];
-	    if (!mdhd) {
-	      return null;
-	    }
-	    version = mdhd[0];
-	    index = version === 0 ? 12 : 20;
-	    result[id] = mdhd[index]     << 24 |
-	                 mdhd[index + 1] << 16 |
-	                 mdhd[index + 2] <<  8 |
-	                 mdhd[index + 3];
-	    return result;
-	  }, result);
-	};
-	
-	/**
-	 * Determine the base media decode start time, in seconds, for an MP4
-	 * fragment. If multiple fragments are specified, the earliest time is
-	 * returned.
-	 *
-	 * The base media decode time can be parsed from track fragment
-	 * metadata:
-	 * ```
-	 * moof > traf > tfdt.baseMediaDecodeTime
-	 * ```
-	 * It requires the timescale value from the mdhd to interpret.
-	 *
-	 * @param timescale {object} a hash of track ids to timescale values.
-	 * @return {number} the earliest base media decode start time for the
-	 * fragment, in seconds
-	 */
-	startTime = function(timescale, fragment) {
-	  var trafs, baseTimes, result;
-	
-	  // we need info from two childrend of each track fragment box
-	  trafs = findBox(fragment, ['moof', 'traf']);
-	
-	  // determine the start times for each track
-	  baseTimes = [].concat.apply([], trafs.map(function(traf) {
-	    return findBox(traf, ['tfhd']).map(function(tfhd) {
-	      var id, scale, baseTime;
-	
-	      // get the track id from the tfhd
-	      id = tfhd[4] << 24 |
-	           tfhd[5] << 16 |
-	           tfhd[6] << 8 |
-	           tfhd[7];
-	      // assume a 90kHz clock if no timescale was specified
-	      scale = timescale[id] || 90e3;
-	
-	      // get the base media decode time from the tfdt
-	      baseTime = findBox(traf, ['tfdt']).map(function(tfdt) {
-	        var version, result;
-	
-	        version = tfdt[0];
-	        result = tfdt[4] << 24 |
-	                 tfdt[5] << 16 |
-	                 tfdt[6] <<  8 |
-	                 tfdt[7];
-	        if (version ===  1) {
-	          result *= Math.pow(2, 32);
-	          result += tfdt[8]  << 24 |
-	                    tfdt[9]  << 16 |
-	                    tfdt[10] <<  8 |
-	                    tfdt[11];
-	        }
-	        return result;
-	      })[0];
-	      baseTime = baseTime || Infinity;
-	
-	      // convert base time to seconds
-	      return baseTime / scale;
-	    });
-	  }));
-	
-	  // return the minimum
-	  result = Math.min.apply(null, baseTimes);
-	  return isFinite(result) ? result : 0;
-	};
-	
-	module.exports = {
-	  parseType: parseType,
-	  timescale: timescale,
-	  startTime: startTime
-	};
-	
-	},{}],52:[function(require,module,exports){
+	},{}],72:[function(require,module,exports){
 	/**
 	 * mux.js
 	 *
@@ -43293,513 +46606,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  VIDEO_PROPERTIES: VIDEO_PROPERTIES
 	};
 	
-	},{"../aac":34,"../codecs/adts.js":36,"../codecs/h264":37,"../data/silence":38,"../m2ts/m2ts.js":44,"../utils/clock":54,"../utils/stream.js":56,"./mp4-generator.js":50}],53:[function(require,module,exports){
-	/**
-	 * mux.js
-	 *
-	 * Copyright (c) 2016 Brightcove
-	 * All rights reserved.
-	 *
-	 * Parse mpeg2 transport stream packets to extract basic timing information
-	 */
-	'use strict';
-	
-	var StreamTypes = require('../m2ts/stream-types.js');
-	var handleRollover = require('../m2ts/timestamp-rollover-stream.js').handleRollover;
-	var probe = {};
-	probe.ts = require('../m2ts/probe.js');
-	probe.aac = require('../aac/probe.js');
-	
-	
-	var
-	  PES_TIMESCALE = 90000,
-	  MP2T_PACKET_LENGTH = 188, // bytes
-	  SYNC_BYTE = 0x47;
-	
-	var isLikelyAacData = function(data) {
-	  if ((data[0] === 'I'.charCodeAt(0)) &&
-	      (data[1] === 'D'.charCodeAt(0)) &&
-	      (data[2] === '3'.charCodeAt(0))) {
-	    return true;
-	  }
-	  return false;
-	};
-	
-	/**
-	 * walks through segment data looking for pat and pmt packets to parse out
-	 * program map table information
-	 */
-	var parsePsi_ = function(bytes, pmt) {
-	  var
-	    startIndex = 0,
-	    endIndex = MP2T_PACKET_LENGTH,
-	    packet, type;
-	
-	  while (endIndex < bytes.byteLength) {
-	    // Look for a pair of start and end sync bytes in the data..
-	    if (bytes[startIndex] === SYNC_BYTE && bytes[endIndex] === SYNC_BYTE) {
-	      // We found a packet
-	      packet = bytes.subarray(startIndex, endIndex);
-	      type = probe.ts.parseType(packet, pmt.pid);
-	
-	      switch (type) {
-	        case 'pat':
-	          if (!pmt.pid) {
-	            pmt.pid = probe.ts.parsePat(packet);
-	          }
-	          break;
-	        case 'pmt':
-	          if (!pmt.table) {
-	            pmt.table = probe.ts.parsePmt(packet);
-	          }
-	          break;
-	        default:
-	          break;
-	      }
-	
-	      // Found the pat and pmt, we can stop walking the segment
-	      if (pmt.pid && pmt.table) {
-	        return;
-	      }
-	
-	      startIndex += MP2T_PACKET_LENGTH;
-	      endIndex += MP2T_PACKET_LENGTH;
-	      continue;
-	    }
-	
-	    // If we get here, we have somehow become de-synchronized and we need to step
-	    // forward one byte at a time until we find a pair of sync bytes that denote
-	    // a packet
-	    startIndex++;
-	    endIndex++;
-	  }
-	};
-	
-	/**
-	 * walks through the segment data from the start and end to get timing information
-	 * for the first and last audio pes packets
-	 */
-	var parseAudioPes_ = function(bytes, pmt, result) {
-	  var
-	    startIndex = 0,
-	    endIndex = MP2T_PACKET_LENGTH,
-	    packet, type, pesType, pusi, parsed;
-	
-	  var endLoop = false;
-	
-	  // Start walking from start of segment to get first audio packet
-	  while (endIndex < bytes.byteLength) {
-	    // Look for a pair of start and end sync bytes in the data..
-	    if (bytes[startIndex] === SYNC_BYTE && bytes[endIndex] === SYNC_BYTE) {
-	      // We found a packet
-	      packet = bytes.subarray(startIndex, endIndex);
-	      type = probe.ts.parseType(packet, pmt.pid);
-	
-	      switch (type) {
-	        case 'pes':
-	          pesType = probe.ts.parsePesType(packet, pmt.table);
-	          pusi = probe.ts.parsePayloadUnitStartIndicator(packet);
-	          if (pesType === 'audio' && pusi) {
-	            parsed = probe.ts.parsePesTime(packet);
-	            parsed.type = 'audio';
-	            result.audio.push(parsed);
-	            endLoop = true;
-	          }
-	          break;
-	        default:
-	          break;
-	      }
-	
-	      if (endLoop) {
-	        break;
-	      }
-	
-	      startIndex += MP2T_PACKET_LENGTH;
-	      endIndex += MP2T_PACKET_LENGTH;
-	      continue;
-	    }
-	
-	    // If we get here, we have somehow become de-synchronized and we need to step
-	    // forward one byte at a time until we find a pair of sync bytes that denote
-	    // a packet
-	    startIndex++;
-	    endIndex++;
-	  }
-	
-	  // Start walking from end of segment to get last audio packet
-	  endIndex = bytes.byteLength;
-	  startIndex = endIndex - MP2T_PACKET_LENGTH;
-	  endLoop = false;
-	  while (startIndex >= 0) {
-	    // Look for a pair of start and end sync bytes in the data..
-	    if (bytes[startIndex] === SYNC_BYTE && bytes[endIndex] === SYNC_BYTE) {
-	      // We found a packet
-	      packet = bytes.subarray(startIndex, endIndex);
-	      type = probe.ts.parseType(packet, pmt.pid);
-	
-	      switch (type) {
-	        case 'pes':
-	          pesType = probe.ts.parsePesType(packet, pmt.table);
-	          pusi = probe.ts.parsePayloadUnitStartIndicator(packet);
-	          if (pesType === 'audio' && pusi) {
-	            parsed = probe.ts.parsePesTime(packet);
-	            parsed.type = 'audio';
-	            result.audio.push(parsed);
-	            endLoop = true;
-	          }
-	          break;
-	        default:
-	          break;
-	      }
-	
-	      if (endLoop) {
-	        break;
-	      }
-	
-	      startIndex -= MP2T_PACKET_LENGTH;
-	      endIndex -= MP2T_PACKET_LENGTH;
-	      continue;
-	    }
-	
-	    // If we get here, we have somehow become de-synchronized and we need to step
-	    // forward one byte at a time until we find a pair of sync bytes that denote
-	    // a packet
-	    startIndex--;
-	    endIndex--;
-	  }
-	};
-	
-	/**
-	 * walks through the segment data from the start and end to get timing information
-	 * for the first and last video pes packets as well as timing information for the first
-	 * key frame.
-	 */
-	var parseVideoPes_ = function(bytes, pmt, result) {
-	  var
-	    startIndex = 0,
-	    endIndex = MP2T_PACKET_LENGTH,
-	    packet, type, pesType, pusi, parsed, frame, i, pes;
-	
-	  var endLoop = false;
-	
-	  var currentFrame = {
-	    data: [],
-	    size: 0
-	  };
-	
-	  // Start walking from start of segment to get first video packet
-	  while (endIndex < bytes.byteLength) {
-	    // Look for a pair of start and end sync bytes in the data..
-	    if (bytes[startIndex] === SYNC_BYTE && bytes[endIndex] === SYNC_BYTE) {
-	      // We found a packet
-	      packet = bytes.subarray(startIndex, endIndex);
-	      type = probe.ts.parseType(packet, pmt.pid);
-	
-	      switch (type) {
-	        case 'pes':
-	          pesType = probe.ts.parsePesType(packet, pmt.table);
-	          pusi = probe.ts.parsePayloadUnitStartIndicator(packet);
-	          if (pesType === 'video') {
-	            if (pusi && !endLoop) {
-	              parsed = probe.ts.parsePesTime(packet);
-	              parsed.type = 'video';
-	              result.video.push(parsed);
-	              endLoop = true;
-	            }
-	            if (!result.firstKeyFrame) {
-	              if (pusi) {
-	                if (currentFrame.size !== 0) {
-	                  frame = new Uint8Array(currentFrame.size);
-	                  i = 0;
-	                  while (currentFrame.data.length) {
-	                    pes = currentFrame.data.shift();
-	                    frame.set(pes, i);
-	                    i += pes.byteLength;
-	                  }
-	                  if (probe.ts.videoPacketContainsKeyFrame(frame)) {
-	                    result.firstKeyFrame = probe.ts.parsePesTime(frame);
-	                    result.firstKeyFrame.type = 'video';
-	                  }
-	                  currentFrame.size = 0;
-	                }
-	              }
-	              currentFrame.data.push(packet);
-	              currentFrame.size += packet.byteLength;
-	            }
-	          }
-	          break;
-	        default:
-	          break;
-	      }
-	
-	      if (endLoop && result.firstKeyFrame) {
-	        break;
-	      }
-	
-	      startIndex += MP2T_PACKET_LENGTH;
-	      endIndex += MP2T_PACKET_LENGTH;
-	      continue;
-	    }
-	
-	    // If we get here, we have somehow become de-synchronized and we need to step
-	    // forward one byte at a time until we find a pair of sync bytes that denote
-	    // a packet
-	    startIndex++;
-	    endIndex++;
-	  }
-	
-	  // Start walking from end of segment to get last video packet
-	  endIndex = bytes.byteLength;
-	  startIndex = endIndex - MP2T_PACKET_LENGTH;
-	  endLoop = false;
-	  while (startIndex >= 0) {
-	    // Look for a pair of start and end sync bytes in the data..
-	    if (bytes[startIndex] === SYNC_BYTE && bytes[endIndex] === SYNC_BYTE) {
-	      // We found a packet
-	      packet = bytes.subarray(startIndex, endIndex);
-	      type = probe.ts.parseType(packet, pmt.pid);
-	
-	      switch (type) {
-	        case 'pes':
-	          pesType = probe.ts.parsePesType(packet, pmt.table);
-	          pusi = probe.ts.parsePayloadUnitStartIndicator(packet);
-	          if (pesType === 'video' && pusi) {
-	              parsed = probe.ts.parsePesTime(packet);
-	              parsed.type = 'video';
-	              result.video.push(parsed);
-	            endLoop = true;
-	          }
-	          break;
-	        default:
-	          break;
-	      }
-	
-	      if (endLoop) {
-	        break;
-	      }
-	
-	      startIndex -= MP2T_PACKET_LENGTH;
-	      endIndex -= MP2T_PACKET_LENGTH;
-	      continue;
-	    }
-	
-	    // If we get here, we have somehow become de-synchronized and we need to step
-	    // forward one byte at a time until we find a pair of sync bytes that denote
-	    // a packet
-	    startIndex--;
-	    endIndex--;
-	  }
-	};
-	
-	/**
-	 * Adjusts the timestamp information for the segment to account for
-	 * rollover and convert to seconds based on pes packet timescale (90khz clock)
-	 */
-	var adjustTimestamp_ = function(segmentInfo, baseTimestamp) {
-	  if (segmentInfo.audio && segmentInfo.audio.length) {
-	    var audioBaseTimestamp = baseTimestamp;
-	    if (typeof audioBaseTimestamp === 'undefined') {
-	      audioBaseTimestamp = segmentInfo.audio[0].dts;
-	    }
-	    segmentInfo.audio.forEach(function(info) {
-	      info.dts = handleRollover(info.dts, audioBaseTimestamp);
-	      info.pts = handleRollover(info.pts, audioBaseTimestamp);
-	      // time in seconds
-	      info.dtsTime = info.dts / PES_TIMESCALE;
-	      info.ptsTime = info.pts / PES_TIMESCALE;
-	    });
-	  }
-	
-	  if (segmentInfo.video && segmentInfo.video.length) {
-	    var videoBaseTimestamp = baseTimestamp;
-	    if (typeof videoBaseTimestamp === 'undefined') {
-	      videoBaseTimestamp = segmentInfo.video[0].dts;
-	    }
-	    segmentInfo.video.forEach(function(info) {
-	      info.dts = handleRollover(info.dts, videoBaseTimestamp);
-	      info.pts = handleRollover(info.pts, videoBaseTimestamp);
-	      // time in seconds
-	      info.dtsTime = info.dts / PES_TIMESCALE;
-	      info.ptsTime = info.pts / PES_TIMESCALE;
-	    });
-	    if (segmentInfo.firstKeyFrame) {
-	      var frame = segmentInfo.firstKeyFrame;
-	      frame.dts = handleRollover(frame.dts, videoBaseTimestamp);
-	      frame.pts = handleRollover(frame.pts, videoBaseTimestamp);
-	      // time in seconds
-	      frame.dtsTime = frame.dts / PES_TIMESCALE;
-	      frame.ptsTime = frame.dts / PES_TIMESCALE;
-	    }
-	  }
-	};
-	
-	/**
-	 * inspects the aac data stream for start and end time information
-	 */
-	var inspectAac_ = function(bytes) {
-	  var
-	    endLoop = false,
-	    audioCount = 0,
-	    sampleRate = null,
-	    timestamp = null,
-	    frameSize = 0,
-	    byteIndex = 0,
-	    packet;
-	
-	  while (bytes.length - byteIndex >= 3) {
-	    var type = probe.aac.parseType(bytes, byteIndex);
-	    switch (type) {
-	      case 'timed-metadata':
-	        // Exit early because we don't have enough to parse
-	        // the ID3 tag header
-	        if (bytes.length - byteIndex < 10) {
-	          endLoop = true;
-	          break;
-	        }
-	
-	        frameSize = probe.aac.parseId3TagSize(bytes, byteIndex);
-	
-	        // Exit early if we don't have enough in the buffer
-	        // to emit a full packet
-	        if (frameSize > bytes.length) {
-	          endLoop = true;
-	          break;
-	        }
-	        if (timestamp === null) {
-	          packet = bytes.subarray(byteIndex, byteIndex + frameSize);
-	          timestamp = probe.aac.parseAacTimestamp(packet);
-	        }
-	        byteIndex += frameSize;
-	        break;
-	      case 'audio':
-	        // Exit early because we don't have enough to parse
-	        // the ADTS frame header
-	        if (bytes.length - byteIndex < 7) {
-	          endLoop = true;
-	          break;
-	        }
-	
-	        frameSize = probe.aac.parseAdtsSize(bytes, byteIndex);
-	
-	        // Exit early if we don't have enough in the buffer
-	        // to emit a full packet
-	        if (frameSize > bytes.length) {
-	          endLoop = true;
-	          break;
-	        }
-	        if (sampleRate === null) {
-	          packet = bytes.subarray(byteIndex, byteIndex + frameSize);
-	          sampleRate = probe.aac.parseSampleRate(packet);
-	        }
-	        audioCount++;
-	        byteIndex += frameSize;
-	        break;
-	      default:
-	        byteIndex++;
-	        break;
-	    }
-	    if (endLoop) {
-	      return null;
-	    }
-	  }
-	  if (sampleRate === null || timestamp === null) {
-	    return null;
-	  }
-	
-	  var audioTimescale = PES_TIMESCALE / sampleRate;
-	
-	  var result = {
-	    audio: [
-	      {
-	        type: 'audio',
-	        dts: timestamp,
-	        pts: timestamp
-	      },
-	      {
-	        type: 'audio',
-	        dts: timestamp + (audioCount * 1024 * audioTimescale),
-	        pts: timestamp + (audioCount * 1024 * audioTimescale)
-	      }
-	    ]
-	  };
-	
-	  return result;
-	};
-	
-	/**
-	 * inspects the transport stream segment data for start and end time information
-	 * of the audio and video tracks (when present) as well as the first key frame's
-	 * start time.
-	 */
-	var inspectTs_ = function(bytes) {
-	  var pmt = {
-	    pid: null,
-	    table: null
-	  };
-	
-	  var result = {};
-	
-	  parsePsi_(bytes, pmt);
-	
-	  for (var pid in pmt.table) {
-	    if (pmt.table.hasOwnProperty(pid)) {
-	      var type = pmt.table[pid];
-	      switch (type) {
-	        case StreamTypes.H264_STREAM_TYPE:
-	          result.video = [];
-	          parseVideoPes_(bytes, pmt, result);
-	          if (result.video.length === 0) {
-	            delete result.video;
-	          }
-	          break;
-	        case StreamTypes.ADTS_STREAM_TYPE:
-	          result.audio = [];
-	          parseAudioPes_(bytes, pmt, result);
-	          if (result.audio.length === 0) {
-	            delete result.audio;
-	          }
-	          break;
-	        default:
-	          break;
-	      }
-	    }
-	  }
-	  return result;
-	};
-	
-	/**
-	 * Inspects segment byte data and returns an object with start and end timing information
-	 *
-	 * @param {Uint8Array} bytes The segment byte data
-	 * @param {Number} baseTimestamp Relative reference timestamp used when adjusting frame
-	 *  timestamps for rollover. This value must be in 90khz clock.
-	 * @return {Object} Object containing start and end frame timing info of segment.
-	 */
-	var inspect = function(bytes, baseTimestamp) {
-	  var isAacData = isLikelyAacData(bytes);
-	
-	  var result;
-	
-	  if (isAacData) {
-	    result = inspectAac_(bytes);
-	  } else {
-	    result = inspectTs_(bytes);
-	  }
-	
-	  if (!result || (!result.audio && !result.video)) {
-	    return null;
-	  }
-	
-	  adjustTimestamp_(result, baseTimestamp);
-	
-	  return result;
-	};
-	
-	module.exports = {
-	  inspect: inspect
-	};
-	
-	},{"../aac/probe.js":35,"../m2ts/probe.js":46,"../m2ts/stream-types.js":47,"../m2ts/timestamp-rollover-stream.js":48}],54:[function(require,module,exports){
+	},{"../aac":55,"../codecs/adts.js":56,"../codecs/h264":57,"../data/silence":58,"../m2ts/m2ts.js":66,"../utils/clock":73,"../utils/stream.js":75,"./mp4-generator.js":71}],73:[function(require,module,exports){
 	var
 	  ONE_SECOND_IN_TS = 90000, // 90kHz clock
 	  secondsToVideoTs,
@@ -43842,7 +46649,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  videoTsToAudioTs: videoTsToAudioTs
 	};
 	
-	},{}],55:[function(require,module,exports){
+	},{}],74:[function(require,module,exports){
 	'use strict';
 	
 	var ExpGolomb;
@@ -43991,2582 +46798,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	module.exports = ExpGolomb;
 	
-	},{}],56:[function(require,module,exports){
-	/**
-	 * mux.js
-	 *
-	 * Copyright (c) 2014 Brightcove
-	 * All rights reserved.
-	 *
-	 * A lightweight readable stream implemention that handles event dispatching.
-	 * Objects that inherit from streams should call init in their constructors.
-	 */
-	'use strict';
-	
-	var Stream = function() {
-	  this.init = function() {
-	    var listeners = {};
-	    /**
-	     * Add a listener for a specified event type.
-	     * @param type {string} the event name
-	     * @param listener {function} the callback to be invoked when an event of
-	     * the specified type occurs
-	     */
-	    this.on = function(type, listener) {
-	      if (!listeners[type]) {
-	        listeners[type] = [];
-	      }
-	      listeners[type] = listeners[type].concat(listener);
-	    };
-	    /**
-	     * Remove a listener for a specified event type.
-	     * @param type {string} the event name
-	     * @param listener {function} a function previously registered for this
-	     * type of event through `on`
-	     */
-	    this.off = function(type, listener) {
-	      var index;
-	      if (!listeners[type]) {
-	        return false;
-	      }
-	      index = listeners[type].indexOf(listener);
-	      listeners[type] = listeners[type].slice();
-	      listeners[type].splice(index, 1);
-	      return index > -1;
-	    };
-	    /**
-	     * Trigger an event of the specified type on this stream. Any additional
-	     * arguments to this function are passed as parameters to event listeners.
-	     * @param type {string} the event name
-	     */
-	    this.trigger = function(type) {
-	      var callbacks, i, length, args;
-	      callbacks = listeners[type];
-	      if (!callbacks) {
-	        return;
-	      }
-	      // Slicing the arguments on every invocation of this method
-	      // can add a significant amount of overhead. Avoid the
-	      // intermediate object creation for the common case of a
-	      // single callback argument
-	      if (arguments.length === 2) {
-	        length = callbacks.length;
-	        for (i = 0; i < length; ++i) {
-	          callbacks[i].call(this, arguments[1]);
-	        }
-	      } else {
-	        args = [];
-	        i = arguments.length;
-	        for (i = 1; i < arguments.length; ++i) {
-	          args.push(arguments[i]);
-	        }
-	        length = callbacks.length;
-	        for (i = 0; i < length; ++i) {
-	          callbacks[i].apply(this, args);
-	        }
-	      }
-	    };
-	    /**
-	     * Destroys the stream and cleans up.
-	     */
-	    this.dispose = function() {
-	      listeners = {};
-	    };
-	  };
-	};
-	
-	/**
-	 * Forwards all `data` events on this stream to the destination stream. The
-	 * destination stream should provide a method `push` to receive the data
-	 * events as they arrive.
-	 * @param destination {stream} the stream that will receive all `data` events
-	 * @param autoFlush {boolean} if false, we will not call `flush` on the destination
-	 *                            when the current stream emits a 'done' event
-	 * @see http://nodejs.org/api/stream.html#stream_readable_pipe_destination_options
-	 */
-	Stream.prototype.pipe = function(destination) {
-	  this.on('data', function(data) {
-	    destination.push(data);
-	  });
-	
-	  this.on('done', function(flushSource) {
-	    destination.flush(flushSource);
-	  });
-	
-	  return destination;
-	};
-	
-	// Default stream functions that are expected to be overridden to perform
-	// actual work. These are provided by the prototype as a sort of no-op
-	// implementation so that we don't have to check for their existence in the
-	// `pipe` function above.
-	Stream.prototype.push = function(data) {
-	  this.trigger('data', data);
-	};
-	
-	Stream.prototype.flush = function(flushSource) {
-	  this.trigger('done', flushSource);
-	};
-	
-	module.exports = Stream;
-	
-	},{}],57:[function(require,module,exports){
-	/* jshint ignore:start */
-	(function(root) { 
-	/* jshint ignore:end */
-	  var URLToolkit = {
-	    // build an absolute URL from a relative one using the provided baseURL
-	    // if relativeURL is an absolute URL it will be returned as is.
-	    buildAbsoluteURL: function(baseURL, relativeURL) {
-	      // remove any remaining space and CRLF
-	      relativeURL = relativeURL.trim();
-	      if (/^[a-z]+:/i.test(relativeURL)) {
-	        // complete url, not relative
-	        return relativeURL;
-	      }
-	
-	      var relativeURLQuery = null;
-	      var relativeURLHash = null;
-	
-	      var relativeURLHashSplit = /^([^#]*)(.*)$/.exec(relativeURL);
-	      if (relativeURLHashSplit) {
-	        relativeURLHash = relativeURLHashSplit[2];
-	        relativeURL = relativeURLHashSplit[1];
-	      }
-	      var relativeURLQuerySplit = /^([^\?]*)(.*)$/.exec(relativeURL);
-	      if (relativeURLQuerySplit) {
-	        relativeURLQuery = relativeURLQuerySplit[2];
-	        relativeURL = relativeURLQuerySplit[1];
-	      }
-	
-	      var baseURLHashSplit = /^([^#]*)(.*)$/.exec(baseURL);
-	      if (baseURLHashSplit) {
-	        baseURL = baseURLHashSplit[1];
-	      }
-	      var baseURLQuerySplit = /^([^\?]*)(.*)$/.exec(baseURL);
-	      if (baseURLQuerySplit) {
-	        baseURL = baseURLQuerySplit[1];
-	      }
-	
-	      var baseURLDomainSplit = /^(([a-z]+:)?\/\/[a-z0-9\.\-_~]+(:[0-9]+)?)?(\/.*)$/i.exec(baseURL);
-	      if (!baseURLDomainSplit) {
-	        throw new Error('Error trying to parse base URL.');
-	      }
-	      
-	      // e.g. 'http:', 'https:', ''
-	      var baseURLProtocol = baseURLDomainSplit[2] || '';
-	      // e.g. 'http://example.com', '//example.com', ''
-	      var baseURLProtocolDomain = baseURLDomainSplit[1] || '';
-	      // e.g. '/a/b/c/playlist.m3u8'
-	      var baseURLPath = baseURLDomainSplit[4];
-	
-	      var builtURL = null;
-	      if (/^\/\//.test(relativeURL)) {
-	        // relative url starts wth '//' so copy protocol (which may be '' if baseUrl didn't provide one)
-	        builtURL = baseURLProtocol+'//'+URLToolkit.buildAbsolutePath('', relativeURL.substring(2));
-	      }
-	      else if (/^\//.test(relativeURL)) {
-	        // relative url starts with '/' so start from root of domain
-	        builtURL = baseURLProtocolDomain+'/'+URLToolkit.buildAbsolutePath('', relativeURL.substring(1));
-	      }
-	      else {
-	        builtURL = URLToolkit.buildAbsolutePath(baseURLProtocolDomain+baseURLPath, relativeURL);
-	      }
-	
-	      // put the query and hash parts back
-	      if (relativeURLQuery) {
-	        builtURL += relativeURLQuery;
-	      }
-	      if (relativeURLHash) {
-	        builtURL += relativeURLHash;
-	      }
-	      return builtURL;
-	    },
-	
-	    // build an absolute path using the provided basePath
-	    // adapted from https://developer.mozilla.org/en-US/docs/Web/API/document/cookie#Using_relative_URLs_in_the_path_parameter
-	    // this does not handle the case where relativePath is "/" or "//". These cases should be handled outside this.
-	    buildAbsolutePath: function(basePath, relativePath) {
-	      var sRelPath = relativePath;
-	      var nUpLn, sDir = '', sPath = basePath.replace(/[^\/]*$/, sRelPath.replace(/(\/|^)(?:\.?\/+)+/g, '$1'));
-	      for (var nEnd, nStart = 0; nEnd = sPath.indexOf('/../', nStart), nEnd > -1; nStart = nEnd + nUpLn) {
-	        nUpLn = /^\/(?:\.\.\/)*/.exec(sPath.slice(nEnd))[0].length;
-	        sDir = (sDir + sPath.substring(nStart, nEnd)).replace(new RegExp('(?:\\\/+[^\\\/]*){0,' + ((nUpLn - 1) / 3) + '}$'), '/');
-	      }
-	      return sDir + sPath.substr(nStart);
-	    }
-	  };
-	
-	/* jshint ignore:start */
-	  if(typeof exports === 'object' && typeof module === 'object')
-	    module.exports = URLToolkit;
-	  else if(typeof define === 'function' && define.amd)
-	    define([], function() { return URLToolkit; });
-	  else if(typeof exports === 'object')
-	    exports["URLToolkit"] = URLToolkit;
-	  else
-	    root["URLToolkit"] = URLToolkit;
-	})(this);
-	/* jshint ignore:end */
-	
-	},{}],58:[function(require,module,exports){
-	(function (global){
-	/**
-	 * @file add-text-track-data.js
-	 */
-	'use strict';
-	
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-	
-	var _globalWindow = require('global/window');
-	
-	var _globalWindow2 = _interopRequireDefault(_globalWindow);
-	
-	var _videoJs = (typeof window !== "undefined" ? window['videojs'] : typeof global !== "undefined" ? global['videojs'] : null);
-	
-	var _videoJs2 = _interopRequireDefault(_videoJs);
-	
-	/**
-	 * Define properties on a cue for backwards compatability,
-	 * but warn the user that the way that they are using it
-	 * is depricated and will be removed at a later date.
-	 *
-	 * @param {Cue} cue the cue to add the properties on
-	 * @private
-	 */
-	var deprecateOldCue = function deprecateOldCue(cue) {
-	  Object.defineProperties(cue.frame, {
-	    id: {
-	      get: function get() {
-	        _videoJs2['default'].log.warn('cue.frame.id is deprecated. Use cue.value.key instead.');
-	        return cue.value.key;
-	      }
-	    },
-	    value: {
-	      get: function get() {
-	        _videoJs2['default'].log.warn('cue.frame.value is deprecated. Use cue.value.data instead.');
-	        return cue.value.data;
-	      }
-	    },
-	    privateData: {
-	      get: function get() {
-	        _videoJs2['default'].log.warn('cue.frame.privateData is deprecated. Use cue.value.data instead.');
-	        return cue.value.data;
-	      }
-	    }
-	  });
-	};
-	
-	var durationOfVideo = function durationOfVideo(duration) {
-	  var dur = undefined;
-	
-	  if (isNaN(duration) || Math.abs(duration) === Infinity) {
-	    dur = Number.MAX_VALUE;
-	  } else {
-	    dur = duration;
-	  }
-	  return dur;
-	};
-	/**
-	 * Add text track data to a source handler given the captions and
-	 * metadata from the buffer.
-	 *
-	 * @param {Object} sourceHandler the flash or virtual source buffer
-	 * @param {Array} captionArray an array of caption data
-	 * @param {Array} cue an array of meta data
-	 * @private
-	 */
-	var addTextTrackData = function addTextTrackData(sourceHandler, captionArray, metadataArray) {
-	  var Cue = _globalWindow2['default'].WebKitDataCue || _globalWindow2['default'].VTTCue;
-	
-	  if (captionArray) {
-	    captionArray.forEach(function (caption) {
-	      this.inbandTextTrack_.addCue(new Cue(caption.startTime + this.timestampOffset, caption.endTime + this.timestampOffset, caption.text));
-	    }, sourceHandler);
-	  }
-	
-	  if (metadataArray) {
-	    var videoDuration = durationOfVideo(sourceHandler.mediaSource_.duration);
-	
-	    metadataArray.forEach(function (metadata) {
-	      var time = metadata.cueTime + this.timestampOffset;
-	
-	      metadata.frames.forEach(function (frame) {
-	        var cue = new Cue(time, time, frame.value || frame.url || frame.data || '');
-	
-	        cue.frame = frame;
-	        cue.value = frame;
-	        deprecateOldCue(cue);
-	
-	        this.metadataTrack_.addCue(cue);
-	      }, this);
-	    }, sourceHandler);
-	
-	    // Updating the metadeta cues so that
-	    // the endTime of each cue is the startTime of the next cue
-	    // the endTime of last cue is the duration of the video
-	    if (sourceHandler.metadataTrack_ && sourceHandler.metadataTrack_.cues && sourceHandler.metadataTrack_.cues.length) {
-	      var cues = sourceHandler.metadataTrack_.cues;
-	      var cuesArray = [];
-	
-	      for (var j = 0; j < cues.length; j++) {
-	        cuesArray.push(cues[j]);
-	      }
-	      cuesArray.sort(function (first, second) {
-	        return first.startTime - second.startTime;
-	      });
-	
-	      for (var i = 0; i < cuesArray.length - 1; i++) {
-	        if (cuesArray[i].endTime !== cuesArray[i + 1].startTime) {
-	          cuesArray[i].endTime = cuesArray[i + 1].startTime;
-	        }
-	      }
-	      cuesArray[cuesArray.length - 1].endTime = videoDuration;
-	    }
-	  }
-	};
-	
-	exports['default'] = {
-	  addTextTrackData: addTextTrackData,
-	  durationOfVideo: durationOfVideo
-	};
-	module.exports = exports['default'];
-	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"global/window":28}],59:[function(require,module,exports){
-	/**
-	 * Remove the text track from the player if one with matching kind and
-	 * label properties already exists on the player
-	 *
-	 * @param {Object} player the video.js player object
-	 * @param {String} kind to be considered the text track's `kind` must match
-	 * @param {String} label to be considered the text track's `label` must match
-	 * @private
-	 */
-	'use strict';
-	
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	var removeExistingTrack = function removeExistingTrack(player, kind, label) {
-	  var tracks = player.remoteTextTracks() || [];
-	
-	  for (var i = 0; i < tracks.length; i++) {
-	    var track = tracks[i];
-	
-	    if (track.kind === kind && track.label === label) {
-	      player.removeRemoteTextTrack(track);
-	    }
-	  }
-	};
-	
-	exports.removeExistingTrack = removeExistingTrack;
-	/**
-	 * Cleaup text tracks on video.js if they exist
-	 *
-	 * @param {Object} player the video.js player object
-	 * @private
-	 */
-	var cleanupTextTracks = function cleanupTextTracks(player) {
-	  removeExistingTrack(player, 'captions', 'cc1');
-	  removeExistingTrack(player, 'metadata', 'Timed Metadata');
-	};
-	exports.cleanupTextTracks = cleanupTextTracks;
-	},{}],60:[function(require,module,exports){
-	/**
-	 * @file codec-utils.js
-	 */
-	
-	/**
-	 * Check if a codec string refers to an audio codec.
-	 *
-	 * @param {String} codec codec string to check
-	 * @return {Boolean} if this is an audio codec
-	 * @private
-	 */
-	'use strict';
-	
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	var isAudioCodec = function isAudioCodec(codec) {
-	  return (/mp4a\.\d+.\d+/i.test(codec)
-	  );
-	};
-	
-	/**
-	 * Check if a codec string refers to a video codec.
-	 *
-	 * @param {String} codec codec string to check
-	 * @return {Boolean} if this is a video codec
-	 * @private
-	 */
-	var isVideoCodec = function isVideoCodec(codec) {
-	  return (/avc1\.[\da-f]+/i.test(codec)
-	  );
-	};
-	
-	/**
-	 * Parse a content type header into a type and parameters
-	 * object
-	 *
-	 * @param {String} type the content type header
-	 * @return {Object} the parsed content-type
-	 * @private
-	 */
-	var parseContentType = function parseContentType(type) {
-	  var object = { type: '', parameters: {} };
-	  var parameters = type.trim().split(';');
-	
-	  // first parameter should always be content-type
-	  object.type = parameters.shift().trim();
-	  parameters.forEach(function (parameter) {
-	    var pair = parameter.trim().split('=');
-	
-	    if (pair.length > 1) {
-	      var _name = pair[0].replace(/"/g, '').trim();
-	      var value = pair[1].replace(/"/g, '').trim();
-	
-	      object.parameters[_name] = value;
-	    }
-	  });
-	
-	  return object;
-	};
-	
-	/**
-	 * Replace the old apple-style `avc1.<dd>.<dd>` codec string with the standard
-	 * `avc1.<hhhhhh>`
-	 *
-	 * @param {Array} codecs an array of codec strings to fix
-	 * @return {Array} the translated codec array
-	 * @private
-	 */
-	var translateLegacyCodecs = function translateLegacyCodecs(codecs) {
-	  return codecs.map(function (codec) {
-	    return codec.replace(/avc1\.(\d+)\.(\d+)/i, function (orig, profile, avcLevel) {
-	      var profileHex = ('00' + Number(profile).toString(16)).slice(-2);
-	      var avcLevelHex = ('00' + Number(avcLevel).toString(16)).slice(-2);
-	
-	      return 'avc1.' + profileHex + '00' + avcLevelHex;
-	    });
-	  });
-	};
-	
-	exports['default'] = {
-	  isAudioCodec: isAudioCodec,
-	  parseContentType: parseContentType,
-	  isVideoCodec: isVideoCodec,
-	  translateLegacyCodecs: translateLegacyCodecs
-	};
-	module.exports = exports['default'];
-	},{}],61:[function(require,module,exports){
-	/**
-	 * @file create-text-tracks-if-necessary.js
-	 */
-	'use strict';
-	
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	
-	var _cleanupTextTracks = require('./cleanup-text-tracks');
-	
-	/**
-	 * Create text tracks on video.js if they exist on a segment.
-	 *
-	 * @param {Object} sourceBuffer the VSB or FSB
-	 * @param {Object} mediaSource the HTML or Flash media source
-	 * @param {Object} segment the segment that may contain the text track
-	 * @private
-	 */
-	var createTextTracksIfNecessary = function createTextTracksIfNecessary(sourceBuffer, mediaSource, segment) {
-	  var player = mediaSource.player_;
-	
-	  // create an in-band caption track if one is present in the segment
-	  if (segment.captions && segment.captions.length && !sourceBuffer.inbandTextTrack_) {
-	    (0, _cleanupTextTracks.removeExistingTrack)(player, 'captions', 'cc1');
-	    sourceBuffer.inbandTextTrack_ = player.addRemoteTextTrack({
-	      kind: 'captions',
-	      label: 'cc1'
-	    }, false).track;
-	  }
-	
-	  if (segment.metadata && segment.metadata.length && !sourceBuffer.metadataTrack_) {
-	    (0, _cleanupTextTracks.removeExistingTrack)(player, 'metadata', 'Timed Metadata', true);
-	    sourceBuffer.metadataTrack_ = player.addRemoteTextTrack({
-	      kind: 'metadata',
-	      label: 'Timed Metadata'
-	    }, false).track;
-	    sourceBuffer.metadataTrack_.inBandMetadataTrackDispatchType = segment.metadata.dispatchType;
-	  }
-	};
-	
-	exports['default'] = createTextTracksIfNecessary;
-	module.exports = exports['default'];
-	},{"./cleanup-text-tracks":59}],62:[function(require,module,exports){
-	/**
-	 * @file flash-constants.js
-	 */
-	/**
-	 * The maximum size in bytes for append operations to the video.js
-	 * SWF. Calling through to Flash blocks and can be expensive so
-	 * we chunk data and pass through 4KB at a time, yielding to the
-	 * browser between chunks. This gives a theoretical maximum rate of
-	 * 1MB/s into Flash. Any higher and we begin to drop frames and UI
-	 * responsiveness suffers.
-	 *
-	 * @private
-	 */
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	var flashConstants = {
-	  // times in milliseconds
-	  TIME_BETWEEN_CHUNKS: 4,
-	  BYTES_PER_CHUNK: 4096
-	};
-	
-	exports["default"] = flashConstants;
-	module.exports = exports["default"];
-	},{}],63:[function(require,module,exports){
-	(function (global){
-	/**
-	 * @file flash-media-source.js
-	 */
-	'use strict';
-	
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-	
-	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var _globalDocument = require('global/document');
-	
-	var _globalDocument2 = _interopRequireDefault(_globalDocument);
-	
-	var _videoJs = (typeof window !== "undefined" ? window['videojs'] : typeof global !== "undefined" ? global['videojs'] : null);
-	
-	var _videoJs2 = _interopRequireDefault(_videoJs);
-	
-	var _flashSourceBuffer = require('./flash-source-buffer');
-	
-	var _flashSourceBuffer2 = _interopRequireDefault(_flashSourceBuffer);
-	
-	var _flashConstants = require('./flash-constants');
-	
-	var _flashConstants2 = _interopRequireDefault(_flashConstants);
-	
-	var _codecUtils = require('./codec-utils');
-	
-	var _cleanupTextTracks = require('./cleanup-text-tracks');
-	
-	/**
-	 * A flash implmentation of HTML MediaSources and a polyfill
-	 * for browsers that don't support native or HTML MediaSources..
-	 *
-	 * @link https://developer.mozilla.org/en-US/docs/Web/API/MediaSource
-	 * @class FlashMediaSource
-	 * @extends videojs.EventTarget
-	 */
-	
-	var FlashMediaSource = (function (_videojs$EventTarget) {
-	  _inherits(FlashMediaSource, _videojs$EventTarget);
-	
-	  function FlashMediaSource() {
-	    var _this = this;
-	
-	    _classCallCheck(this, FlashMediaSource);
-	
-	    _get(Object.getPrototypeOf(FlashMediaSource.prototype), 'constructor', this).call(this);
-	    this.sourceBuffers = [];
-	    this.readyState = 'closed';
-	
-	    this.on(['sourceopen', 'webkitsourceopen'], function (event) {
-	      // find the swf where we will push media data
-	      _this.swfObj = _globalDocument2['default'].getElementById(event.swfId);
-	      _this.player_ = (0, _videoJs2['default'])(_this.swfObj.parentNode);
-	      _this.tech_ = _this.swfObj.tech;
-	      _this.readyState = 'open';
-	
-	      _this.tech_.on('seeking', function () {
-	        var i = _this.sourceBuffers.length;
-	
-	        while (i--) {
-	          _this.sourceBuffers[i].abort();
-	        }
-	      });
-	
-	      if (_this.tech_.hls) {
-	        _this.tech_.hls.on('dispose', function () {
-	          (0, _cleanupTextTracks.cleanupTextTracks)(_this.player_);
-	        });
-	      }
-	
-	      // trigger load events
-	      if (_this.swfObj) {
-	        _this.swfObj.vjs_load();
-	      }
-	    });
-	  }
-	
-	  /**
-	    * Set or return the presentation duration.
-	    *
-	    * @param {Double} value the duration of the media in seconds
-	    * @param {Double} the current presentation duration
-	    * @link http://www.w3.org/TR/media-source/#widl-MediaSource-duration
-	    */
-	
-	  /**
-	   * We have this function so that the html and flash interfaces
-	   * are the same.
-	   *
-	   * @private
-	   */
-	
-	  _createClass(FlashMediaSource, [{
-	    key: 'addSeekableRange_',
-	    value: function addSeekableRange_() {}
-	    // intentional no-op
-	
-	    /**
-	     * Create a new flash source buffer and add it to our flash media source.
-	     *
-	     * @link https://developer.mozilla.org/en-US/docs/Web/API/MediaSource/addSourceBuffer
-	     * @param {String} type the content-type of the source
-	     * @return {Object} the flash source buffer
-	     */
-	
-	  }, {
-	    key: 'addSourceBuffer',
-	    value: function addSourceBuffer(type) {
-	      var parsedType = (0, _codecUtils.parseContentType)(type);
-	      var sourceBuffer = undefined;
-	
-	      // if this is an FLV type, we'll push data to flash
-	      if (parsedType.type === 'video/mp2t') {
-	        // Flash source buffers
-	        sourceBuffer = new _flashSourceBuffer2['default'](this);
-	      } else {
-	        throw new Error('NotSupportedError (Video.js)');
-	      }
-	
-	      this.sourceBuffers.push(sourceBuffer);
-	      return sourceBuffer;
-	    }
-	
-	    /**
-	     * Signals the end of the stream.
-	     *
-	     * @link https://w3c.github.io/media-source/#widl-MediaSource-endOfStream-void-EndOfStreamError-error
-	     * @param {String=} error Signals that a playback error
-	     * has occurred. If specified, it must be either "network" or
-	     * "decode".
-	     */
-	  }, {
-	    key: 'endOfStream',
-	    value: function endOfStream(error) {
-	      if (error === 'network') {
-	        // MEDIA_ERR_NETWORK
-	        this.tech_.error(2);
-	      } else if (error === 'decode') {
-	        // MEDIA_ERR_DECODE
-	        this.tech_.error(3);
-	      }
-	      if (this.readyState !== 'ended') {
-	        this.readyState = 'ended';
-	        this.swfObj.vjs_endOfStream();
-	      }
-	    }
-	  }]);
-	
-	  return FlashMediaSource;
-	})(_videoJs2['default'].EventTarget);
-	
-	exports['default'] = FlashMediaSource;
-	try {
-	  Object.defineProperty(FlashMediaSource.prototype, 'duration', {
-	    /**
-	     * Return the presentation duration.
-	     *
-	     * @return {Double} the duration of the media in seconds
-	     * @link http://www.w3.org/TR/media-source/#widl-MediaSource-duration
-	     */
-	    get: function get() {
-	      if (!this.swfObj) {
-	        return NaN;
-	      }
-	      // get the current duration from the SWF
-	      return this.swfObj.vjs_getProperty('duration');
-	    },
-	    /**
-	     * Set the presentation duration.
-	     *
-	     * @param {Double} value the duration of the media in seconds
-	     * @return {Double} the duration of the media in seconds
-	     * @link http://www.w3.org/TR/media-source/#widl-MediaSource-duration
-	     */
-	    set: function set(value) {
-	      var i = undefined;
-	      var oldDuration = this.swfObj.vjs_getProperty('duration');
-	
-	      this.swfObj.vjs_setProperty('duration', value);
-	
-	      if (value < oldDuration) {
-	        // In MSE, this triggers the range removal algorithm which causes
-	        // an update to occur
-	        for (i = 0; i < this.sourceBuffers.length; i++) {
-	          this.sourceBuffers[i].remove(value, oldDuration);
-	        }
-	      }
-	
-	      return value;
-	    }
-	  });
-	} catch (e) {
-	  // IE8 throws if defineProperty is called on a non-DOM node. We
-	  // don't support IE8 but we shouldn't throw an error if loaded
-	  // there.
-	  FlashMediaSource.prototype.duration = NaN;
-	}
-	
-	for (var property in _flashConstants2['default']) {
-	  FlashMediaSource[property] = _flashConstants2['default'][property];
-	}
-	module.exports = exports['default'];
-	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./cleanup-text-tracks":59,"./codec-utils":60,"./flash-constants":62,"./flash-source-buffer":64,"global/document":27}],64:[function(require,module,exports){
-	(function (global){
-	/**
-	 * @file flash-source-buffer.js
-	 */
-	'use strict';
-	
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-	
-	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var _globalWindow = require('global/window');
-	
-	var _globalWindow2 = _interopRequireDefault(_globalWindow);
-	
-	var _videoJs = (typeof window !== "undefined" ? window['videojs'] : typeof global !== "undefined" ? global['videojs'] : null);
-	
-	var _videoJs2 = _interopRequireDefault(_videoJs);
-	
-	var _muxJsLibFlv = require('mux.js/lib/flv');
-	
-	var _muxJsLibFlv2 = _interopRequireDefault(_muxJsLibFlv);
-	
-	var _removeCuesFromTrack = require('./remove-cues-from-track');
-	
-	var _removeCuesFromTrack2 = _interopRequireDefault(_removeCuesFromTrack);
-	
-	var _createTextTracksIfNecessary = require('./create-text-tracks-if-necessary');
-	
-	var _createTextTracksIfNecessary2 = _interopRequireDefault(_createTextTracksIfNecessary);
-	
-	var _addTextTrackData = require('./add-text-track-data');
-	
-	var _flashConstants = require('./flash-constants');
-	
-	var _flashConstants2 = _interopRequireDefault(_flashConstants);
-	
-	/**
-	 * A wrapper around the setTimeout function that uses
-	 * the flash constant time between ticks value.
-	 *
-	 * @param {Function} func the function callback to run
-	 * @private
-	 */
-	var scheduleTick = function scheduleTick(func) {
-	  // Chrome doesn't invoke requestAnimationFrame callbacks
-	  // in background tabs, so use setTimeout.
-	  _globalWindow2['default'].setTimeout(func, _flashConstants2['default'].TIME_BETWEEN_CHUNKS);
-	};
-	
-	/**
-	 * Round a number to a specified number of places much like
-	 * toFixed but return a number instead of a string representation.
-	 *
-	 * @param {Number} num A number
-	 * @param {Number} places The number of decimal places which to
-	 * round
-	 * @private
-	 */
-	var toDecimalPlaces = function toDecimalPlaces(num, places) {
-	  if (typeof places !== 'number' || places < 0) {
-	    places = 0;
-	  }
-	
-	  var scale = Math.pow(10, places);
-	
-	  return Math.round(num * scale) / scale;
-	};
-	
-	/**
-	 * A SourceBuffer implementation for Flash rather than HTML.
-	 *
-	 * @link https://developer.mozilla.org/en-US/docs/Web/API/MediaSource
-	 * @param {Object} mediaSource the flash media source
-	 * @class FlashSourceBuffer
-	 * @extends videojs.EventTarget
-	 */
-	
-	var FlashSourceBuffer = (function (_videojs$EventTarget) {
-	  _inherits(FlashSourceBuffer, _videojs$EventTarget);
-	
-	  function FlashSourceBuffer(mediaSource) {
-	    var _this = this;
-	
-	    _classCallCheck(this, FlashSourceBuffer);
-	
-	    _get(Object.getPrototypeOf(FlashSourceBuffer.prototype), 'constructor', this).call(this);
-	    var encodedHeader = undefined;
-	
-	    // Start off using the globally defined value but refine
-	    // as we append data into flash
-	    this.chunkSize_ = _flashConstants2['default'].BYTES_PER_CHUNK;
-	
-	    // byte arrays queued to be appended
-	    this.buffer_ = [];
-	
-	    // the total number of queued bytes
-	    this.bufferSize_ = 0;
-	
-	    // to be able to determine the correct position to seek to, we
-	    // need to retain information about the mapping between the
-	    // media timeline and PTS values
-	    this.basePtsOffset_ = NaN;
-	
-	    this.mediaSource_ = mediaSource;
-	
-	    // indicates whether the asynchronous continuation of an operation
-	    // is still being processed
-	    // see https://w3c.github.io/media-source/#widl-SourceBuffer-updating
-	    this.updating = false;
-	    this.timestampOffset_ = 0;
-	
-	    // TS to FLV transmuxer
-	    this.segmentParser_ = new _muxJsLibFlv2['default'].Transmuxer();
-	    this.segmentParser_.on('data', this.receiveBuffer_.bind(this));
-	    encodedHeader = _globalWindow2['default'].btoa(String.fromCharCode.apply(null, Array.prototype.slice.call(this.segmentParser_.getFlvHeader())));
-	    this.mediaSource_.swfObj.vjs_appendBuffer(encodedHeader);
-	
-	    this.one('updateend', function () {
-	      _this.mediaSource_.tech_.trigger('loadedmetadata');
-	    });
-	
-	    Object.defineProperty(this, 'timestampOffset', {
-	      get: function get() {
-	        return this.timestampOffset_;
-	      },
-	      set: function set(val) {
-	        if (typeof val === 'number' && val >= 0) {
-	          this.timestampOffset_ = val;
-	          this.segmentParser_ = new _muxJsLibFlv2['default'].Transmuxer();
-	          this.segmentParser_.on('data', this.receiveBuffer_.bind(this));
-	          // We have to tell flash to expect a discontinuity
-	          this.mediaSource_.swfObj.vjs_discontinuity();
-	          // the media <-> PTS mapping must be re-established after
-	          // the discontinuity
-	          this.basePtsOffset_ = NaN;
-	        }
-	      }
-	    });
-	
-	    Object.defineProperty(this, 'buffered', {
-	      get: function get() {
-	        if (!this.mediaSource_ || !this.mediaSource_.swfObj || !('vjs_getProperty' in this.mediaSource_.swfObj)) {
-	          return _videoJs2['default'].createTimeRange();
-	        }
-	
-	        var buffered = this.mediaSource_.swfObj.vjs_getProperty('buffered');
-	
-	        if (buffered && buffered.length) {
-	          buffered[0][0] = toDecimalPlaces(buffered[0][0], 3);
-	          buffered[0][1] = toDecimalPlaces(buffered[0][1], 3);
-	        }
-	        return _videoJs2['default'].createTimeRanges(buffered);
-	      }
-	    });
-	
-	    // On a seek we remove all text track data since flash has no concept
-	    // of a buffered-range and everything else is reset on seek
-	    this.mediaSource_.player_.on('seeked', function () {
-	      (0, _removeCuesFromTrack2['default'])(0, Infinity, _this.metadataTrack_);
-	      (0, _removeCuesFromTrack2['default'])(0, Infinity, _this.inbandTextTrack_);
-	    });
-	  }
-	
-	  /**
-	   * Append bytes to the sourcebuffers buffer, in this case we
-	   * have to append it to swf object.
-	   *
-	   * @link https://developer.mozilla.org/en-US/docs/Web/API/SourceBuffer/appendBuffer
-	   * @param {Array} bytes
-	   */
-	
-	  _createClass(FlashSourceBuffer, [{
-	    key: 'appendBuffer',
-	    value: function appendBuffer(bytes) {
-	      var _this2 = this;
-	
-	      var error = undefined;
-	      var chunk = 512 * 1024;
-	      var i = 0;
-	
-	      if (this.updating) {
-	        error = new Error('SourceBuffer.append() cannot be called ' + 'while an update is in progress');
-	        error.name = 'InvalidStateError';
-	        error.code = 11;
-	        throw error;
-	      }
-	
-	      this.updating = true;
-	      this.mediaSource_.readyState = 'open';
-	      this.trigger({ type: 'update' });
-	
-	      // this is here to use recursion
-	      var chunkInData = function chunkInData() {
-	        _this2.segmentParser_.push(bytes.subarray(i, i + chunk));
-	        i += chunk;
-	        if (i < bytes.byteLength) {
-	          scheduleTick(chunkInData);
-	        } else {
-	          scheduleTick(_this2.segmentParser_.flush.bind(_this2.segmentParser_));
-	        }
-	      };
-	
-	      chunkInData();
-	    }
-	
-	    /**
-	     * Reset the parser and remove any data queued to be sent to the SWF.
-	     *
-	     * @link https://developer.mozilla.org/en-US/docs/Web/API/SourceBuffer/abort
-	     */
-	  }, {
-	    key: 'abort',
-	    value: function abort() {
-	      this.buffer_ = [];
-	      this.bufferSize_ = 0;
-	      this.mediaSource_.swfObj.vjs_abort();
-	
-	      // report any outstanding updates have ended
-	      if (this.updating) {
-	        this.updating = false;
-	        this.trigger({ type: 'updateend' });
-	      }
-	    }
-	
-	    /**
-	     * Flash cannot remove ranges already buffered in the NetStream
-	     * but seeking clears the buffer entirely. For most purposes,
-	     * having this operation act as a no-op is acceptable.
-	     *
-	     * @link https://developer.mozilla.org/en-US/docs/Web/API/SourceBuffer/remove
-	     * @param {Double} start start of the section to remove
-	     * @param {Double} end end of the section to remove
-	     */
-	  }, {
-	    key: 'remove',
-	    value: function remove(start, end) {
-	      (0, _removeCuesFromTrack2['default'])(start, end, this.metadataTrack_);
-	      (0, _removeCuesFromTrack2['default'])(start, end, this.inbandTextTrack_);
-	      this.trigger({ type: 'update' });
-	      this.trigger({ type: 'updateend' });
-	    }
-	
-	    /**
-	     * Receive a buffer from the flv.
-	     *
-	     * @param {Object} segment
-	     * @private
-	     */
-	  }, {
-	    key: 'receiveBuffer_',
-	    value: function receiveBuffer_(segment) {
-	      var _this3 = this;
-	
-	      // create an in-band caption track if one is present in the segment
-	      (0, _createTextTracksIfNecessary2['default'])(this, this.mediaSource_, segment);
-	      (0, _addTextTrackData.addTextTrackData)(this, segment.captions, segment.metadata);
-	
-	      // Do this asynchronously since convertTagsToData_ can be time consuming
-	      scheduleTick(function () {
-	        var flvBytes = _this3.convertTagsToData_(segment);
-	
-	        if (_this3.buffer_.length === 0) {
-	          scheduleTick(_this3.processBuffer_.bind(_this3));
-	        }
-	
-	        if (flvBytes) {
-	          _this3.buffer_.push(flvBytes);
-	          _this3.bufferSize_ += flvBytes.byteLength;
-	        }
-	      });
-	    }
-	
-	    /**
-	     * Append a portion of the current buffer to the SWF.
-	     *
-	     * @private
-	     */
-	  }, {
-	    key: 'processBuffer_',
-	    value: function processBuffer_() {
-	      var chunkSize = _flashConstants2['default'].BYTES_PER_CHUNK;
-	
-	      if (!this.buffer_.length) {
-	        if (this.updating !== false) {
-	          this.updating = false;
-	          this.trigger({ type: 'updateend' });
-	        }
-	        // do nothing if the buffer is empty
-	        return;
-	      }
-	
-	      // concatenate appends up to the max append size
-	      var chunk = this.buffer_[0].subarray(0, chunkSize);
-	
-	      // requeue any bytes that won't make it this round
-	      if (chunk.byteLength < chunkSize || this.buffer_[0].byteLength === chunkSize) {
-	        this.buffer_.shift();
-	      } else {
-	        this.buffer_[0] = this.buffer_[0].subarray(chunkSize);
-	      }
-	
-	      this.bufferSize_ -= chunk.byteLength;
-	
-	      // base64 encode the bytes
-	      var binary = '';
-	      var length = chunk.byteLength;
-	
-	      for (var i = 0; i < length; i++) {
-	        binary += String.fromCharCode(chunk[i]);
-	      }
-	      var b64str = _globalWindow2['default'].btoa(binary);
-	
-	      // bypass normal ExternalInterface calls and pass xml directly
-	      // IE can be slow by default
-	      this.mediaSource_.swfObj.CallFunction('<invoke name="vjs_appendBuffer"' + 'returntype="javascript"><arguments><string>' + b64str + '</string></arguments></invoke>');
-	
-	      // schedule another append if necessary
-	      if (this.bufferSize_ !== 0) {
-	        scheduleTick(this.processBuffer_.bind(this));
-	      } else {
-	        this.updating = false;
-	        this.trigger({ type: 'updateend' });
-	      }
-	    }
-	
-	    /**
-	     * Turns an array of flv tags into a Uint8Array representing the
-	     * flv data. Also removes any tags that are before the current
-	     * time so that playback begins at or slightly after the right
-	     * place on a seek
-	     *
-	     * @private
-	     * @param {Object} segmentData object of segment data
-	     */
-	  }, {
-	    key: 'convertTagsToData_',
-	    value: function convertTagsToData_(segmentData) {
-	      var segmentByteLength = 0;
-	      var tech = this.mediaSource_.tech_;
-	      var targetPts = 0;
-	      var segment = undefined;
-	      var filteredAudioTags = [];
-	      var filteredVideoTags = [];
-	      var videoTags = segmentData.tags.videoTags;
-	      var audioTags = segmentData.tags.audioTags;
-	
-	      // Establish the media timeline to PTS translation if we don't
-	      // have one already
-	      if (isNaN(this.basePtsOffset_) && (videoTags.length || audioTags.length)) {
-	        // We know there is at least one video or audio tag, but since we may not have both,
-	        // we use pts: Infinity for the missing tag. The will force the following Math.min
-	        // call will to use the proper pts value since it will always be less than Infinity
-	        var firstVideoTag = videoTags[0] || { pts: Infinity };
-	        var firstAudioTag = audioTags[0] || { pts: Infinity };
-	
-	        this.basePtsOffset_ = Math.min(firstAudioTag.pts, firstVideoTag.pts);
-	      }
-	
-	      if (tech.buffered().length) {
-	        targetPts = tech.buffered().end(0) - this.timestampOffset;
-	      }
-	
-	      // Trim to currentTime if it's ahead of buffered or buffered doesn't exist
-	      if (tech.seeking()) {
-	        targetPts = Math.max(targetPts, tech.currentTime() - this.timestampOffset);
-	      }
-	
-	      // PTS values are represented in milliseconds
-	      targetPts *= 1e3;
-	      targetPts += this.basePtsOffset_;
-	
-	      // skip tags with a presentation time less than the seek target/end of buffer
-	      for (var i = 0; i < audioTags.length; i++) {
-	        if (audioTags[i].pts >= targetPts) {
-	          filteredAudioTags.push(audioTags[i]);
-	        }
-	      }
-	
-	      // filter complete GOPs with a presentation time less than the seek target/end of buffer
-	      var startIndex = 0;
-	
-	      while (startIndex < videoTags.length) {
-	        var startTag = videoTags[startIndex];
-	
-	        if (startTag.pts >= targetPts) {
-	          filteredVideoTags.push(startTag);
-	        } else if (startTag.keyFrame) {
-	          var nextIndex = startIndex + 1;
-	          var foundNextKeyFrame = false;
-	
-	          while (nextIndex < videoTags.length) {
-	            var nextTag = videoTags[nextIndex];
-	
-	            if (nextTag.pts >= targetPts) {
-	              break;
-	            } else if (nextTag.keyFrame) {
-	              foundNextKeyFrame = true;
-	              break;
-	            } else {
-	              nextIndex++;
-	            }
-	          }
-	
-	          if (foundNextKeyFrame) {
-	            // we found another key frame before the targetPts. This means it is safe
-	            // to drop this entire GOP
-	            startIndex = nextIndex;
-	          } else {
-	            // we reached the target pts or the end of the tag list before finding the
-	            // next key frame. We want to append all the tags from the current key frame
-	            // startTag to the targetPts to prevent trimming part of a GOP
-	            while (startIndex < nextIndex) {
-	              filteredVideoTags.push(videoTags[startIndex]);
-	              startIndex++;
-	            }
-	          }
-	          continue;
-	        }
-	        startIndex++;
-	      }
-	
-	      var tags = this.getOrderedTags_(filteredVideoTags, filteredAudioTags);
-	
-	      if (tags.length === 0) {
-	        return;
-	      }
-	
-	      // concatenate the bytes into a single segment
-	      for (var i = 0; i < tags.length; i++) {
-	        segmentByteLength += tags[i].bytes.byteLength;
-	      }
-	      segment = new Uint8Array(segmentByteLength);
-	      for (var i = 0, j = 0; i < tags.length; i++) {
-	        segment.set(tags[i].bytes, j);
-	        j += tags[i].bytes.byteLength;
-	      }
-	
-	      return segment;
-	    }
-	
-	    /**
-	     * Assemble the FLV tags in decoder order.
-	     *
-	     * @private
-	     * @param {Array} videoTags list of video tags
-	     * @param {Array} audioTags list of audio tags
-	     */
-	  }, {
-	    key: 'getOrderedTags_',
-	    value: function getOrderedTags_(videoTags, audioTags) {
-	      var tag = undefined;
-	      var tags = [];
-	
-	      while (videoTags.length || audioTags.length) {
-	        if (!videoTags.length) {
-	          // only audio tags remain
-	          tag = audioTags.shift();
-	        } else if (!audioTags.length) {
-	          // only video tags remain
-	          tag = videoTags.shift();
-	        } else if (audioTags[0].dts < videoTags[0].dts) {
-	          // audio should be decoded next
-	          tag = audioTags.shift();
-	        } else {
-	          // video should be decoded next
-	          tag = videoTags.shift();
-	        }
-	
-	        tags.push(tag.finalize());
-	      }
-	
-	      return tags;
-	    }
-	  }]);
-	
-	  return FlashSourceBuffer;
-	})(_videoJs2['default'].EventTarget);
-	
-	exports['default'] = FlashSourceBuffer;
-	module.exports = exports['default'];
-	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./add-text-track-data":58,"./create-text-tracks-if-necessary":61,"./flash-constants":62,"./remove-cues-from-track":66,"global/window":28,"mux.js/lib/flv":41}],65:[function(require,module,exports){
-	(function (global){
-	/**
-	 * @file html-media-source.js
-	 */
-	'use strict';
-	
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-	
-	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var _globalWindow = require('global/window');
-	
-	var _globalWindow2 = _interopRequireDefault(_globalWindow);
-	
-	var _globalDocument = require('global/document');
-	
-	var _globalDocument2 = _interopRequireDefault(_globalDocument);
-	
-	var _videoJs = (typeof window !== "undefined" ? window['videojs'] : typeof global !== "undefined" ? global['videojs'] : null);
-	
-	var _videoJs2 = _interopRequireDefault(_videoJs);
-	
-	var _virtualSourceBuffer = require('./virtual-source-buffer');
-	
-	var _virtualSourceBuffer2 = _interopRequireDefault(_virtualSourceBuffer);
-	
-	var _addTextTrackData = require('./add-text-track-data');
-	
-	var _codecUtils = require('./codec-utils');
-	
-	var _cleanupTextTracks = require('./cleanup-text-tracks');
-	
-	/**
-	 * Our MediaSource implementation in HTML, mimics native
-	 * MediaSource where/if possible.
-	 *
-	 * @link https://developer.mozilla.org/en-US/docs/Web/API/MediaSource
-	 * @class HtmlMediaSource
-	 * @extends videojs.EventTarget
-	 */
-	
-	var HtmlMediaSource = (function (_videojs$EventTarget) {
-	  _inherits(HtmlMediaSource, _videojs$EventTarget);
-	
-	  function HtmlMediaSource() {
-	    var _this = this;
-	
-	    _classCallCheck(this, HtmlMediaSource);
-	
-	    _get(Object.getPrototypeOf(HtmlMediaSource.prototype), 'constructor', this).call(this);
-	    var property = undefined;
-	
-	    this.nativeMediaSource_ = new _globalWindow2['default'].MediaSource();
-	    // delegate to the native MediaSource's methods by default
-	    for (property in this.nativeMediaSource_) {
-	      if (!(property in HtmlMediaSource.prototype) && typeof this.nativeMediaSource_[property] === 'function') {
-	        this[property] = this.nativeMediaSource_[property].bind(this.nativeMediaSource_);
-	      }
-	    }
-	
-	    // emulate `duration` and `seekable` until seeking can be
-	    // handled uniformly for live streams
-	    // see https://github.com/w3c/media-source/issues/5
-	    this.duration_ = NaN;
-	    Object.defineProperty(this, 'duration', {
-	      get: function get() {
-	        if (this.duration_ === Infinity) {
-	          return this.duration_;
-	        }
-	        return this.nativeMediaSource_.duration;
-	      },
-	      set: function set(duration) {
-	        this.duration_ = duration;
-	        if (duration !== Infinity) {
-	          this.nativeMediaSource_.duration = duration;
-	          return;
-	        }
-	      }
-	    });
-	    Object.defineProperty(this, 'seekable', {
-	      get: function get() {
-	        if (this.duration_ === Infinity) {
-	          return _videoJs2['default'].createTimeRanges([[0, this.nativeMediaSource_.duration]]);
-	        }
-	        return this.nativeMediaSource_.seekable;
-	      }
-	    });
-	
-	    Object.defineProperty(this, 'readyState', {
-	      get: function get() {
-	        return this.nativeMediaSource_.readyState;
-	      }
-	    });
-	
-	    Object.defineProperty(this, 'activeSourceBuffers', {
-	      get: function get() {
-	        return this.activeSourceBuffers_;
-	      }
-	    });
-	
-	    // the list of virtual and native SourceBuffers created by this
-	    // MediaSource
-	    this.sourceBuffers = [];
-	
-	    this.activeSourceBuffers_ = [];
-	
-	    /**
-	     * update the list of active source buffers based upon various
-	     * imformation from HLS and video.js
-	     *
-	     * @private
-	     */
-	    this.updateActiveSourceBuffers_ = function () {
-	      // Retain the reference but empty the array
-	      _this.activeSourceBuffers_.length = 0;
-	
-	      // By default, the audio in the combined virtual source buffer is enabled
-	      // and the audio-only source buffer (if it exists) is disabled.
-	      var combined = false;
-	      var audioOnly = true;
-	
-	      // TODO: maybe we can store the sourcebuffers on the track objects?
-	      // safari may do something like this
-	      for (var i = 0; i < _this.player_.audioTracks().length; i++) {
-	        var track = _this.player_.audioTracks()[i];
-	
-	        if (track.enabled && track.kind !== 'main') {
-	          // The enabled track is an alternate audio track so disable the audio in
-	          // the combined source buffer and enable the audio-only source buffer.
-	          combined = true;
-	          audioOnly = false;
-	          break;
-	        }
-	      }
-	
-	      // Since we currently support a max of two source buffers, add all of the source
-	      // buffers (in order).
-	      _this.sourceBuffers.forEach(function (sourceBuffer) {
-	        /* eslinst-disable */
-	        // TODO once codecs are required, we can switch to using the codecs to determine
-	        //      what stream is the video stream, rather than relying on videoTracks
-	        /* eslinst-enable */
-	
-	        sourceBuffer.appendAudioInitSegment_ = true;
-	
-	        if (sourceBuffer.videoCodec_ && sourceBuffer.audioCodec_) {
-	          // combined
-	          sourceBuffer.audioDisabled_ = combined;
-	        } else if (sourceBuffer.videoCodec_ && !sourceBuffer.audioCodec_) {
-	          // If the "combined" source buffer is video only, then we do not want
-	          // disable the audio-only source buffer (this is mostly for demuxed
-	          // audio and video hls)
-	          sourceBuffer.audioDisabled_ = true;
-	          audioOnly = false;
-	        } else if (!sourceBuffer.videoCodec_ && sourceBuffer.audioCodec_) {
-	          // audio only
-	          sourceBuffer.audioDisabled_ = audioOnly;
-	          if (audioOnly) {
-	            return;
-	          }
-	        }
-	
-	        _this.activeSourceBuffers_.push(sourceBuffer);
-	      });
-	    };
-	
-	    this.onPlayerMediachange_ = function () {
-	      _this.sourceBuffers.forEach(function (sourceBuffer) {
-	        sourceBuffer.appendAudioInitSegment_ = true;
-	      });
-	    };
-	
-	    // Re-emit MediaSource events on the polyfill
-	    ['sourceopen', 'sourceclose', 'sourceended'].forEach(function (eventName) {
-	      this.nativeMediaSource_.addEventListener(eventName, this.trigger.bind(this));
-	    }, this);
-	
-	    // capture the associated player when the MediaSource is
-	    // successfully attached
-	    this.on('sourceopen', function (event) {
-	      // Get the player this MediaSource is attached to
-	      var video = _globalDocument2['default'].querySelector('[src="' + _this.url_ + '"]');
-	
-	      if (!video) {
-	        return;
-	      }
-	
-	      _this.player_ = (0, _videoJs2['default'])(video.parentNode);
-	
-	      if (_this.player_.audioTracks && _this.player_.audioTracks()) {
-	        _this.player_.audioTracks().on('change', _this.updateActiveSourceBuffers_);
-	        _this.player_.audioTracks().on('addtrack', _this.updateActiveSourceBuffers_);
-	        _this.player_.audioTracks().on('removetrack', _this.updateActiveSourceBuffers_);
-	      }
-	
-	      _this.player_.on('mediachange', _this.onPlayerMediachange_);
-	    });
-	
-	    this.on('sourceended', function (event) {
-	      var duration = (0, _addTextTrackData.durationOfVideo)(_this.duration);
-	
-	      for (var i = 0; i < _this.sourceBuffers.length; i++) {
-	        var sourcebuffer = _this.sourceBuffers[i];
-	        var cues = sourcebuffer.metadataTrack_ && sourcebuffer.metadataTrack_.cues;
-	
-	        if (cues && cues.length) {
-	          cues[cues.length - 1].endTime = duration;
-	        }
-	      }
-	    });
-	
-	    // explicitly terminate any WebWorkers that were created
-	    // by SourceHandlers
-	    this.on('sourceclose', function (event) {
-	      this.sourceBuffers.forEach(function (sourceBuffer) {
-	        if (sourceBuffer.transmuxer_) {
-	          sourceBuffer.transmuxer_.terminate();
-	        }
-	      });
-	
-	      this.sourceBuffers.length = 0;
-	      if (!this.player_) {
-	        return;
-	      }
-	
-	      (0, _cleanupTextTracks.cleanupTextTracks)(this.player_);
-	
-	      if (this.player_.audioTracks && this.player_.audioTracks()) {
-	        this.player_.audioTracks().off('change', this.updateActiveSourceBuffers_);
-	        this.player_.audioTracks().off('addtrack', this.updateActiveSourceBuffers_);
-	        this.player_.audioTracks().off('removetrack', this.updateActiveSourceBuffers_);
-	      }
-	
-	      // We can only change this if the player hasn't been disposed of yet
-	      // because `off` eventually tries to use the el_ property. If it has
-	      // been disposed of, then don't worry about it because there are no
-	      // event handlers left to unbind anyway
-	      if (this.player_.el_) {
-	        this.player_.off('mediachange', this.onPlayerMediachange_);
-	      }
-	    });
-	  }
-	
-	  /**
-	   * Add a range that that can now be seeked to.
-	   *
-	   * @param {Double} start where to start the addition
-	   * @param {Double} end where to end the addition
-	   * @private
-	   */
-	
-	  _createClass(HtmlMediaSource, [{
-	    key: 'addSeekableRange_',
-	    value: function addSeekableRange_(start, end) {
-	      var error = undefined;
-	
-	      if (this.duration !== Infinity) {
-	        error = new Error('MediaSource.addSeekableRange() can only be invoked ' + 'when the duration is Infinity');
-	        error.name = 'InvalidStateError';
-	        error.code = 11;
-	        throw error;
-	      }
-	
-	      if (end > this.nativeMediaSource_.duration || isNaN(this.nativeMediaSource_.duration)) {
-	        this.nativeMediaSource_.duration = end;
-	      }
-	    }
-	
-	    /**
-	     * Add a source buffer to the media source.
-	     *
-	     * @link https://developer.mozilla.org/en-US/docs/Web/API/MediaSource/addSourceBuffer
-	     * @param {String} type the content-type of the content
-	     * @return {Object} the created source buffer
-	     */
-	  }, {
-	    key: 'addSourceBuffer',
-	    value: function addSourceBuffer(type) {
-	      var buffer = undefined;
-	      var parsedType = (0, _codecUtils.parseContentType)(type);
-	
-	      // Create a VirtualSourceBuffer to transmux MPEG-2 transport
-	      // stream segments into fragmented MP4s
-	      if (/^(video|audio)\/mp2t$/i.test(parsedType.type)) {
-	        var codecs = [];
-	
-	        if (parsedType.parameters && parsedType.parameters.codecs) {
-	          codecs = parsedType.parameters.codecs.split(',');
-	          codecs = (0, _codecUtils.translateLegacyCodecs)(codecs);
-	          codecs = codecs.filter(function (codec) {
-	            return (0, _codecUtils.isAudioCodec)(codec) || (0, _codecUtils.isVideoCodec)(codec);
-	          });
-	        }
-	
-	        if (codecs.length === 0) {
-	          codecs = ['avc1.4d400d', 'mp4a.40.2'];
-	        }
-	
-	        buffer = new _virtualSourceBuffer2['default'](this, codecs);
-	
-	        if (this.sourceBuffers.length !== 0) {
-	          // If another VirtualSourceBuffer already exists, then we are creating a
-	          // SourceBuffer for an alternate audio track and therefore we know that
-	          // the source has both an audio and video track.
-	          // That means we should trigger the manual creation of the real
-	          // SourceBuffers instead of waiting for the transmuxer to return data
-	          this.sourceBuffers[0].createRealSourceBuffers_();
-	          buffer.createRealSourceBuffers_();
-	
-	          // Automatically disable the audio on the first source buffer if
-	          // a second source buffer is ever created
-	          this.sourceBuffers[0].audioDisabled_ = true;
-	        }
-	      } else {
-	        // delegate to the native implementation
-	        buffer = this.nativeMediaSource_.addSourceBuffer(type);
-	      }
-	
-	      this.sourceBuffers.push(buffer);
-	      return buffer;
-	    }
-	  }]);
-	
-	  return HtmlMediaSource;
-	})(_videoJs2['default'].EventTarget);
-	
-	exports['default'] = HtmlMediaSource;
-	module.exports = exports['default'];
-	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./add-text-track-data":58,"./cleanup-text-tracks":59,"./codec-utils":60,"./virtual-source-buffer":69,"global/document":27,"global/window":28}],66:[function(require,module,exports){
-	/**
-	 * @file remove-cues-from-track.js
-	 */
-	
-	/**
-	 * Remove cues from a track on video.js.
-	 *
-	 * @param {Double} start start of where we should remove the cue
-	 * @param {Double} end end of where the we should remove the cue
-	 * @param {Object} track the text track to remove the cues from
-	 * @private
-	 */
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	var removeCuesFromTrack = function removeCuesFromTrack(start, end, track) {
-	  var i = undefined;
-	  var cue = undefined;
-	
-	  if (!track) {
-	    return;
-	  }
-	
-	  if (!track.cues) {
-	    return;
-	  }
-	
-	  i = track.cues.length;
-	
-	  while (i--) {
-	    cue = track.cues[i];
-	
-	    // Remove any overlapping cue
-	    if (cue.startTime <= end && cue.endTime >= start) {
-	      track.removeCue(cue);
-	    }
-	  }
-	};
-	
-	exports["default"] = removeCuesFromTrack;
-	module.exports = exports["default"];
-	},{}],67:[function(require,module,exports){
-	/**
-	 * @file transmuxer-worker.js
-	 */
-	
-	/**
-	 * videojs-contrib-media-sources
-	 *
-	 * Copyright (c) 2015 Brightcove
-	 * All rights reserved.
-	 *
-	 * Handles communication between the browser-world and the mux.js
-	 * transmuxer running inside of a WebWorker by exposing a simple
-	 * message-based interface to a Transmuxer object.
-	 */
-	'use strict';
-	
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-	
-	var _globalWindow = require('global/window');
-	
-	var _globalWindow2 = _interopRequireDefault(_globalWindow);
-	
-	var _muxJsLibMp4 = require('mux.js/lib/mp4');
-	
-	var _muxJsLibMp42 = _interopRequireDefault(_muxJsLibMp4);
-	
-	/**
-	 * Re-emits tranmsuxer events by converting them into messages to the
-	 * world outside the worker.
-	 *
-	 * @param {Object} transmuxer the transmuxer to wire events on
-	 * @private
-	 */
-	var wireTransmuxerEvents = function wireTransmuxerEvents(transmuxer) {
-	  transmuxer.on('data', function (segment) {
-	    // transfer ownership of the underlying ArrayBuffer
-	    // instead of doing a copy to save memory
-	    // ArrayBuffers are transferable but generic TypedArrays are not
-	    // @link https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers#Passing_data_by_transferring_ownership_(transferable_objects)
-	    var initArray = segment.initSegment;
-	
-	    segment.initSegment = {
-	      data: initArray.buffer,
-	      byteOffset: initArray.byteOffset,
-	      byteLength: initArray.byteLength
-	    };
-	
-	    var typedArray = segment.data;
-	
-	    segment.data = typedArray.buffer;
-	    _globalWindow2['default'].postMessage({
-	      action: 'data',
-	      segment: segment,
-	      byteOffset: typedArray.byteOffset,
-	      byteLength: typedArray.byteLength
-	    }, [segment.data]);
-	  });
-	
-	  if (transmuxer.captionStream) {
-	    transmuxer.captionStream.on('data', function (caption) {
-	      _globalWindow2['default'].postMessage({
-	        action: 'caption',
-	        data: caption
-	      });
-	    });
-	  }
-	
-	  transmuxer.on('done', function (data) {
-	    _globalWindow2['default'].postMessage({ action: 'done' });
-	  });
-	};
-	
-	/**
-	 * All incoming messages route through this hash. If no function exists
-	 * to handle an incoming message, then we ignore the message.
-	 *
-	 * @class MessageHandlers
-	 * @param {Object} options the options to initialize with
-	 */
-	
-	var MessageHandlers = (function () {
-	  function MessageHandlers(options) {
-	    _classCallCheck(this, MessageHandlers);
-	
-	    this.options = options || {};
-	    this.init();
-	  }
-	
-	  /**
-	   * Our web wroker interface so that things can talk to mux.js
-	   * that will be running in a web worker. the scope is passed to this by
-	   * webworkify.
-	   *
-	   * @param {Object} self the scope for the web worker
-	   */
-	
-	  /**
-	   * initialize our web worker and wire all the events.
-	   */
-	
-	  _createClass(MessageHandlers, [{
-	    key: 'init',
-	    value: function init() {
-	      if (this.transmuxer) {
-	        this.transmuxer.dispose();
-	      }
-	      this.transmuxer = new _muxJsLibMp42['default'].Transmuxer(this.options);
-	      wireTransmuxerEvents(this.transmuxer);
-	    }
-	
-	    /**
-	     * Adds data (a ts segment) to the start of the transmuxer pipeline for
-	     * processing.
-	     *
-	     * @param {ArrayBuffer} data data to push into the muxer
-	     */
-	  }, {
-	    key: 'push',
-	    value: function push(data) {
-	      // Cast array buffer to correct type for transmuxer
-	      var segment = new Uint8Array(data.data, data.byteOffset, data.byteLength);
-	
-	      this.transmuxer.push(segment);
-	    }
-	
-	    /**
-	     * Recreate the transmuxer so that the next segment added via `push`
-	     * start with a fresh transmuxer.
-	     */
-	  }, {
-	    key: 'reset',
-	    value: function reset() {
-	      this.init();
-	    }
-	
-	    /**
-	     * Set the value that will be used as the `baseMediaDecodeTime` time for the
-	     * next segment pushed in. Subsequent segments will have their `baseMediaDecodeTime`
-	     * set relative to the first based on the PTS values.
-	     *
-	     * @param {Object} data used to set the timestamp offset in the muxer
-	     */
-	  }, {
-	    key: 'setTimestampOffset',
-	    value: function setTimestampOffset(data) {
-	      var timestampOffset = data.timestampOffset || 0;
-	
-	      this.transmuxer.setBaseMediaDecodeTime(Math.round(timestampOffset * 90000));
-	    }
-	  }, {
-	    key: 'setAudioAppendStart',
-	    value: function setAudioAppendStart(data) {
-	      this.transmuxer.setAudioAppendStart(Math.ceil(data.appendStart * 90000));
-	    }
-	
-	    /**
-	     * Forces the pipeline to finish processing the last segment and emit it's
-	     * results.
-	     *
-	     * @param {Object} data event data, not really used
-	     */
-	  }, {
-	    key: 'flush',
-	    value: function flush(data) {
-	      this.transmuxer.flush();
-	    }
-	  }]);
-	
-	  return MessageHandlers;
-	})();
-	
-	var Worker = function Worker(self) {
-	  self.onmessage = function (event) {
-	    if (event.data.action === 'init' && event.data.options) {
-	      this.messageHandlers = new MessageHandlers(event.data.options);
-	      return;
-	    }
-	
-	    if (!this.messageHandlers) {
-	      this.messageHandlers = new MessageHandlers();
-	    }
-	
-	    if (event.data && event.data.action && event.data.action !== 'init') {
-	      if (this.messageHandlers[event.data.action]) {
-	        this.messageHandlers[event.data.action](event.data);
-	      }
-	    }
-	  };
-	};
-	
-	exports['default'] = function (self) {
-	  return new Worker(self);
-	};
-	
-	module.exports = exports['default'];
-	},{"global/window":28,"mux.js/lib/mp4":49}],68:[function(require,module,exports){
-	(function (global){
-	/**
-	 * @file videojs-contrib-media-sources.js
-	 */
-	'use strict';
-	
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-	
-	var _globalWindow = require('global/window');
-	
-	var _globalWindow2 = _interopRequireDefault(_globalWindow);
-	
-	var _flashMediaSource = require('./flash-media-source');
-	
-	var _flashMediaSource2 = _interopRequireDefault(_flashMediaSource);
-	
-	var _htmlMediaSource = require('./html-media-source');
-	
-	var _htmlMediaSource2 = _interopRequireDefault(_htmlMediaSource);
-	
-	var _videoJs = (typeof window !== "undefined" ? window['videojs'] : typeof global !== "undefined" ? global['videojs'] : null);
-	
-	var _videoJs2 = _interopRequireDefault(_videoJs);
-	
-	var urlCount = 0;
-	
-	// ------------
-	// Media Source
-	// ------------
-	
-	var defaults = {
-	  // how to determine the MediaSource implementation to use. There
-	  // are three available modes:
-	  // - auto: use native MediaSources where available and Flash
-	  //   everywhere else
-	  // - html5: always use native MediaSources
-	  // - flash: always use the Flash MediaSource polyfill
-	  mode: 'auto'
-	};
-	
-	// store references to the media sources so they can be connected
-	// to a video element (a swf object)
-	// TODO: can we store this somewhere local to this module?
-	_videoJs2['default'].mediaSources = {};
-	
-	/**
-	 * Provide a method for a swf object to notify JS that a
-	 * media source is now open.
-	 *
-	 * @param {String} msObjectURL string referencing the MSE Object URL
-	 * @param {String} swfId the swf id
-	 */
-	var open = function open(msObjectURL, swfId) {
-	  var mediaSource = _videoJs2['default'].mediaSources[msObjectURL];
-	
-	  if (mediaSource) {
-	    mediaSource.trigger({ type: 'sourceopen', swfId: swfId });
-	  } else {
-	    throw new Error('Media Source not found (Video.js)');
-	  }
-	};
-	
-	/**
-	 * Check to see if the native MediaSource object exists and supports
-	 * an MP4 container with both H.264 video and AAC-LC audio.
-	 *
-	 * @return {Boolean} if  native media sources are supported
-	 */
-	var supportsNativeMediaSources = function supportsNativeMediaSources() {
-	  return !!_globalWindow2['default'].MediaSource && !!_globalWindow2['default'].MediaSource.isTypeSupported && _globalWindow2['default'].MediaSource.isTypeSupported('video/mp4;codecs="avc1.4d400d,mp4a.40.2"');
-	};
-	
-	/**
-	 * An emulation of the MediaSource API so that we can support
-	 * native and non-native functionality such as flash and
-	 * video/mp2t videos. returns an instance of HtmlMediaSource or
-	 * FlashMediaSource depending on what is supported and what options
-	 * are passed in.
-	 *
-	 * @link https://developer.mozilla.org/en-US/docs/Web/API/MediaSource/MediaSource
-	 * @param {Object} options options to use during setup.
-	 */
-	var MediaSource = function MediaSource(options) {
-	  var settings = _videoJs2['default'].mergeOptions(defaults, options);
-	
-	  this.MediaSource = {
-	    open: open,
-	    supportsNativeMediaSources: supportsNativeMediaSources
-	  };
-	
-	  // determine whether HTML MediaSources should be used
-	  if (settings.mode === 'html5' || settings.mode === 'auto' && supportsNativeMediaSources()) {
-	    return new _htmlMediaSource2['default']();
-	  }
-	
-	  // otherwise, emulate them through the SWF
-	  return new _flashMediaSource2['default']();
-	};
-	
-	exports.MediaSource = MediaSource;
-	MediaSource.open = open;
-	MediaSource.supportsNativeMediaSources = supportsNativeMediaSources;
-	
-	/**
-	 * A wrapper around the native URL for our MSE object
-	 * implementation, this object is exposed under videojs.URL
-	 *
-	 * @link https://developer.mozilla.org/en-US/docs/Web/API/URL/URL
-	 */
-	var URL = {
-	  /**
-	   * A wrapper around the native createObjectURL for our objects.
-	   * This function maps a native or emulated mediaSource to a blob
-	   * url so that it can be loaded into video.js
-	   *
-	   * @link https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL
-	   * @param {MediaSource} object the object to create a blob url to
-	   */
-	  createObjectURL: function createObjectURL(object) {
-	    var objectUrlPrefix = 'blob:vjs-media-source/';
-	    var url = undefined;
-	
-	    // use the native MediaSource to generate an object URL
-	    if (object instanceof _htmlMediaSource2['default']) {
-	      url = _globalWindow2['default'].URL.createObjectURL(object.nativeMediaSource_);
-	      object.url_ = url;
-	      return url;
-	    }
-	    // if the object isn't an emulated MediaSource, delegate to the
-	    // native implementation
-	    if (!(object instanceof _flashMediaSource2['default'])) {
-	      url = _globalWindow2['default'].URL.createObjectURL(object);
-	      object.url_ = url;
-	      return url;
-	    }
-	
-	    // build a URL that can be used to map back to the emulated
-	    // MediaSource
-	    url = objectUrlPrefix + urlCount;
-	
-	    urlCount++;
-	
-	    // setup the mapping back to object
-	    _videoJs2['default'].mediaSources[url] = object;
-	
-	    return url;
-	  }
-	};
-	
-	exports.URL = URL;
-	_videoJs2['default'].MediaSource = MediaSource;
-	_videoJs2['default'].URL = URL;
-	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./flash-media-source":63,"./html-media-source":65,"global/window":28}],69:[function(require,module,exports){
-	(function (global){
-	/**
-	 * @file virtual-source-buffer.js
-	 */
-	'use strict';
-	
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-	
-	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var _videoJs = (typeof window !== "undefined" ? window['videojs'] : typeof global !== "undefined" ? global['videojs'] : null);
-	
-	var _videoJs2 = _interopRequireDefault(_videoJs);
-	
-	var _createTextTracksIfNecessary = require('./create-text-tracks-if-necessary');
-	
-	var _createTextTracksIfNecessary2 = _interopRequireDefault(_createTextTracksIfNecessary);
-	
-	var _removeCuesFromTrack = require('./remove-cues-from-track');
-	
-	var _removeCuesFromTrack2 = _interopRequireDefault(_removeCuesFromTrack);
-	
-	var _addTextTrackData = require('./add-text-track-data');
-	
-	var _webworkify = require('webworkify');
-	
-	var _webworkify2 = _interopRequireDefault(_webworkify);
-	
-	var _transmuxerWorker = require('./transmuxer-worker');
-	
-	var _transmuxerWorker2 = _interopRequireDefault(_transmuxerWorker);
-	
-	var _codecUtils = require('./codec-utils');
-	
-	/**
-	 * VirtualSourceBuffers exist so that we can transmux non native formats
-	 * into a native format, but keep the same api as a native source buffer.
-	 * It creates a transmuxer, that works in its own thread (a web worker) and
-	 * that transmuxer muxes the data into a native format. VirtualSourceBuffer will
-	 * then send all of that data to the naive sourcebuffer so that it is
-	 * indestinguishable from a natively supported format.
-	 *
-	 * @param {HtmlMediaSource} mediaSource the parent mediaSource
-	 * @param {Array} codecs array of codecs that we will be dealing with
-	 * @class VirtualSourceBuffer
-	 * @extends video.js.EventTarget
-	 */
-	
-	var VirtualSourceBuffer = (function (_videojs$EventTarget) {
-	  _inherits(VirtualSourceBuffer, _videojs$EventTarget);
-	
-	  function VirtualSourceBuffer(mediaSource, codecs) {
-	    var _this = this;
-	
-	    _classCallCheck(this, VirtualSourceBuffer);
-	
-	    _get(Object.getPrototypeOf(VirtualSourceBuffer.prototype), 'constructor', this).call(this, _videoJs2['default'].EventTarget);
-	    this.timestampOffset_ = 0;
-	    this.pendingBuffers_ = [];
-	    this.bufferUpdating_ = false;
-	    this.mediaSource_ = mediaSource;
-	    this.codecs_ = codecs;
-	    this.audioCodec_ = null;
-	    this.videoCodec_ = null;
-	    this.audioDisabled_ = false;
-	    this.appendAudioInitSegment_ = true;
-	
-	    var options = {
-	      remux: false
-	    };
-	
-	    this.codecs_.forEach(function (codec) {
-	      if ((0, _codecUtils.isAudioCodec)(codec)) {
-	        _this.audioCodec_ = codec;
-	      } else if ((0, _codecUtils.isVideoCodec)(codec)) {
-	        _this.videoCodec_ = codec;
-	      }
-	    });
-	
-	    // append muxed segments to their respective native buffers as
-	    // soon as they are available
-	    this.transmuxer_ = (0, _webworkify2['default'])(_transmuxerWorker2['default']);
-	    this.transmuxer_.postMessage({ action: 'init', options: options });
-	
-	    this.transmuxer_.onmessage = function (event) {
-	      if (event.data.action === 'data') {
-	        return _this.data_(event);
-	      }
-	
-	      if (event.data.action === 'done') {
-	        return _this.done_(event);
-	      }
-	    };
-	
-	    // this timestampOffset is a property with the side-effect of resetting
-	    // baseMediaDecodeTime in the transmuxer on the setter
-	    Object.defineProperty(this, 'timestampOffset', {
-	      get: function get() {
-	        return this.timestampOffset_;
-	      },
-	      set: function set(val) {
-	        if (typeof val === 'number' && val >= 0) {
-	          this.timestampOffset_ = val;
-	          this.appendAudioInitSegment_ = true;
-	
-	          // We have to tell the transmuxer to set the baseMediaDecodeTime to
-	          // the desired timestampOffset for the next segment
-	          this.transmuxer_.postMessage({
-	            action: 'setTimestampOffset',
-	            timestampOffset: val
-	          });
-	        }
-	      }
-	    });
-	
-	    // setting the append window affects both source buffers
-	    Object.defineProperty(this, 'appendWindowStart', {
-	      get: function get() {
-	        return (this.videoBuffer_ || this.audioBuffer_).appendWindowStart;
-	      },
-	      set: function set(start) {
-	        if (this.videoBuffer_) {
-	          this.videoBuffer_.appendWindowStart = start;
-	        }
-	        if (this.audioBuffer_) {
-	          this.audioBuffer_.appendWindowStart = start;
-	        }
-	      }
-	    });
-	
-	    // this buffer is "updating" if either of its native buffers are
-	    Object.defineProperty(this, 'updating', {
-	      get: function get() {
-	        return !!(this.bufferUpdating_ || !this.audioDisabled_ && this.audioBuffer_ && this.audioBuffer_.updating || this.videoBuffer_ && this.videoBuffer_.updating);
-	      }
-	    });
-	
-	    // the buffered property is the intersection of the buffered
-	    // ranges of the native source buffers
-	    Object.defineProperty(this, 'buffered', {
-	      get: function get() {
-	        var start = null;
-	        var end = null;
-	        var arity = 0;
-	        var extents = [];
-	        var ranges = [];
-	
-	        // neither buffer has been created yet
-	        if (!this.videoBuffer_ && !this.audioBuffer_) {
-	          return _videoJs2['default'].createTimeRange();
-	        }
-	
-	        // only one buffer is configured
-	        if (!this.videoBuffer_) {
-	          return this.audioBuffer_.buffered;
-	        }
-	        if (!this.audioBuffer_) {
-	          return this.videoBuffer_.buffered;
-	        }
-	
-	        // both buffers are configured
-	        if (this.audioDisabled_) {
-	          return this.videoBuffer_.buffered;
-	        }
-	
-	        // both buffers are empty
-	        if (this.videoBuffer_.buffered.length === 0 && this.audioBuffer_.buffered.length === 0) {
-	          return _videoJs2['default'].createTimeRange();
-	        }
-	
-	        // Handle the case where we have both buffers and create an
-	        // intersection of the two
-	        var videoBuffered = this.videoBuffer_.buffered;
-	        var audioBuffered = this.audioBuffer_.buffered;
-	        var count = videoBuffered.length;
-	
-	        // A) Gather up all start and end times
-	        while (count--) {
-	          extents.push({ time: videoBuffered.start(count), type: 'start' });
-	          extents.push({ time: videoBuffered.end(count), type: 'end' });
-	        }
-	        count = audioBuffered.length;
-	        while (count--) {
-	          extents.push({ time: audioBuffered.start(count), type: 'start' });
-	          extents.push({ time: audioBuffered.end(count), type: 'end' });
-	        }
-	        // B) Sort them by time
-	        extents.sort(function (a, b) {
-	          return a.time - b.time;
-	        });
-	
-	        // C) Go along one by one incrementing arity for start and decrementing
-	        //    arity for ends
-	        for (count = 0; count < extents.length; count++) {
-	          if (extents[count].type === 'start') {
-	            arity++;
-	
-	            // D) If arity is ever incremented to 2 we are entering an
-	            //    overlapping range
-	            if (arity === 2) {
-	              start = extents[count].time;
-	            }
-	          } else if (extents[count].type === 'end') {
-	            arity--;
-	
-	            // E) If arity is ever decremented to 1 we leaving an
-	            //    overlapping range
-	            if (arity === 1) {
-	              end = extents[count].time;
-	            }
-	          }
-	
-	          // F) Record overlapping ranges
-	          if (start !== null && end !== null) {
-	            ranges.push([start, end]);
-	            start = null;
-	            end = null;
-	          }
-	        }
-	
-	        return _videoJs2['default'].createTimeRanges(ranges);
-	      }
-	    });
-	  }
-	
-	  /**
-	   * When we get a data event from the transmuxer
-	   * we call this function and handle the data that
-	   * was sent to us
-	   *
-	   * @private
-	   * @param {Event} event the data event from the transmuxer
-	   */
-	
-	  _createClass(VirtualSourceBuffer, [{
-	    key: 'data_',
-	    value: function data_(event) {
-	      var segment = event.data.segment;
-	
-	      // Cast ArrayBuffer to TypedArray
-	      segment.data = new Uint8Array(segment.data, event.data.byteOffset, event.data.byteLength);
-	
-	      segment.initSegment = new Uint8Array(segment.initSegment.data, segment.initSegment.byteOffset, segment.initSegment.byteLength);
-	
-	      (0, _createTextTracksIfNecessary2['default'])(this, this.mediaSource_, segment);
-	
-	      // Add the segments to the pendingBuffers array
-	      this.pendingBuffers_.push(segment);
-	      return;
-	    }
-	
-	    /**
-	     * When we get a done event from the transmuxer
-	     * we call this function and we process all
-	     * of the pending data that we have been saving in the
-	     * data_ function
-	     *
-	     * @private
-	     * @param {Event} event the done event from the transmuxer
-	     */
-	  }, {
-	    key: 'done_',
-	    value: function done_(event) {
-	      // All buffers should have been flushed from the muxer
-	      // start processing anything we have received
-	      this.processPendingSegments_();
-	      return;
-	    }
-	
-	    /**
-	     * Create our internal native audio/video source buffers and add
-	     * event handlers to them with the following conditions:
-	     * 1. they do not already exist on the mediaSource
-	     * 2. this VSB has a codec for them
-	     *
-	     * @private
-	     */
-	  }, {
-	    key: 'createRealSourceBuffers_',
-	    value: function createRealSourceBuffers_() {
-	      var _this2 = this;
-	
-	      var types = ['audio', 'video'];
-	
-	      types.forEach(function (type) {
-	        // Don't create a SourceBuffer of this type if we don't have a
-	        // codec for it
-	        if (!_this2[type + 'Codec_']) {
-	          return;
-	        }
-	
-	        // Do nothing if a SourceBuffer of this type already exists
-	        if (_this2[type + 'Buffer_']) {
-	          return;
-	        }
-	
-	        var buffer = null;
-	
-	        // If the mediasource already has a SourceBuffer for the codec
-	        // use that
-	        if (_this2.mediaSource_[type + 'Buffer_']) {
-	          buffer = _this2.mediaSource_[type + 'Buffer_'];
-	        } else {
-	          buffer = _this2.mediaSource_.nativeMediaSource_.addSourceBuffer(type + '/mp4;codecs="' + _this2[type + 'Codec_'] + '"');
-	          _this2.mediaSource_[type + 'Buffer_'] = buffer;
-	        }
-	
-	        _this2[type + 'Buffer_'] = buffer;
-	
-	        // Wire up the events to the SourceBuffer
-	        ['update', 'updatestart', 'updateend'].forEach(function (event) {
-	          buffer.addEventListener(event, function () {
-	            // if audio is disabled
-	            if (type === 'audio' && _this2.audioDisabled_) {
-	              return;
-	            }
-	
-	            var shouldTrigger = types.every(function (t) {
-	              // skip checking audio's updating status if audio
-	              // is not enabled
-	              if (t === 'audio' && _this2.audioDisabled_) {
-	                return true;
-	              }
-	              // if the other type if updating we don't trigger
-	              if (type !== t && _this2[t + 'Buffer_'] && _this2[t + 'Buffer_'].updating) {
-	                return false;
-	              }
-	              return true;
-	            });
-	
-	            if (shouldTrigger) {
-	              return _this2.trigger(event);
-	            }
-	          });
-	        });
-	      });
-	    }
-	
-	    /**
-	     * Emulate the native mediasource function, but our function will
-	     * send all of the proposed segments to the transmuxer so that we
-	     * can transmux them before we append them to our internal
-	     * native source buffers in the correct format.
-	     *
-	     * @link https://developer.mozilla.org/en-US/docs/Web/API/SourceBuffer/appendBuffer
-	     * @param {Uint8Array} segment the segment to append to the buffer
-	     */
-	  }, {
-	    key: 'appendBuffer',
-	    value: function appendBuffer(segment) {
-	      // Start the internal "updating" state
-	      this.bufferUpdating_ = true;
-	
-	      if (this.audioBuffer_ && this.audioBuffer_.buffered.length) {
-	        var audioBuffered = this.audioBuffer_.buffered;
-	
-	        this.transmuxer_.postMessage({
-	          action: 'setAudioAppendStart',
-	          appendStart: audioBuffered.end(audioBuffered.length - 1)
-	        });
-	      }
-	
-	      this.transmuxer_.postMessage({
-	        action: 'push',
-	        // Send the typed-array of data as an ArrayBuffer so that
-	        // it can be sent as a "Transferable" and avoid the costly
-	        // memory copy
-	        data: segment.buffer,
-	
-	        // To recreate the original typed-array, we need information
-	        // about what portion of the ArrayBuffer it was a view into
-	        byteOffset: segment.byteOffset,
-	        byteLength: segment.byteLength
-	      }, [segment.buffer]);
-	      this.transmuxer_.postMessage({ action: 'flush' });
-	    }
-	
-	    /**
-	     * Emulate the native mediasource function and remove parts
-	     * of the buffer from any of our internal buffers that exist
-	     *
-	     * @link https://developer.mozilla.org/en-US/docs/Web/API/SourceBuffer/remove
-	     * @param {Double} start position to start the remove at
-	     * @param {Double} end position to end the remove at
-	     */
-	  }, {
-	    key: 'remove',
-	    value: function remove(start, end) {
-	      if (this.videoBuffer_) {
-	        this.videoBuffer_.remove(start, end);
-	      }
-	      if (this.audioBuffer_) {
-	        this.audioBuffer_.remove(start, end);
-	      }
-	
-	      // Remove Metadata Cues (id3)
-	      (0, _removeCuesFromTrack2['default'])(start, end, this.metadataTrack_);
-	
-	      // Remove Any Captions
-	      (0, _removeCuesFromTrack2['default'])(start, end, this.inbandTextTrack_);
-	    }
-	
-	    /**
-	     * Process any segments that the muxer has output
-	     * Concatenate segments together based on type and append them into
-	     * their respective sourceBuffers
-	     *
-	     * @private
-	     */
-	  }, {
-	    key: 'processPendingSegments_',
-	    value: function processPendingSegments_() {
-	      var sortedSegments = {
-	        video: {
-	          segments: [],
-	          bytes: 0
-	        },
-	        audio: {
-	          segments: [],
-	          bytes: 0
-	        },
-	        captions: [],
-	        metadata: []
-	      };
-	
-	      // Sort segments into separate video/audio arrays and
-	      // keep track of their total byte lengths
-	      sortedSegments = this.pendingBuffers_.reduce(function (segmentObj, segment) {
-	        var type = segment.type;
-	        var data = segment.data;
-	        var initSegment = segment.initSegment;
-	
-	        segmentObj[type].segments.push(data);
-	        segmentObj[type].bytes += data.byteLength;
-	
-	        segmentObj[type].initSegment = initSegment;
-	
-	        // Gather any captions into a single array
-	        if (segment.captions) {
-	          segmentObj.captions = segmentObj.captions.concat(segment.captions);
-	        }
-	
-	        if (segment.info) {
-	          segmentObj[type].info = segment.info;
-	        }
-	
-	        // Gather any metadata into a single array
-	        if (segment.metadata) {
-	          segmentObj.metadata = segmentObj.metadata.concat(segment.metadata);
-	        }
-	
-	        return segmentObj;
-	      }, sortedSegments);
-	
-	      // Create the real source buffers if they don't exist by now since we
-	      // finally are sure what tracks are contained in the source
-	      if (!this.videoBuffer_ && !this.audioBuffer_) {
-	        // Remove any codecs that may have been specified by default but
-	        // are no longer applicable now
-	        if (sortedSegments.video.bytes === 0) {
-	          this.videoCodec_ = null;
-	        }
-	        if (sortedSegments.audio.bytes === 0) {
-	          this.audioCodec_ = null;
-	        }
-	
-	        this.createRealSourceBuffers_();
-	      }
-	
-	      if (sortedSegments.audio.info) {
-	        this.mediaSource_.trigger({ type: 'audioinfo', info: sortedSegments.audio.info });
-	      }
-	      if (sortedSegments.video.info) {
-	        this.mediaSource_.trigger({ type: 'videoinfo', info: sortedSegments.video.info });
-	      }
-	
-	      if (this.appendAudioInitSegment_) {
-	        if (!this.audioDisabled_ && this.audioBuffer_) {
-	          sortedSegments.audio.segments.unshift(sortedSegments.audio.initSegment);
-	          sortedSegments.audio.bytes += sortedSegments.audio.initSegment.byteLength;
-	        }
-	        this.appendAudioInitSegment_ = false;
-	      }
-	
-	      // Merge multiple video and audio segments into one and append
-	      if (this.videoBuffer_) {
-	        sortedSegments.video.segments.unshift(sortedSegments.video.initSegment);
-	        sortedSegments.video.bytes += sortedSegments.video.initSegment.byteLength;
-	        this.concatAndAppendSegments_(sortedSegments.video, this.videoBuffer_);
-	        // TODO: are video tracks the only ones with text tracks?
-	        (0, _addTextTrackData.addTextTrackData)(this, sortedSegments.captions, sortedSegments.metadata);
-	      }
-	      if (!this.audioDisabled_ && this.audioBuffer_) {
-	        this.concatAndAppendSegments_(sortedSegments.audio, this.audioBuffer_);
-	      }
-	
-	      this.pendingBuffers_.length = 0;
-	
-	      // We are no longer in the internal "updating" state
-	      this.bufferUpdating_ = false;
-	    }
-	
-	    /**
-	     * Combine all segments into a single Uint8Array and then append them
-	     * to the destination buffer
-	     *
-	     * @param {Object} segmentObj
-	     * @param {SourceBuffer} destinationBuffer native source buffer to append data to
-	     * @private
-	     */
-	  }, {
-	    key: 'concatAndAppendSegments_',
-	    value: function concatAndAppendSegments_(segmentObj, destinationBuffer) {
-	      var offset = 0;
-	      var tempBuffer = undefined;
-	
-	      if (segmentObj.bytes) {
-	        tempBuffer = new Uint8Array(segmentObj.bytes);
-	
-	        // Combine the individual segments into one large typed-array
-	        segmentObj.segments.forEach(function (segment) {
-	          tempBuffer.set(segment, offset);
-	          offset += segment.byteLength;
-	        });
-	
-	        try {
-	          destinationBuffer.appendBuffer(tempBuffer);
-	        } catch (error) {
-	          if (this.mediaSource_.player_) {
-	            this.mediaSource_.player_.error({
-	              code: -3,
-	              type: 'APPEND_BUFFER_ERR'
-	            });
-	          }
-	        }
-	      }
-	    }
-	
-	    /**
-	     * Emulate the native mediasource function. abort any soureBuffer
-	     * actions and throw out any un-appended data.
-	     *
-	     * @link https://developer.mozilla.org/en-US/docs/Web/API/SourceBuffer/abort
-	     */
-	  }, {
-	    key: 'abort',
-	    value: function abort() {
-	      if (this.videoBuffer_) {
-	        this.videoBuffer_.abort();
-	      }
-	      if (this.audioBuffer_) {
-	        this.audioBuffer_.abort();
-	      }
-	      if (this.transmuxer_) {
-	        this.transmuxer_.postMessage({ action: 'reset' });
-	      }
-	      this.pendingBuffers_.length = 0;
-	      this.bufferUpdating_ = false;
-	    }
-	  }]);
-	
-	  return VirtualSourceBuffer;
-	})(_videoJs2['default'].EventTarget);
-	
-	exports['default'] = VirtualSourceBuffer;
-	module.exports = exports['default'];
-	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./add-text-track-data":58,"./codec-utils":60,"./create-text-tracks-if-necessary":61,"./remove-cues-from-track":66,"./transmuxer-worker":67,"webworkify":70}],70:[function(require,module,exports){
+	},{}],75:[function(require,module,exports){
+	arguments[4][40][0].apply(exports,arguments)
+	},{"dup":40}],76:[function(require,module,exports){
 	var bundleFn = arguments[3];
 	var sources = arguments[4];
 	var cache = arguments[5];
@@ -46623,7 +46857,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    ));
 	};
 	
-	},{}],71:[function(require,module,exports){
+	},{}],77:[function(require,module,exports){
+	arguments[4][76][0].apply(exports,arguments)
+	},{"dup":76}],78:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file videojs-contrib-hls.js
@@ -46791,6 +47027,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	/**
+	 * Resuable stable sort function
+	 *
+	 * @param {Playlists} array
+	 * @param {Function} sortFn Different comparators
+	 * @function stableSort
+	 */
+	var stableSort = function stableSort(array, sortFn) {
+	  var newArray = array.slice();
+	
+	  array.sort(function (left, right) {
+	    var cmp = sortFn(left, right);
+	
+	    if (cmp === 0) {
+	      return newArray.indexOf(left) - newArray.indexOf(right);
+	    }
+	    return cmp;
+	  });
+	};
+	
+	/**
 	 * Chooses the appropriate media playlist based on the current
 	 * bandwidth estimate and the player size.
 	 *
@@ -46798,96 +47054,72 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * bandwidth, accounting for some amount of bandwidth variance
 	 */
 	Hls.STANDARD_PLAYLIST_SELECTOR = function () {
-	  var effectiveBitrate = undefined;
 	  var sortedPlaylists = this.playlists.master.playlists.slice();
 	  var bandwidthPlaylists = [];
-	  var i = undefined;
-	  var variant = undefined;
 	  var bandwidthBestVariant = undefined;
 	  var resolutionPlusOne = undefined;
-	  var resolutionPlusOneAttribute = undefined;
 	  var resolutionBestVariant = undefined;
 	  var width = undefined;
 	  var height = undefined;
+	  var systemBandwidth = undefined;
+	  var haveResolution = undefined;
+	  var resolutionPlusOneList = [];
+	  var resolutionPlusOneSmallest = [];
+	  var resolutionBestVariantList = [];
 	
-	  sortedPlaylists.sort(Hls.comparePlaylistBandwidth);
+	  stableSort(sortedPlaylists, Hls.comparePlaylistBandwidth);
 	
 	  // filter out any playlists that have been excluded due to
 	  // incompatible configurations or playback errors
 	  sortedPlaylists = sortedPlaylists.filter(_playlist2['default'].isEnabled);
-	
 	  // filter out any variant that has greater effective bitrate
 	  // than the current estimated bandwidth
-	  i = sortedPlaylists.length;
-	  while (i--) {
-	    variant = sortedPlaylists[i];
+	  systemBandwidth = this.systemBandwidth;
+	  bandwidthPlaylists = sortedPlaylists.filter(function (elem) {
+	    return elem.attributes && elem.attributes.BANDWIDTH && elem.attributes.BANDWIDTH * BANDWIDTH_VARIANCE < systemBandwidth;
+	  });
 	
-	    // ignore playlists without bandwidth information
-	    if (!variant.attributes || !variant.attributes.BANDWIDTH) {
-	      continue;
-	    }
-	
-	    effectiveBitrate = variant.attributes.BANDWIDTH * BANDWIDTH_VARIANCE;
-	
-	    if (effectiveBitrate < this.systemBandwidth) {
-	      bandwidthPlaylists.push(variant);
-	
-	      // since the playlists are sorted in ascending order by
-	      // bandwidth, the first viable variant is the best
-	      if (!bandwidthBestVariant) {
-	        bandwidthBestVariant = variant;
-	      }
-	    }
-	  }
-	
-	  i = bandwidthPlaylists.length;
+	  // get all of the renditions with the same (highest) bandwidth
+	  // and then taking the very first element
+	  bandwidthBestVariant = bandwidthPlaylists.filter(function (elem) {
+	    return elem.attributes.BANDWIDTH === bandwidthPlaylists[bandwidthPlaylists.length - 1].attributes.BANDWIDTH;
+	  })[0];
 	
 	  // sort variants by resolution
-	  bandwidthPlaylists.sort(Hls.comparePlaylistResolution);
-	
-	  // forget our old variant from above,
-	  // or we might choose that in high-bandwidth scenarios
-	  // (this could be the lowest bitrate rendition as  we go through all of them above)
-	  variant = null;
+	  stableSort(bandwidthPlaylists, Hls.comparePlaylistResolution);
 	
 	  width = parseInt(safeGetComputedStyle(this.tech_.el(), 'width'), 10);
 	  height = parseInt(safeGetComputedStyle(this.tech_.el(), 'height'), 10);
 	
-	  // iterate through the bandwidth-filtered playlists and find
-	  // best rendition by player dimension
-	  while (i--) {
-	    variant = bandwidthPlaylists[i];
+	  // filter out playlists without resolution information
+	  haveResolution = bandwidthPlaylists.filter(function (elem) {
+	    return elem.attributes && elem.attributes.RESOLUTION && elem.attributes.RESOLUTION.width && elem.attributes.RESOLUTION.height;
+	  });
 	
-	    // ignore playlists without resolution information
-	    if (!variant.attributes || !variant.attributes.RESOLUTION || !variant.attributes.RESOLUTION.width || !variant.attributes.RESOLUTION.height) {
-	      continue;
-	    }
+	  // if we have the exact resolution as the player use it
+	  resolutionBestVariantList = haveResolution.filter(function (elem) {
+	    return elem.attributes.RESOLUTION.width === width && elem.attributes.RESOLUTION.height === height;
+	  });
+	  // ensure that we pick the highest bandwidth variant that have exact resolution
+	  resolutionBestVariant = resolutionBestVariantList.filter(function (elem) {
+	    return elem.attributes.BANDWIDTH === resolutionBestVariantList[resolutionBestVariantList.length - 1].attributes.BANDWIDTH;
+	  })[0];
 	
-	    // since the playlists are sorted, the first variant that has
-	    // dimensions less than or equal to the player size is the best
-	    var variantResolution = variant.attributes.RESOLUTION;
-	
-	    if (variantResolution.width === width && variantResolution.height === height) {
-	      // if we have the exact resolution as the player use it
-	      resolutionPlusOne = null;
-	      resolutionBestVariant = variant;
-	      break;
-	    } else if (variantResolution.width < width && variantResolution.height < height) {
-	      // if both dimensions are less than the player use the
-	      // previous (next-largest) variant
-	      break;
-	    } else if (!resolutionPlusOne || variantResolution.width < resolutionPlusOneAttribute.width && variantResolution.height < resolutionPlusOneAttribute.height) {
-	      // If we still haven't found a good match keep a
-	      // reference to the previous variant for the next loop
-	      // iteration
-	
-	      // By only saving variants if they are smaller than the
-	      // previously saved variant, we ensure that we also pick
-	      // the highest bandwidth variant that is just-larger-than
-	      // the video player
-	      resolutionPlusOne = variant;
-	      resolutionPlusOneAttribute = resolutionPlusOne.attributes.RESOLUTION;
-	    }
+	  // find the smallest variant that is larger than the player
+	  // if there is no match of exact resolution
+	  if (!resolutionBestVariant) {
+	    resolutionPlusOneList = haveResolution.filter(function (elem) {
+	      return elem.attributes.RESOLUTION.width > width || elem.attributes.RESOLUTION.height > height;
+	    });
+	    // find all the variants have the same smallest resolution
+	    resolutionPlusOneSmallest = resolutionPlusOneList.filter(function (elem) {
+	      return elem.attributes.RESOLUTION.width === resolutionPlusOneList[0].attributes.RESOLUTION.width && elem.attributes.RESOLUTION.height === resolutionPlusOneList[0].attributes.RESOLUTION.height;
+	    });
+	    // ensure that we also pick the highest bandwidth variant that
+	    // is just-larger-than the video player
+	    resolutionPlusOne = resolutionPlusOneSmallest.filter(function (elem) {
+	      return elem.attributes.BANDWIDTH === resolutionPlusOneSmallest[resolutionPlusOneSmallest.length - 1].attributes.BANDWIDTH;
+	    })[0];
 	  }
 	
 	  // fallback chain of variants
@@ -47500,7 +47732,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  HlsSourceHandler: HlsSourceHandler
 	};
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./bin-utils":2,"./config":3,"./master-playlist-controller":5,"./playback-watcher":6,"./playlist":8,"./playlist-loader":7,"./reload-source-on-error":10,"./rendition-mixin":11,"./xhr":17,"aes-decrypter":21,"global/document":27,"global/window":28,"m3u8-parser":29,"videojs-contrib-media-sources":68}]},{},[71])(71)
+	},{"./bin-utils":2,"./config":3,"./master-playlist-controller":5,"./playback-watcher":6,"./playlist":8,"./playlist-loader":7,"./reload-source-on-error":10,"./rendition-mixin":11,"./xhr":17,"aes-decrypter":21,"global/document":27,"global/window":28,"m3u8-parser":29,"videojs-contrib-media-sources":53}]},{},[78])(78)
 	});
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
