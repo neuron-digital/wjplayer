@@ -1,7 +1,7 @@
 {
   "name": "wjplayer",
   "description": "Video.js HLS bundle that supports VAST/VMAP ads, 360-degree videos, and more",
-  "version": "1.4.9",
+  "version": "1.4.10",
   "main": "dist/wjplayer.js",
   "scripts": {
     "build": "webpack --mode=build && webpack --mode=dev && gulp",
