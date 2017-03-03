@@ -12,12 +12,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Go-Promo/wjplayer.git"
+    "url": "https://github.com/neuron-digital/wjplayer.git"
   },
   "bugs": {
-    "url": "https://github.com/Go-Promo/wjplayer/issues"
+    "url": "https://github.com/neuron-digital/wjplayer/issues"
   },
-  "homepage": "https://github.com/Go-Promo/wjplayer",
+  "homepage": "https://github.com/neuron-digital/wjplayer",
   "author": {
     "name": "Mikhail Khazov",
     "email": "mkhazov.work@gmail.com"
@@ -25,7 +25,7 @@
   "contributors": [
     {
       "name": "Alexey Avdeev",
-      "email": "aavdeev@go-promo.ru"
+      "email": "aad.jerry@gmail.com"
     }
   ],
   "license": "MIT",
