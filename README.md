@@ -312,27 +312,27 @@ Creates a new player and places it to container with the specified id.
 
 ## Compatible
 
-| Browser           | IE | Edge | Firefox | Chrome | Safari | Opera | iOS Safari | Opera Mini | Android Browser | Chrome for Android |
-|-------------------|----|------|---------|--------|--------|-------|------------|------------|-----------------|--------------------|
-| Live              | x  | o    | o       | о      | o      | o     |            |            |                 | о                  |
-|   with ads        | x  | o    | o       | о      | o      | o     |            |            |                 | о                  |
-| HLS master        | x  | o3   | o       | о      | o3     | o     |            |            |                 | o3                 |
-| HLS by resolution | o  | o    | o       | о      | o      | о     |            |            |                 | o                  |
-| MP4               | o  | o    | o       | о      | o      | xx    |            |            |                 | o                  |
-| HLS and MP4       | o  | o4   | o       | о      | o4     | xx    |            |            |                 | о                  |
-| Stretch           | o  | o    | o       | о      | o      | o     |            |            |                 | о                  |
-| MP3               | хх | хх   | oo      | o      | o      | о     |            |            |                 | o                  |
-| 360° MP4          | o  | o    | o       | o      | x3     | xx    |            |            |                 | o                  |
+| Browser           | IE | Edge | Firefox | Chrome | Safari | Opera | iOS Safari | Opera Mini | Android Browser | Chrome for Android Phone | Chrome for Android Tablet |
+|-------------------|----|------|---------|--------|--------|-------|------------|------------|-----------------|-------------------------|---------------------------|
+| Live              | x  | n/a  | o       | о      | o      | o     | o          | o          | o               | о | o |               |
+|   with ads        | o  | n/a  | o       | оo     | o      | oo    | r1         | x          | oo              | о | o |                 |
+| HLS master        | x  | n/a  | x       | x      | o      | x     | o          | x          | x               | o | o |                |
+| HLS by resolution | x  | n/a  | o       | о      | o      | о     | o          | x          | oo              | o | o |                 |
+| MP4               | o  | n/a  | o       | оo     | o      | oo    | o          | x          | oo              | o | o |                 |
+| HLS and MP4       | x  | n/a  | x       | x      | o      | x     | o          | x          | oo              | о | o |                 |
+| Stretch           | o  | n/a  | o       | о      | o      | o     | p1         | x          | x               | x | v1 |                 |
+| MP3               | o  | n/a  | o       | o      | o      | о     | o          | x          | oo              | o | o |                 |
+| 360° MP4          | x  | n/a  | x       | o      | o      | o     | x          | x          | oo              | x | o |                 |
 
 ### Notes:
 
 - о  - playing with no issues.
-- oo - audio is playing, but click on the download button doesn't lead to openning of the file saving dialog.
-- o3 - adaptive bitrate selection is used. Resolution switcher menu is not displayed.
-- o4 - adaptive bitrate selection is used. Resolution switcher menu is not displayed, 'undefined' is shown as resolution switcher menu label.
-- х  - Video is not playing. Error message: "No compatible service was found for this media".
-- xx - Audio/video is not playing. Error message: "The media could not be loaded, either because the server or network failed or because format is not supported".
-- x3 - Not working due to cross domain issue: https://github.com/yanwsh/videojs-panorama#cross-domian-issue. Need to keep the code and video within same domain
+- oo - pereodical freezes are happening.
+- x - video is not playing.
+- r1 - postroll & midroll are not working
+- p1 - play button is only available in landscape orientation
+- v1 - video goes beyond screen border
+- n/a - test environment is not available
 
 
 ## Contributing
