@@ -57,14 +57,14 @@
     "video.js": "5.16.0",
     "videojs-contrib-ads": "3.1.3",
     "videojs-contrib-hls": "5.2.1",
-    "videojs-download-button": "go-promo/videojs-download-button",
-    "videojs-ga": "github:go-promo/videojs-ga",
-    "videojs-ima": "github:go-promo/videojs-ima",
+    "videojs-download-button": "neuron-digital/videojs-download-button",
+    "videojs-ga": "neuron-digital/videojs-ga",
+    "videojs-ima": "neuron-digital/videojs-ima",
     "videojs-panorama": "0.1.2",
     "videojs-quality-picker": "0.0.3",
-    "videojs-resolution-switcher": "github:go-promo/videojs-resolution-switcher#hls",
-    "videojs-social": "github:go-promo/videojs-social#no-socials",
-    "videojs5-hlsjs-source-handler": "github:go-promo/videojs5-hlsjs-source-handler#hls6",
+    "videojs-resolution-switcher": "neuron-digital/videojs-resolution-switcher#hls",
+    "videojs-social": "neuron-digital/videojs-social#no-socials",
+    "videojs5-hlsjs-source-handler": "neuron-digital/videojs5-hlsjs-source-handler#hls6",
     "webpack": "1.13.2"
   }
 }

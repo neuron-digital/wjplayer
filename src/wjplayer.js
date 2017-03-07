@@ -172,7 +172,7 @@ const google = window.google;
  *
  * @param {Object} options.share
  *   Will be passed to videojs-social plugin.
- *   @see https://github.com/Go-Promo/videojs-social for details.
+ *   @see https://github.com/neuron-digital/videojs-social for details.
  * @param {String} options.share.url
  *   This is the URL that points to your custom web page
  *   which has your video and the meta tags for sharing.
