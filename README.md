@@ -25,10 +25,10 @@ Video.js bundle that supports HLS, VAST/VMAP, 360-degree videos, and more.
 
 #### Other plugins
 * https://github.com/googleads/videojs-ima
-* https://github.com/Go-Promo/videojs-resolution-switcher
-* https://github.com/Go-Promo/videojs-social
-* https://github.com/Go-Promo/videojs-download-button
-* https://github.com/Go-Promo/videojs-ga
+* https://github.com/neuron-digital/videojs-resolution-switcher
+* https://github.com/neuron-digital/videojs-social
+* https://github.com/neuron-digital/videojs-download-button
+* https://github.com/neuron-digital/videojs-ga
 * https://github.com/yanwsh/videojs-panorama
 
 ### Plugins dependencies
