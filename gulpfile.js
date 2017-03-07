@@ -168,7 +168,7 @@ gulp.task('lint', () => {
 gulp.task('server', () => {
   browserSync.init({
     server: {
-      baseDir: './'
+      baseDir: './examples'
     },
     port: process.env.PORT || 3000,
     https: !!process.env.HTTPS,
