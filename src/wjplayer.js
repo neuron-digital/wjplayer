@@ -319,12 +319,18 @@ class WJPlayer {
         this.player.loadingSpinner.hide();
       }
 
-      // Start playback
+      // autoplay is not supported on mobile devices
       if (this.options.autoplay && !this.browser.IS_MOBILE) {
+        this.initAds();
         this.play();
+      } else if (this.browser.IS_MOBILE) {
+        // init ads and start playback on tap
+        this.player.one('touchend', function() {
+          this.initAds();
+          this.play();
+        }.bind(this));
       } else {
-        var startEvent = this.browser.IS_MOBILE ? 'touchend' : 'click';
-        this.player.one(startEvent, this.play.bind(this));
+        this.initAds();
       }
     });
     if (typeof this.player.qualityPickerPlugin === 'function') {
@@ -365,7 +371,6 @@ class WJPlayer {
   }
 
   play() {
-    this.initAds();
     this.player.play();
     this.options.autoplay && this.player.autoplay(true);
   }
