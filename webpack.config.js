@@ -5,13 +5,14 @@ var env = require('yargs').argv.mode;
 
 var libraryName = 'wjplayer';
 
-var plugins = [], outputFileExt;
+var plugins = [];
+var outputFileExt = '.js';
+var devtool = '';
 
 if (env === 'build') {
   plugins.push(new UglifyJsPlugin({ minimize: true }));
   outputFileExt = '.min.js';
-} else {
-  outputFileExt = '.js';
+  devtool = 'source-map';
 }
 
 var config = {
@@ -21,7 +22,7 @@ var config = {
     // there's a problem with the result file, TODO
     // 'wjplayer-360': __dirname + '/src/wjplayer-360.js',
   },
-  devtool: 'source-map',
+  devtool: devtool,
   output: {
     path: __dirname + '/dist',
     filename: '[name]' + outputFileExt,
