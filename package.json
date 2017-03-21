@@ -5,8 +5,8 @@
   "main": "dist/wjplayer.js",
   "style": "dist/wjplayer.css",
   "scripts": {
-    "build": "webpack --mode=build && webpack --mode=dev && gulp",
-    "dev": "webpack --progress --colors --watch --mode=dev",
+    "build": "webpack && webpack --mode=minify && gulp",
+    "dev": "webpack --progress --colors --watch",
     "start": "gulp browse",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

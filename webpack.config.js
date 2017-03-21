@@ -1,7 +1,7 @@
 var webpack = require('webpack');
 var UglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
 var path = require('path');
-var env = require('yargs').argv.mode;
+var mode = require('yargs').argv.mode;
 
 var libraryName = 'wjplayer';
 
@@ -9,7 +9,7 @@ var plugins = [];
 var outputFileExt = '.js';
 var devtool = '';
 
-if (env === 'build') {
+if (mode === 'minify') {
   plugins.push(new UglifyJsPlugin({ minimize: true }));
   outputFileExt = '.min.js';
   devtool = 'source-map';
