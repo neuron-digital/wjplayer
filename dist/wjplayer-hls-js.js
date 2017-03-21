@@ -30741,12 +30741,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	          _this.player.loadingSpinner.hide();
 	        }
 	
-	        // Start playback
+	        // autoplay is not supported on mobile devices
 	        if (_this.options.autoplay && !_this.browser.IS_MOBILE) {
+	          _this.initAds();
 	          _this.play();
+	        } else if (_this.browser.IS_MOBILE) {
+	          // init ads and start playback on tap
+	          _this.player.one('touchend', function () {
+	            this.initAds();
+	            this.play();
+	          }.bind(_this));
 	        } else {
-	          var startEvent = _this.browser.IS_MOBILE ? 'touchend' : 'click';
-	          _this.player.one(startEvent, _this.play.bind(_this));
+	          _this.initAds();
 	        }
 	      });
 	      if (typeof this.player.qualityPickerPlugin === 'function') {
@@ -30789,7 +30795,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'play',
 	    value: function play() {
-	      this.initAds();
 	      this.player.play();
 	      this.options.autoplay && this.player.autoplay(true);
 	    }

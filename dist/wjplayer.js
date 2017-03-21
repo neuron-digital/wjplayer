@@ -30411,7 +30411,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var require;var require;/* WEBPACK VAR INJECTION */(function(global) {/**
 	 * videojs-contrib-hls
-	 * @version 5.3.3
+	 * @version 5.3.2
 	 * @copyright 2017 Brightcove, Inc
 	 * @license Apache-2.0
 	 */
@@ -31031,13 +31031,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var media = _this2.masterPlaylistLoader_.media();
 	        var requestTimeout = _this2.masterPlaylistLoader_.targetDuration * 1.5 * 1000;
 	
-	        // If we don't have any more available playlists, we don't want to
-	        // timeout the request.
-	        if (_this2.masterPlaylistLoader_.isLowestEnabledRendition_()) {
-	          _this2.requestOptions_.timeout = 0;
-	        } else {
-	          _this2.requestOptions_.timeout = requestTimeout;
-	        }
+	        _this2.requestOptions_.timeout = requestTimeout;
 	
 	        // if this isn't a live video and preload permits, start
 	        // downloading segments
@@ -31908,7 +31902,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	exports.MasterPlaylistController = MasterPlaylistController;
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./ad-cue-tags":1,"./decrypter-worker":4,"./playlist-loader":7,"./ranges":9,"./segment-loader":13,"./sync-controller":16,"videojs-contrib-media-sources/es5/codec-utils":62,"webworkify":73}],6:[function(require,module,exports){
+	},{"./ad-cue-tags":1,"./decrypter-worker":4,"./playlist-loader":7,"./ranges":9,"./segment-loader":13,"./sync-controller":16,"videojs-contrib-media-sources/es5/codec-utils":62,"webworkify":72}],6:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file playback-watcher.js
@@ -32531,13 +32525,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @return {Boolean} true if on lowest rendition
 	   */
 	  loader.isLowestEnabledRendition_ = function () {
-	    if (loader.master.playlists.length === 1) {
-	      return true;
-	    }
-	
 	    var media = loader.media();
 	
-	    var currentBandwidth = media.attributes.BANDWIDTH || Number.MAX_VALUE;
+	    if (!media || !media.attributes) {
+	      return false;
+	    }
+	
+	    var currentBandwidth = media.attributes.BANDWIDTH || 0;
 	
 	    return loader.master.playlists.filter(function (playlist) {
 	      var enabled = (0, _playlistJs.isEnabled)(playlist);
@@ -42507,15 +42501,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    baseMediaDecodeTimeTs = clock.audioTsToVideoTs(track.baseMediaDecodeTime, track.samplerate);
-	    // determine frame clock duration based on sample rate, round up to avoid overfills
-	    frameDuration = Math.ceil(ONE_SECOND_IN_TS / (track.samplerate / 1024));
 	
-	    if (audioAppendStartTs && videoBaseMediaDecodeTime) {
-	      // insert the shortest possible amount (audio gap or audio to video gap)
-	      audioGapDuration =
-	        baseMediaDecodeTimeTs - Math.max(audioAppendStartTs, videoBaseMediaDecodeTime);
+	    if (audioAppendStartTs &&
+	        videoBaseMediaDecodeTime &&
+	        // old audio doesn't overlap with new audio
+	        audioAppendStartTs < baseMediaDecodeTimeTs) {
+	      audioGapDuration = baseMediaDecodeTimeTs - videoBaseMediaDecodeTime;
+	      // determine frame clock duration based on sample rate, round up to avoid overfills
+	      frameDuration = Math.ceil(ONE_SECOND_IN_TS / (track.samplerate / 1024));
 	      // number of full frames in the audio gap
 	      audioFillFrameCount = Math.floor(audioGapDuration / frameDuration);
+	      // ensure gap is a whole number of frames
 	      audioFillDuration = audioFillFrameCount * frameDuration;
 	    }
 	
@@ -44542,67 +44538,43 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	
 	  if (metadataArray) {
-	    (function () {
-	      var videoDuration = durationOfVideo(sourceHandler.mediaSource_.duration);
+	    var videoDuration = durationOfVideo(sourceHandler.mediaSource_.duration);
 	
-	      metadataArray.forEach(function (metadata) {
-	        var time = metadata.cueTime + this.timestampOffset;
+	    metadataArray.forEach(function (metadata) {
+	      var time = metadata.cueTime + this.timestampOffset;
 	
-	        metadata.frames.forEach(function (frame) {
-	          var cue = new Cue(time, time, frame.value || frame.url || frame.data || '');
+	      metadata.frames.forEach(function (frame) {
+	        var cue = new Cue(time, time, frame.value || frame.url || frame.data || '');
 	
-	          cue.frame = frame;
-	          cue.value = frame;
-	          deprecateOldCue(cue);
+	        cue.frame = frame;
+	        cue.value = frame;
+	        deprecateOldCue(cue);
 	
-	          this.metadataTrack_.addCue(cue);
-	        }, this);
-	      }, sourceHandler);
+	        this.metadataTrack_.addCue(cue);
+	      }, this);
+	    }, sourceHandler);
 	
-	      // Updating the metadeta cues so that
-	      // the endTime of each cue is the startTime of the next cue
-	      // the endTime of last cue is the duration of the video
-	      if (sourceHandler.metadataTrack_ && sourceHandler.metadataTrack_.cues && sourceHandler.metadataTrack_.cues.length) {
-	        (function () {
-	          var cues = sourceHandler.metadataTrack_.cues;
-	          var cuesArray = [];
+	    // Updating the metadeta cues so that
+	    // the endTime of each cue is the startTime of the next cue
+	    // the endTime of last cue is the duration of the video
+	    if (sourceHandler.metadataTrack_ && sourceHandler.metadataTrack_.cues && sourceHandler.metadataTrack_.cues.length) {
+	      var cues = sourceHandler.metadataTrack_.cues;
+	      var cuesArray = [];
 	
-	          // Create a copy of the TextTrackCueList...
-	          // ...disregarding cues with a falsey value
-	          for (var i = 0; i < cues.length; i++) {
-	            if (cues[i]) {
-	              cuesArray.push(cues[i]);
-	            }
-	          }
-	
-	          // Group cues by their startTime value
-	          var cuesGroupedByStartTime = cuesArray.reduce(function (obj, cue) {
-	            var timeSlot = obj[cue.startTime] || [];
-	
-	            timeSlot.push(cue);
-	            obj[cue.startTime] = timeSlot;
-	
-	            return obj;
-	          }, {});
-	
-	          // Sort startTimes by ascending order
-	          var sortedStartTimes = Object.keys(cuesGroupedByStartTime).sort(function (a, b) {
-	            return Number(a) - Number(b);
-	          });
-	
-	          // Map each cue group's endTime to the next group's startTime
-	          sortedStartTimes.forEach(function (startTime, idx) {
-	            var cueGroup = cuesGroupedByStartTime[startTime];
-	            var nextTime = Number(sortedStartTimes[idx + 1]) || videoDuration;
-	
-	            // Map each cue's endTime the next group's startTime
-	            cueGroup.forEach(function (cue) {
-	              cue.endTime = nextTime;
-	            });
-	          });
-	        })();
+	      for (var j = 0; j < cues.length; j++) {
+	        cuesArray.push(cues[j]);
 	      }
-	    })();
+	      cuesArray.sort(function (first, second) {
+	        return first.startTime - second.startTime;
+	      });
+	
+	      for (var i = 0; i < cuesArray.length - 1; i++) {
+	        if (cuesArray[i].endTime !== cuesArray[i + 1].startTime) {
+	          cuesArray[i].endTime = cuesArray[i + 1].startTime;
+	        }
+	      }
+	      cuesArray[cuesArray.length - 1].endTime = videoDuration;
+	    }
 	  }
 	};
 	
@@ -45069,14 +45041,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _addTextTrackData = require('./add-text-track-data');
 	
-	var _flashTransmuxerWorker = require('./flash-transmuxer-worker');
-	
-	var _flashTransmuxerWorker2 = _interopRequireDefault(_flashTransmuxerWorker);
-	
-	var _webworkify = require('webworkify');
-	
-	var _webworkify2 = _interopRequireDefault(_webworkify);
-	
 	var _flashConstants = require('./flash-constants');
 	
 	var _flashConstants2 = _interopRequireDefault(_flashConstants);
@@ -45161,9 +45125,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    this.mediaSource_ = mediaSource;
 	
-	    this.audioBufferEnd_ = NaN;
-	    this.videoBufferEnd_ = NaN;
-	
 	    // indicates whether the asynchronous continuation of an operation
 	    // is still being processed
 	    // see https://w3c.github.io/media-source/#widl-SourceBuffer-updating
@@ -45191,13 +45152,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    this.mediaSource_.swfObj.vjs_appendChunkReady(this.flashEncodedHeaderName_);
 	
-	    this.transmuxer_ = (0, _webworkify2['default'])(_flashTransmuxerWorker2['default']);
-	    this.transmuxer_.postMessage({ action: 'init', options: {} });
-	    this.transmuxer_.onmessage = function (event) {
-	      if (event.data.action === 'data') {
-	        _this.receiveBuffer_(event.data.segment);
-	      }
-	    };
+	    // TS to FLV transmuxer
+	    this.transmuxer_ = new _muxJsLibFlv2['default'].Transmuxer();
+	    this.transmuxer_.on('data', this.receiveBuffer_.bind(this));
 	
 	    this.one('updateend', function () {
 	      _this.mediaSource_.tech_.trigger('loadedmetadata');
@@ -45210,15 +45167,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	      set: function set(val) {
 	        if (typeof val === 'number' && val >= 0) {
 	          this.timestampOffset_ = val;
+	          this.transmuxer_ = new _muxJsLibFlv2['default'].Transmuxer();
+	          this.transmuxer_.on('data', this.receiveBuffer_.bind(this));
 	          // We have to tell flash to expect a discontinuity
 	          this.mediaSource_.swfObj.vjs_discontinuity();
 	          // the media <-> PTS mapping must be re-established after
 	          // the discontinuity
 	          this.basePtsOffset_ = NaN;
-	          this.audioBufferEnd_ = NaN;
-	          this.videoBufferEnd_ = NaN;
-	
-	          this.transmuxer_.postMessage({ action: 'reset' });
 	        }
 	      }
 	    });
@@ -45245,10 +45200,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      (0, _removeCuesFromTrack2['default'])(0, Infinity, _this.metadataTrack_);
 	      (0, _removeCuesFromTrack2['default'])(0, Infinity, _this.inbandTextTrack_);
 	    });
-	
-	    this.mediaSource_.player_.tech_.hls.on('dispose', function () {
-	      _this.transmuxer_.terminate();
-	    });
 	  }
 	
 	  /**
@@ -45262,6 +45213,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  _createClass(FlashSourceBuffer, [{
 	    key: 'appendBuffer',
 	    value: function appendBuffer(bytes) {
+	      var _this2 = this;
+	
 	      var error = undefined;
 	
 	      if (this.updating) {
@@ -45274,13 +45227,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.mediaSource_.readyState = 'open';
 	      this.trigger({ type: 'update' });
 	
-	      this.transmuxer_.postMessage({
-	        action: 'push',
-	        data: bytes.buffer,
-	        byteOffset: bytes.byteOffset,
-	        byteLength: bytes.byteLength
-	      }, [bytes.buffer]);
-	      this.transmuxer_.postMessage({ action: 'flush' });
+	      var chunk = 512 * 1024;
+	      var i = 0;
+	
+	      // this is here to use recursion
+	      var chunkInData = function chunkInData() {
+	        _this2.transmuxer_.push(bytes.subarray(i, i + chunk));
+	        i += chunk;
+	        if (i < bytes.byteLength) {
+	          scheduleTick(chunkInData);
+	        } else {
+	          scheduleTick(_this2.transmuxer_.flush.bind(_this2.transmuxer_));
+	        }
+	      };
+	
+	      chunkInData();
 	    }
 	
 	    /**
@@ -45329,7 +45290,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'receiveBuffer_',
 	    value: function receiveBuffer_(segment) {
-	      var _this2 = this;
+	      var _this3 = this;
 	
 	      // create an in-band caption track if one is present in the segment
 	      (0, _createTextTracksIfNecessary2['default'])(this, this.mediaSource_, segment);
@@ -45337,15 +45298,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      // Do this asynchronously since convertTagsToData_ can be time consuming
 	      scheduleTick(function () {
-	        var flvBytes = _this2.convertTagsToData_(segment);
+	        var flvBytes = _this3.convertTagsToData_(segment);
 	
-	        if (_this2.buffer_.length === 0) {
-	          scheduleTick(_this2.processBuffer_.bind(_this2));
+	        if (_this3.buffer_.length === 0) {
+	          scheduleTick(_this3.processBuffer_.bind(_this3));
 	        }
 	
 	        if (flvBytes) {
-	          _this2.buffer_.push(flvBytes);
-	          _this2.bufferSize_ += flvBytes.byteLength;
+	          _this3.buffer_.push(flvBytes);
+	          _this3.bufferSize_ += flvBytes.byteLength;
 	        }
 	      });
 	    }
@@ -45358,7 +45319,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'processBuffer_',
 	    value: function processBuffer_() {
-	      var _this3 = this;
+	      var _this4 = this;
 	
 	      var chunkSize = _flashConstants2['default'].BYTES_PER_CHUNK;
 	
@@ -45395,8 +45356,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      _globalWindow2['default'][this.flashEncodedDataName_] = function () {
 	        // schedule another processBuffer to process any left over data or to
 	        // trigger updateend
-	        scheduleTick(_this3.processBuffer_.bind(_this3));
-	        delete _globalWindow2['default'][_this3.flashEncodedDataName_];
+	        scheduleTick(_this4.processBuffer_.bind(_this4));
+	        delete _globalWindow2['default'][_this4.flashEncodedDataName_];
 	        return b64str;
 	      };
 	
@@ -45418,7 +45379,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: function convertTagsToData_(segmentData) {
 	      var segmentByteLength = 0;
 	      var tech = this.mediaSource_.tech_;
-	      var videoTargetPts = 0;
+	      var targetPts = 0;
 	      var segment = undefined;
 	      var videoTags = segmentData.tags.videoTags;
 	      var audioTags = segmentData.tags.audioTags;
@@ -45435,51 +45396,35 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.basePtsOffset_ = Math.min(firstAudioTag.pts, firstVideoTag.pts);
 	      }
 	
+	      if (tech.buffered().length) {
+	        targetPts = tech.buffered().end(0) - this.timestampOffset;
+	      }
+	
+	      // Trim to currentTime if seeking
 	      if (tech.seeking()) {
-	        // Do not use previously saved buffer end values while seeking since buffer
-	        // is cleared on all seeks
-	        this.videoBufferEnd_ = NaN;
-	        this.audioBufferEnd_ = NaN;
+	        targetPts = Math.max(targetPts, tech.currentTime() - this.timestampOffset);
 	      }
 	
-	      if (isNaN(this.videoBufferEnd_)) {
-	        if (tech.buffered().length) {
-	          videoTargetPts = tech.buffered().end(0) - this.timestampOffset;
-	        }
-	
-	        // Trim to currentTime if seeking
-	        if (tech.seeking()) {
-	          videoTargetPts = Math.max(videoTargetPts, tech.currentTime() - this.timestampOffset);
-	        }
-	
-	        // PTS values are represented in milliseconds
-	        videoTargetPts *= 1e3;
-	        videoTargetPts += this.basePtsOffset_;
-	      } else {
-	        // Add a fudge factor of 0.1 to the last video pts appended since a rendition change
-	        // could append an overlapping segment, in which case there is a high likelyhood
-	        // a tag could have a matching pts to videoBufferEnd_, which would cause
-	        // that tag to get appended by the tag.pts >= targetPts check below even though it
-	        // is a duplicate of what was previously appended
-	        videoTargetPts = this.videoBufferEnd_ + 0.1;
-	      }
+	      // PTS values are represented in milliseconds
+	      targetPts *= 1e3;
+	      targetPts += this.basePtsOffset_;
 	
 	      // filter complete GOPs with a presentation time less than the seek target/end of buffer
 	      var currentIndex = videoTags.length;
 	
-	      // if the last tag is beyond videoTargetPts, then do not search the list for a GOP
-	      // since our videoTargetPts lies in a future segment
-	      if (currentIndex && videoTags[currentIndex - 1].pts >= videoTargetPts) {
+	      // if the last tag is beyond targetPts, then do not search the list for a GOP
+	      // since our targetPts lies in a future segment
+	      if (currentIndex && videoTags[currentIndex - 1].pts >= targetPts) {
 	        // Start by walking backwards from the end of the list until we reach a tag that
-	        // is equal to or less than videoTargetPts
+	        // is equal to or less than targetPts
 	        while (--currentIndex) {
 	          var currentTag = videoTags[currentIndex];
 	
-	          if (currentTag.pts > videoTargetPts) {
+	          if (currentTag.pts > targetPts) {
 	            continue;
 	          }
 	
-	          // if we see a keyFrame or metadata tag once we've gone below videoTargetPts,
+	          // if we see a keyFrame or metadata tag once we've gone below targetPts,
 	          // exit the loop as this is the start of the GOP that we want to append
 	          if (currentTag.keyFrame || currentTag.metaDataTag) {
 	            break;
@@ -45489,7 +45434,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // We need to check if there are any metadata tags that come before currentIndex
 	        // as those will be metadata tags associated with the GOP we are appending
 	        // There could be 0 to 2 metadata tags that come before the currentIndex depending
-	        // on what videoTargetPts is and whether the transmuxer prepended metadata tags to this
+	        // on what targetPts is and whether the transmuxer prepended metadata tags to this
 	        // key frame
 	        while (currentIndex) {
 	          var nextTag = videoTags[currentIndex - 1];
@@ -45504,24 +45449,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      var filteredVideoTags = videoTags.slice(currentIndex);
 	
-	      var audioTargetPts = undefined;
-	
-	      if (isNaN(this.audioBufferEnd_)) {
-	        audioTargetPts = videoTargetPts;
-	      } else {
-	        // Add a fudge factor of 0.1 to the last video pts appended since a rendition change
-	        // could append an overlapping segment, in which case there is a high likelyhood
-	        // a tag could have a matching pts to videoBufferEnd_, which would cause
-	        // that tag to get appended by the tag.pts >= targetPts check below even though it
-	        // is a duplicate of what was previously appended
-	        audioTargetPts = this.audioBufferEnd_ + 0.1;
-	      }
+	      var audioTargetPts = targetPts;
 	
 	      if (filteredVideoTags.length) {
 	        // If targetPts intersects a GOP and we appended the tags for the GOP that came
 	        // before targetPts, we want to make sure to trim audio tags at the pts
 	        // of the first video tag to avoid brief moments of silence
-	        audioTargetPts = Math.min(audioTargetPts, filteredVideoTags[0].pts);
+	        audioTargetPts = Math.min(targetPts, filteredVideoTags[0].pts);
 	      }
 	
 	      // skip tags with a presentation time less than the seek target/end of buffer
@@ -45537,14 +45471,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      var filteredAudioTags = audioTags.slice(currentIndex);
 	
-	      // update the audio and video buffer ends
-	      if (filteredAudioTags.length) {
-	        this.audioBufferEnd_ = filteredAudioTags[filteredAudioTags.length - 1].pts;
-	      }
-	      if (filteredVideoTags.length) {
-	        this.videoBufferEnd_ = filteredVideoTags[filteredVideoTags.length - 1].pts;
-	      }
-	
 	      var tags = this.getOrderedTags_(filteredVideoTags, filteredAudioTags);
 	
 	      if (tags.length === 0) {
@@ -45554,10 +45480,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // If we are appending data that comes before our target pts, we want to tell
 	      // the swf to adjust its notion of current time to account for the extra tags
 	      // we are appending to complete the GOP that intersects with targetPts
-	      if (tags[0].pts < videoTargetPts && tech.seeking()) {
+	      if (tags[0].pts < targetPts && tech.seeking()) {
 	        var fudgeFactor = 1 / 30;
 	        var currentTime = tech.currentTime();
-	        var diff = (videoTargetPts - tags[0].pts) / 1e3;
+	        var diff = (targetPts - tags[0].pts) / 1e3;
 	        var adjustedTime = currentTime - diff;
 	
 	        if (adjustedTime < fudgeFactor) {
@@ -45628,152 +45554,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports['default'] = FlashSourceBuffer;
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./add-text-track-data":60,"./create-text-tracks-if-necessary":63,"./flash-constants":64,"./flash-transmuxer-worker":67,"./remove-cues-from-track":69,"global/window":28,"mux.js/lib/flv":42,"webworkify":73}],67:[function(require,module,exports){
-	/**
-	 * @file flash-transmuxer-worker.js
-	 */
-	'use strict';
-	
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-	
-	var _globalWindow = require('global/window');
-	
-	var _globalWindow2 = _interopRequireDefault(_globalWindow);
-	
-	var _muxJsLibFlv = require('mux.js/lib/flv');
-	
-	var _muxJsLibFlv2 = _interopRequireDefault(_muxJsLibFlv);
-	
-	/**
-	 * Re-emits transmuxer events by converting them into messages to the
-	 * world outside the worker.
-	 *
-	 * @param {Object} transmuxer the transmuxer to wire events on
-	 * @private
-	 */
-	var wireTransmuxerEvents = function wireTransmuxerEvents(transmuxer) {
-	  transmuxer.on('data', function (segment) {
-	    _globalWindow2['default'].postMessage({
-	      action: 'data',
-	      segment: segment
-	    });
-	  });
-	
-	  transmuxer.on('done', function (data) {
-	    _globalWindow2['default'].postMessage({ action: 'done' });
-	  });
-	};
-	
-	/**
-	 * All incoming messages route through this hash. If no function exists
-	 * to handle an incoming message, then we ignore the message.
-	 *
-	 * @class MessageHandlers
-	 * @param {Object} options the options to initialize with
-	 */
-	
-	var MessageHandlers = (function () {
-	  function MessageHandlers(options) {
-	    _classCallCheck(this, MessageHandlers);
-	
-	    this.options = options || {};
-	    this.init();
-	  }
-	
-	  /**
-	   * Our web wroker interface so that things can talk to mux.js
-	   * that will be running in a web worker. The scope is passed to this by
-	   * webworkify.
-	   *
-	   * @param {Object} self the scope for the web worker
-	   */
-	
-	  /**
-	   * initialize our web worker and wire all the events.
-	   */
-	
-	  _createClass(MessageHandlers, [{
-	    key: 'init',
-	    value: function init() {
-	      if (this.transmuxer) {
-	        this.transmuxer.dispose();
-	      }
-	      this.transmuxer = new _muxJsLibFlv2['default'].Transmuxer(this.options);
-	      wireTransmuxerEvents(this.transmuxer);
-	    }
-	
-	    /**
-	     * Adds data (a ts segment) to the start of the transmuxer pipeline for
-	     * processing.
-	     *
-	     * @param {ArrayBuffer} data data to push into the muxer
-	     */
-	  }, {
-	    key: 'push',
-	    value: function push(data) {
-	      // Cast array buffer to correct type for transmuxer
-	      var segment = new Uint8Array(data.data, data.byteOffset, data.byteLength);
-	
-	      this.transmuxer.push(segment);
-	    }
-	
-	    /**
-	     * Recreate the transmuxer so that the next segment added via `push`
-	     * start with a fresh transmuxer.
-	     */
-	  }, {
-	    key: 'reset',
-	    value: function reset() {
-	      this.init();
-	    }
-	
-	    /**
-	     * Forces the pipeline to finish processing the last segment and emit its
-	     * results.
-	     */
-	  }, {
-	    key: 'flush',
-	    value: function flush() {
-	      this.transmuxer.flush();
-	    }
-	  }]);
-	
-	  return MessageHandlers;
-	})();
-	
-	var FlashTransmuxerWorker = function FlashTransmuxerWorker(self) {
-	  self.onmessage = function (event) {
-	    if (event.data.action === 'init' && event.data.options) {
-	      this.messageHandlers = new MessageHandlers(event.data.options);
-	      return;
-	    }
-	
-	    if (!this.messageHandlers) {
-	      this.messageHandlers = new MessageHandlers();
-	    }
-	
-	    if (event.data && event.data.action && event.data.action !== 'init') {
-	      if (this.messageHandlers[event.data.action]) {
-	        this.messageHandlers[event.data.action](event.data);
-	      }
-	    }
-	  };
-	};
-	
-	exports['default'] = function (self) {
-	  return new FlashTransmuxerWorker(self);
-	};
-	
-	module.exports = exports['default'];
-	},{"global/window":28,"mux.js/lib/flv":42}],68:[function(require,module,exports){
+	},{"./add-text-track-data":60,"./create-text-tracks-if-necessary":63,"./flash-constants":64,"./remove-cues-from-track":68,"global/window":28,"mux.js/lib/flv":42}],67:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file html-media-source.js
@@ -46113,7 +45894,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports['default'] = HtmlMediaSource;
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./add-text-track-data":60,"./cleanup-text-tracks":61,"./codec-utils":62,"./virtual-source-buffer":72,"global/document":27,"global/window":28}],69:[function(require,module,exports){
+	},{"./add-text-track-data":60,"./cleanup-text-tracks":61,"./codec-utils":62,"./virtual-source-buffer":71,"global/document":27,"global/window":28}],68:[function(require,module,exports){
 	/**
 	 * @file remove-cues-from-track.js
 	 */
@@ -46157,7 +45938,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	exports["default"] = removeCuesFromTrack;
 	module.exports = exports["default"];
-	},{}],70:[function(require,module,exports){
+	},{}],69:[function(require,module,exports){
 	/**
 	 * @file transmuxer-worker.js
 	 */
@@ -46361,7 +46142,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	module.exports = exports['default'];
-	},{"global/window":28,"mux.js/lib/mp4":51}],71:[function(require,module,exports){
+	},{"global/window":28,"mux.js/lib/mp4":51}],70:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file videojs-contrib-media-sources.js
@@ -46459,11 +46240,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // determine whether HTML MediaSources should be used
 	  if (settings.mode === 'html5' || settings.mode === 'auto' && supportsNativeMediaSources()) {
 	    return new _htmlMediaSource2['default']();
-	  } else if (_videoJs2['default'].getTech('Flash')) {
-	    return new _flashMediaSource2['default']();
 	  }
 	
-	  throw new Error('Cannot use Flash or Html5 to create a MediaSource for this video');
+	  // otherwise, emulate them through the SWF
+	  return new _flashMediaSource2['default']();
 	};
 	
 	exports.MediaSource = MediaSource;
@@ -46520,7 +46300,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	_videoJs2['default'].MediaSource = MediaSource;
 	_videoJs2['default'].URL = URL;
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./flash-media-source":65,"./html-media-source":68,"global/window":28}],72:[function(require,module,exports){
+	},{"./flash-media-source":65,"./html-media-source":67,"global/window":28}],71:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file virtual-source-buffer.js
@@ -47100,7 +46880,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports['default'] = VirtualSourceBuffer;
 	module.exports = exports['default'];
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./add-text-track-data":60,"./codec-utils":62,"./create-text-tracks-if-necessary":63,"./remove-cues-from-track":69,"./transmuxer-worker":70,"webworkify":73}],73:[function(require,module,exports){
+	},{"./add-text-track-data":60,"./codec-utils":62,"./create-text-tracks-if-necessary":63,"./remove-cues-from-track":68,"./transmuxer-worker":69,"webworkify":72}],72:[function(require,module,exports){
 	var bundleFn = arguments[3];
 	var sources = arguments[4];
 	var cache = arguments[5];
@@ -47157,7 +46937,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    ));
 	};
 	
-	},{}],74:[function(require,module,exports){
+	},{}],73:[function(require,module,exports){
 	(function (global){
 	/**
 	 * @file videojs-contrib-hls.js
@@ -48030,7 +47810,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  HlsSourceHandler: HlsSourceHandler
 	};
 	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{"./bin-utils":2,"./config":3,"./master-playlist-controller":5,"./playback-watcher":6,"./playlist":8,"./playlist-loader":7,"./reload-source-on-error":10,"./rendition-mixin":11,"./xhr":17,"aes-decrypter":21,"global/document":27,"global/window":28,"m3u8-parser":29,"videojs-contrib-media-sources":71}]},{},[74])(74)
+	},{"./bin-utils":2,"./config":3,"./master-playlist-controller":5,"./playback-watcher":6,"./playlist":8,"./playlist-loader":7,"./reload-source-on-error":10,"./rendition-mixin":11,"./xhr":17,"aes-decrypter":21,"global/document":27,"global/window":28,"m3u8-parser":29,"videojs-contrib-media-sources":70}]},{},[73])(73)
 	});
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
@@ -48817,12 +48597,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	          _this.player.loadingSpinner.hide();
 	        }
 	
-	        // Start playback
+	        // autoplay is not supported on mobile devices
 	        if (_this.options.autoplay && !_this.browser.IS_MOBILE) {
+	          _this.initAds();
 	          _this.play();
+	        } else if (_this.browser.IS_MOBILE) {
+	          // init ads and start playback on tap
+	          _this.player.one('touchend', function () {
+	            this.initAds();
+	            this.play();
+	          }.bind(_this));
 	        } else {
-	          var startEvent = _this.browser.IS_MOBILE ? 'touchend' : 'click';
-	          _this.player.one(startEvent, _this.play.bind(_this));
+	          _this.initAds();
 	        }
 	      });
 	      if (typeof this.player.qualityPickerPlugin === 'function') {
@@ -48865,7 +48651,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'play',
 	    value: function play() {
-	      this.initAds();
 	      this.player.play();
 	      this.options.autoplay && this.player.autoplay(true);
 	    }
