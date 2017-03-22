@@ -24,12 +24,13 @@
         skin: 'nmd',
         controls: getQueryParam('controls') === 'false' ? false : true,
         autoplay: getQueryParam('autoplay'),
+        muted: true,
         loop: getQueryParam('loop'),
         stretch: getQueryParam('stretch'),
         sources: [
           {
-            src: 'https://streams.kolor.com/streams/07d347ca-3250-4531-ac99-b4247429e171/source.03-1080p_HD.mp4',
-            type: 'video/mp4'
+            src: 'http://videos.electroteque.org/360/ultra_light_flight_720p.webm',
+            type: 'video/webm'
           }],
         panorama: {
           clickAndDrag: true,
