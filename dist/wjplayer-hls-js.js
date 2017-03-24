@@ -30669,12 +30669,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    if (this.options.playerType === 'video' && videojs.Hls && (!this.browser.IS_MOBILE || this.options.sourcesWithRes.length)) {
-	      this.options.enableResolutionSwitcher = true;
-	      // will be passed to videoJsResolutionSwitcher plugin
-	      this.options.videojs.plugins.videoJsResolutionSwitcher = {
-	        default: this.options.defaultQuality,
-	        dynamicLabel: true
-	      };
+	      var isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
+	      if (!isIE11) {
+	        this.options.enableResolutionSwitcher = true;
+	        this.options.sources = [];
+	        // will be passed to videoJsResolutionSwitcher plugin
+	        this.options.videojs.plugins.videoJsResolutionSwitcher = {
+	          default: this.options.defaultQuality,
+	          dynamicLabel: true
+	        };
+	      } else if (!this.options.sources.length) {
+	        // https://github.com/videojs/videojs-contrib-hls/blob/ab9a3986411ca15e3b4983dc03de8d32e9c686a2/README.md#ie11
+	        // on IE11 let videojs-contrib-hls to use flash fallback
+	        this.options.sources = this.options.sourcesWithRes;
+	      }
 	    }
 
 	    if (this.options.ads && this.options.ads.adTagUrl) {

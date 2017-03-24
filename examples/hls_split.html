@@ -24,39 +24,45 @@
       autoplay: getQueryParam('autoplay'),
       loop: getQueryParam('loop'),
       preload: getQueryParam('preload') || 'metadata',
-      poster: 'https://static.life.ru/posts/2016/06/423804/video/.f77a74027325a532521646113b1f1ae6.jpg',
+      poster: 'https://static.life.ru/posts/2016/09/907639/video/.185142e5f273e565511ebe3a8494cf95.jpg',
       defaultQuality: 480,
       skin: 'nmd',
       pathToSwf: '../dist/video-js.swf',
+      sources: [
+       {
+        src: 'https://static.life.ru/posts/2016/09/907639/video/185142e5f273e565511ebe3a8494cf95-720.m3u8',
+        type: 'application/x-mpegURL',
+       }
+      ],
       sourcesWithRes: [
         {
-          src: 'https://static.life.ru/posts/2016/06/423804/video/f77a74027325a532521646113b1f1ae6-240.m3u8',
+          src: 'https://static.life.ru/posts/2016/09/907639/video/185142e5f273e565511ebe3a8494cf95-240.m3u8',
           type: 'application/x-mpegURL',
           label: '240p',
           res: 240
         },
         {
-          src: 'https://static.life.ru/posts/2016/06/423804/video/f77a74027325a532521646113b1f1ae6-360.m3u8',
+          src: 'https://static.life.ru/posts/2016/09/907639/video/185142e5f273e565511ebe3a8494cf95-360.m3u8',
           type: 'application/x-mpegURL',
           label: '360p',
           res: 360
         },
         {
-          src: 'https://static.life.ru/posts/2016/06/423804/video/f77a74027325a532521646113b1f1ae6-480.m3u8',
+          src: 'https://static.life.ru/posts/2016/09/907639/video/185142e5f273e565511ebe3a8494cf95-480.m3u8',
           type: 'application/x-mpegURL',
           label: '480p',
           res: 480
         },
         {
-          src: 'https://static.life.ru/posts/2016/06/423804/video/f77a74027325a532521646113b1f1ae6-720.m3u8',
+          src: 'https://static.life.ru/posts/2016/09/907639/video/185142e5f273e565511ebe3a8494cf95-720.m3u8',
           type: 'application/x-mpegURL',
           label: '720p',
           res: 720
         }],
       ads: window.ads,
       share: {
-        url: 'http://embed.life.ru/video/d1967b76d8f720dd5f0acb3a37b3f44d',
-        embedCode: "<iframe src='http://embed.life.ru/video/d1967b76d8f720dd5f0acb3a37b3f44d' width='560' height='315' frameborder='0' allowfullscreen>"
+        url: 'http://embed.life.ru/video/185142e5f273e565511ebe3a8494cf95',
+        embedCode: "<iframe src='http://embed.life.ru/video/185142e5f273e565511ebe3a8494cf95' width='560' height='315' frameborder='0' allowfullscreen></iframe>"
       }
     });
     player.reloadSourceOnError();
