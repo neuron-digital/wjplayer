@@ -30670,7 +30670,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    if (this.options.playerType === 'video' && videojs.Hls && (!this.browser.IS_MOBILE || this.options.sourcesWithRes.length)) {
 	      var isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
-	      if (!isIE11) {
+	      if (isIE11) {
+	        // https://github.com/videojs/videojs-contrib-hls/blob/ab9a3986411ca15e3b4983dc03de8d32e9c686a2/README.md#ie11
+	        // on IE11 force using flash
+	        this.options.videojs.techOrder = ['flash'];
+
+	        if (!this.options.sources.length && this.options.sourcesWithRes.length) {
+	          this.options.sources = this.options.sourcesWithRes;
+	        }
+	      } else {
 	        this.options.enableResolutionSwitcher = true;
 	        this.options.sources = [];
 	        // will be passed to videoJsResolutionSwitcher plugin
@@ -30678,10 +30686,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	          default: this.options.defaultQuality,
 	          dynamicLabel: true
 	        };
-	      } else if (!this.options.sources.length) {
-	        // https://github.com/videojs/videojs-contrib-hls/blob/ab9a3986411ca15e3b4983dc03de8d32e9c686a2/README.md#ie11
-	        // on IE11 let videojs-contrib-hls to use flash fallback
-	        this.options.sources = this.options.sourcesWithRes;
 	      }
 	    }
 
