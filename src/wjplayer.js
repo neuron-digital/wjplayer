@@ -260,7 +260,6 @@ class WJPlayer {
 
       } else {
         this.options.enableResolutionSwitcher = true;
-        this.options.sources = [];
         // will be passed to videoJsResolutionSwitcher plugin
         this.options.videojs.plugins.videoJsResolutionSwitcher = {
           default: this.options.defaultQuality,
