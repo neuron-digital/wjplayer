@@ -63,7 +63,7 @@
     "videojs-panorama": "github:neuron-digital/videojs-panorama#9a20b1d0b201ba20a89ab491a7d5f247e133b9ee",
     "videojs-quality-picker": "0.0.3",
     "videojs-resolution-switcher": "neuron-digital/videojs-resolution-switcher#hls",
-    "videojs-social": "neuron-digital/videojs-social#no-socials",
+    "videojs-social": "github:neuron-digital/videojs-social#98360ac",
     "videojs5-hlsjs-source-handler": "neuron-digital/videojs5-hlsjs-source-handler#hls6",
     "webpack": "1.13.2"
   }

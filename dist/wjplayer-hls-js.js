@@ -30093,20 +30093,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	        },
 
 	        hide: function () {
+	            var player = this.player();
 	            videojs.getComponent('Component').prototype.hide.call(this);
 	            if (this.previouslyPlaying) {
-	                this.player().play();
+	                player.play();
 	            }
 	            // Set focus back to the social button for accessibility
-	            this.player().controlBar.socialButton.el().focus();
+	            player.controlBar.socialButton.el().focus();
+	            player.trigger('sharing:closed');
 	        },
 
 	        show: function () {
+	            var player = this.player();
 	            videojs.getComponent('Component').prototype.show.call(this);
-	            if (!this.player().paused()) {
+	            if (!player.paused()) {
 	                this.previouslyPlaying = true;
-	                this.player().pause();
+	                player.pause();
 	            }
+	            player.trigger('sharing:opened');
 	        }
 	    });
 
