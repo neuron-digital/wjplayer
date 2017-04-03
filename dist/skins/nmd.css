@@ -25,7 +25,8 @@
   content: '';
   background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48c3ZnIHZlcnNpb249IjEuMSIgaWQ9ItCh0LvQvtC5XzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IiB2aWV3Qm94PSIwIDAgMTggMTQiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDE4IDE0OyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHN0eWxlIHR5cGU9InRleHQvY3NzIj4uc3Qwe2ZpbGw6I0ZGRkZGRjt9PC9zdHlsZT48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLC0yNCkiPjxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik05LDI0djRjLTUuMSwwLjUtOSw0LjgtOSwxMGwwLDBjMi0yLjcsNS40LTQuMyw5LTR2NGw5LTdMOSwyNHoiLz48L2c+PC9zdmc+);
   background-position: 50%;
-  background-repeat: no-repeat; }
+  background-repeat: no-repeat;
+  background-size: 20px; }
 
 .vjs-nmd-skin .vjs-fullscreen-control,
 .vjs-nmd-skin .vjs-share-control {
