@@ -138,6 +138,10 @@ const google = window.google;
  *   Indicates whether video should stretch to fit the container.
  *   Defaults to false
  *
+ * @param {Boolean} options.playOnClick
+ *   If true, click/touch event on player will start/stop the playback even if controls are disabled.
+ *   Defaults to false
+ *
  * @param {Boolean|Object} options.downloadButton
  *   Indicates whether a download button should be shown in control bar.
  * @param {String} options.downloadButton.text
@@ -181,7 +185,7 @@ const google = window.google;
  *
  * @return {Object} the player object.
  */
-function wjplayer(options) {
+export default function wjplayer(options) {
   return new WJPlayer(options);
 }
 
@@ -205,6 +209,7 @@ class WJPlayer {
       preload: 'metadata',
       volumeStyle: 'vertical',
       stretch: false,
+      playOnClick: false,
       skin: 'default',
       classes: [],
       enableResolutionSwitcher: false
@@ -212,9 +217,13 @@ class WJPlayer {
 
     this.browser = {
       IS_IOS: /iP(hone|ad|od)/i.test(navigator.userAgent),
-      IS_ANDROID: /Android/.test(navigator.userAgent)
+      IS_ANDROID: /Android/.test(navigator.userAgent),
+      IS_IE: document.documentMode || /Edge/.test(navigator.userAgent), // detect IE8 and above, and edge
+      IS_IE11: !!window.MSInputMethodContext && !!document.documentMode,
     };
     this.browser.IS_MOBILE = this.browser.IS_IOS || this.browser.IS_ANDROID;
+
+    this.clickEvent = this.browser.IS_MOBILE ? 'touchend' : 'click';
 
     this.options = videojs.mergeOptions(this.defaults, options);
 
@@ -248,8 +257,7 @@ class WJPlayer {
     if (this.options.playerType === 'video'
       && videojs.Hls
       && (!this.browser.IS_MOBILE || this.options.sourcesWithRes.length)) {
-      const isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
-      if (isIE11) {
+      if (this.browser.IS_IE11) {
         // https://github.com/videojs/videojs-contrib-hls/blob/ab9a3986411ca15e3b4983dc03de8d32e9c686a2/README.md#ie11
         // on IE11 force using flash
         this.options.videojs.techOrder = ['flash'];
@@ -337,12 +345,23 @@ class WJPlayer {
         this.play();
       } else if (this.browser.IS_MOBILE) {
         // init ads and start playback on tap
-        this.player.one('touchend', function() {
+        this.player.one(this.clickEvent, () => {
           this.initAds();
           this.play();
-        }.bind(this));
+        });
       } else {
         this.initAds();
+      }
+
+      // allow to start/stop the playback on click even if controls are disabled
+      if (this.options.playOnClick) {
+        this.player.on(this.clickEvent, () => {
+          if (this.player.paused()) {
+            this.player.play();
+          } else {
+            this.player.pause();
+          }
+        });
       }
     });
     if (typeof this.player.qualityPickerPlugin === 'function') {
@@ -355,6 +374,10 @@ class WJPlayer {
 
     let classes = this.options.classes;
     classes.push('vjs-' + this.options.skin + '-skin');
+
+    if (this.browser.IS_IE) {
+      classes.push('ie');
+    }
 
     if (this.options.stretch) {
       classes.push('vjs-stretch');
@@ -397,5 +420,3 @@ class WJPlayer {
     this.player.ima.requestAds();
   }
 }
-
-export default wjplayer;

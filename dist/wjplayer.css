@@ -1811,13 +1811,16 @@ ul.vjs-share-options li a {
 .video-js.vjs-ad-loading > video {
   opacity: 0; }
 
-.video-js.vjs-stretch {
+.video-js.vjs-stretch .vjs-tech {
+  object-fit: cover; }
+
+.video-js.vjs-stretch.ie {
   position: absolute;
   top: -50%;
   left: -50%;
   width: 200%;
   height: 200%; }
-  .video-js.vjs-stretch .vjs-tech {
+  .video-js.vjs-stretch.ie .vjs-tech {
     position: absolute;
     top: 0;
     bottom: 0;
@@ -1828,5 +1831,5 @@ ul.vjs-share-options li a {
     min-width: 50%;
     width: auto;
     height: auto; }
-  .video-js.vjs-stretch .vjs-poster {
+  .video-js.vjs-stretch.ie .vjs-poster {
     background-size: 50% 50%; }
