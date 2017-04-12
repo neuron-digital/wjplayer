@@ -48501,6 +48501,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+	exports.default = wjplayer;
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var google = window.google;
@@ -48719,7 +48721,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    this.browser = {
 	      IS_IOS: /iP(hone|ad|od)/i.test(navigator.userAgent),
-	      IS_ANDROID: /Android/.test(navigator.userAgent)
+	      IS_ANDROID: /Android/.test(navigator.userAgent),
+	      IS_IE: document.documentMode || /Edge/.test(navigator.userAgent), // detect IE8 and above, and edge
+	      IS_IE11: !!window.MSInputMethodContext && !!document.documentMode
 	    };
 	    this.browser.IS_MOBILE = this.browser.IS_IOS || this.browser.IS_ANDROID;
 
@@ -48749,8 +48753,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    if (this.options.playerType === 'video' && videojs.Hls && (!this.browser.IS_MOBILE || this.options.sourcesWithRes.length)) {
-	      var isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
-	      if (isIE11) {
+	      if (this.browser.IS_IE11) {
 	        // https://github.com/videojs/videojs-contrib-hls/blob/ab9a3986411ca15e3b4983dc03de8d32e9c686a2/README.md#ie11
 	        // on IE11 force using flash
 	        this.options.videojs.techOrder = ['flash'];
@@ -48858,6 +48861,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var classes = this.options.classes;
 	      classes.push('vjs-' + this.options.skin + '-skin');
 
+	      if (this.browser.IS_IE) {
+	        classes.push('ie');
+	      }
+
 	      if (this.options.stretch) {
 	        classes.push('vjs-stretch');
 	      }
@@ -48905,7 +48912,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return WJPlayer;
 	}();
 
-	exports.default = wjplayer;
 	module.exports = exports['default'];
 
 /***/ }

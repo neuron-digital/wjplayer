@@ -181,7 +181,7 @@ const google = window.google;
  *
  * @return {Object} the player object.
  */
-function wjplayer(options) {
+export default function wjplayer(options) {
   return new WJPlayer(options);
 }
 
@@ -212,7 +212,9 @@ class WJPlayer {
 
     this.browser = {
       IS_IOS: /iP(hone|ad|od)/i.test(navigator.userAgent),
-      IS_ANDROID: /Android/.test(navigator.userAgent)
+      IS_ANDROID: /Android/.test(navigator.userAgent),
+      IS_IE: document.documentMode || /Edge/.test(navigator.userAgent), // detect IE8 and above, and edge
+      IS_IE11: !!window.MSInputMethodContext && !!document.documentMode,
     };
     this.browser.IS_MOBILE = this.browser.IS_IOS || this.browser.IS_ANDROID;
 
@@ -248,8 +250,7 @@ class WJPlayer {
     if (this.options.playerType === 'video'
       && videojs.Hls
       && (!this.browser.IS_MOBILE || this.options.sourcesWithRes.length)) {
-      const isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
-      if (isIE11) {
+      if (this.browser.IS_IE11) {
         // https://github.com/videojs/videojs-contrib-hls/blob/ab9a3986411ca15e3b4983dc03de8d32e9c686a2/README.md#ie11
         // on IE11 force using flash
         this.options.videojs.techOrder = ['flash'];
@@ -356,6 +357,10 @@ class WJPlayer {
     let classes = this.options.classes;
     classes.push('vjs-' + this.options.skin + '-skin');
 
+    if (this.browser.IS_IE) {
+      classes.push('ie');
+    }
+
     if (this.options.stretch) {
       classes.push('vjs-stretch');
     }
@@ -397,5 +402,3 @@ class WJPlayer {
     this.player.ima.requestAds();
   }
 }
-
-export default wjplayer;
