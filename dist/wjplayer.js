@@ -48645,6 +48645,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *   Indicates whether video should stretch to fit the container.
 	 *   Defaults to false
 	 *
+	 * @param {Boolean} options.playOnClick
+	 *   If true, click/touch event on player will start/stop the playback even if controls are disabled.
+	 *   Defaults to false
+	 *
 	 * @param {Boolean|Object} options.downloadButton
 	 *   Indicates whether a download button should be shown in control bar.
 	 * @param {String} options.downloadButton.text
@@ -48714,6 +48718,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      preload: 'metadata',
 	      volumeStyle: 'vertical',
 	      stretch: false,
+	      playOnClick: false,
 	      skin: 'default',
 	      classes: [],
 	      enableResolutionSwitcher: false
@@ -48726,6 +48731,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      IS_IE11: !!window.MSInputMethodContext && !!document.documentMode
 	    };
 	    this.browser.IS_MOBILE = this.browser.IS_IOS || this.browser.IS_ANDROID;
+
+	    this.clickEvent = this.browser.IS_MOBILE ? 'touchend' : 'click';
 
 	    this.options = videojs.mergeOptions(this.defaults, options);
 
@@ -48841,12 +48848,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	          _this.play();
 	        } else if (_this.browser.IS_MOBILE) {
 	          // init ads and start playback on tap
-	          _this.player.one('touchend', function () {
-	            this.initAds();
-	            this.play();
-	          }.bind(_this));
+	          _this.player.one(_this.clickEvent, function () {
+	            _this.initAds();
+	            _this.play();
+	          });
 	        } else {
 	          _this.initAds();
+	        }
+
+	        // allow to start/stop the playback on click even if controls are disabled
+	        if (_this.options.playOnClick) {
+	          _this.player.on(_this.clickEvent, function () {
+	            if (_this.player.paused()) {
+	              _this.player.play();
+	            } else {
+	              _this.player.pause();
+	            }
+	          });
 	        }
 	      });
 	      if (typeof this.player.qualityPickerPlugin === 'function') {

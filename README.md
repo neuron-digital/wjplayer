@@ -274,6 +274,10 @@ Creates a new player and places it to container with the specified id.
  - **options.stretch**: `Boolean`, Indicates whether video should stretch to fit the container.
   Defaults to false
 
+ - **options.playOnClick**
+  If true, click/touch event on player will start/stop the playback even if controls are disabled.
+  Defaults to false
+
  - **options.downloadButton**: `Boolean | Object`, Indicates whether a download button should be shown in control bar.
 
  - **options.downloadButton.text**: `String`, Button title.

@@ -138,6 +138,10 @@ const google = window.google;
  *   Indicates whether video should stretch to fit the container.
  *   Defaults to false
  *
+ * @param {Boolean} options.playOnClick
+ *   If true, click/touch event on player will start/stop the playback even if controls are disabled.
+ *   Defaults to false
+ *
  * @param {Boolean|Object} options.downloadButton
  *   Indicates whether a download button should be shown in control bar.
  * @param {String} options.downloadButton.text
@@ -205,6 +209,7 @@ class WJPlayer {
       preload: 'metadata',
       volumeStyle: 'vertical',
       stretch: false,
+      playOnClick: false,
       skin: 'default',
       classes: [],
       enableResolutionSwitcher: false
@@ -217,6 +222,8 @@ class WJPlayer {
       IS_IE11: !!window.MSInputMethodContext && !!document.documentMode,
     };
     this.browser.IS_MOBILE = this.browser.IS_IOS || this.browser.IS_ANDROID;
+
+    this.clickEvent = this.browser.IS_MOBILE ? 'touchend' : 'click';
 
     this.options = videojs.mergeOptions(this.defaults, options);
 
@@ -338,12 +345,23 @@ class WJPlayer {
         this.play();
       } else if (this.browser.IS_MOBILE) {
         // init ads and start playback on tap
-        this.player.one('touchend', function() {
+        this.player.one(this.clickEvent, () => {
           this.initAds();
           this.play();
-        }.bind(this));
+        });
       } else {
         this.initAds();
+      }
+
+      // allow to start/stop the playback on click even if controls are disabled
+      if (this.options.playOnClick) {
+        this.player.on(this.clickEvent, () => {
+          if (this.player.paused()) {
+            this.player.play();
+          } else {
+            this.player.pause();
+          }
+        });
       }
     });
     if (typeof this.player.qualityPickerPlugin === 'function') {
