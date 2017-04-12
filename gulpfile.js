@@ -170,6 +170,7 @@ gulp.task('server', () => {
     server: {
       baseDir: './'
     },
+    startPath: '/examples',
     port: process.env.PORT || 3000,
     https: !!process.env.HTTPS,
     open: true,
