@@ -29491,8 +29491,8 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	/*
-	* videojs-ga - v0.4.2 - 2016-11-03
-	* Copyright (c) 2016 Michael Bensoussan
+	* videojs-ga - v0.5.1 - 2017-04-21
+	* Copyright (c) 2017 Michael Bensoussan
 	* Licensed MIT
 	*/
 	(function() {
@@ -29557,10 +29557,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      percentPlayed = Math.round(currentTime / duration * 100);
 	      if (percentsPlayedInterval) {
 	        for (percent = _i = 0; _i <= 99; percent = _i += percentsPlayedInterval) {
-	          if (percentPlayed >= percent && __indexOf.call(percentsAlreadyTracked, percent) < 0) {
-	            if (__indexOf.call(eventsToTrack, 'start') >= 0 && percent === 0 && percentPlayed > 0) {
-	              sendbeacon('start', true);
-	            } else if (__indexOf.call(eventsToTrack, 'percentsPlayed') >= 0 && percentPlayed !== 0) {
+	          if (percent > 0 && percentPlayed >= percent && __indexOf.call(percentsAlreadyTracked, percent) < 0) {
+	            if (__indexOf.call(eventsToTrack, 'percentsPlayed') >= 0 && percentPlayed !== 0) {
 	              sendbeacon('percent played', true, percent);
 	            }
 	            if (percentPlayed > 0) {

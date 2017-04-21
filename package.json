@@ -58,7 +58,7 @@
     "videojs-contrib-ads": "3.1.3",
     "videojs-contrib-hls": "5.3.3",
     "videojs-download-button": "neuron-digital/videojs-download-button",
-    "videojs-ga": "neuron-digital/videojs-ga",
+    "videojs-ga": "neuron-digital/videojs-ga#69281ed",
     "videojs-ima": "neuron-digital/videojs-ima",
     "videojs-panorama": "github:neuron-digital/videojs-panorama#9a20b1d0b201ba20a89ab491a7d5f247e133b9ee",
     "videojs-quality-picker": "0.0.3",
