@@ -2,9 +2,9 @@ language: node_js
 
 node_js:
   - 7
-  - 6
 
 script:
+  - npm rebuild node-sass
   - npm run build
 
 cache:
