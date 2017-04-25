@@ -404,7 +404,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *
 	 * @type {string}
 	 */
-	videojs.VERSION = '5.18.4';
+	videojs.VERSION = '5.19.2';
 
 	/**
 	 * The global options object. These are the settings that take effect
@@ -2183,9 +2183,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	var IS_EDGE = exports.IS_EDGE = /Edge/i.test(USER_AGENT);
 	var IS_CHROME = exports.IS_CHROME = !IS_EDGE && /Chrome/i.test(USER_AGENT);
 	var IS_IE8 = exports.IS_IE8 = /MSIE\s8\.0/.test(USER_AGENT);
-	var IE_VERSION = exports.IE_VERSION = function (result) {
-	  return result && parseFloat(result[1]);
-	}(/MSIE\s(\d+)\.\d/.exec(USER_AGENT));
+	var IE_VERSION = exports.IE_VERSION = function () {
+	  var result = /MSIE\s(\d+)\.\d/.exec(USER_AGENT);
+	  var version = result && parseFloat(result[1]);
+
+	  if (!version && /Trident\/7.0/i.test(USER_AGENT) && /rv:11.0/.test(USER_AGENT)) {
+	    // IE 11 has a different user agent string than other IE versions
+	    version = 11.0;
+	  }
+
+	  return version;
+	}();
 
 	var IS_SAFARI = exports.IS_SAFARI = /Safari/i.test(USER_AGENT) && !IS_CHROME && !IS_ANDROID && !IS_EDGE;
 	var IS_ANY_SAFARI = exports.IS_ANY_SAFARI = IS_SAFARI || IS_IOS;
@@ -9542,7 +9550,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // playing state.
 	      this.wasPlaying_ = !player.paused();
 
-	      if (this.wasPlaying_) {
+	      if (this.options_.pauseOnOpen && this.wasPlaying_) {
 	        player.pause();
 	      }
 
@@ -9609,7 +9617,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.trigger('beforemodalclose');
 	      this.opened_ = false;
 
-	      if (this.wasPlaying_) {
+	      if (this.wasPlaying_ && this.options_.pauseOnOpen) {
 	        player.play();
 	      }
 
@@ -9807,6 +9815,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	ModalDialog.prototype.options_ = {
+	  pauseOnOpen: true,
 	  temporary: true
 	};
 
@@ -10483,7 +10492,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      // passed in
 	      var script = _document2['default'].createElement('script');
 
-	      script.src = this.options_['vtt.js'] || 'https://cdn.rawgit.com/gkatsev/vtt.js/vjs-v0.12.1/dist/vtt.min.js';
+	      script.src = this.options_['vtt.js'] || 'https://vjs.zencdn.net/vttjs/0.12.3/vtt.min.js';
 	      script.onload = function () {
 	        /**
 	         * Fired when vtt.js is loaded.
@@ -10563,11 +10572,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    textTracksChanges();
 	    tracks.addEventListener('change', textTracksChanges);
+	    tracks.addEventListener('addtrack', textTracksChanges);
+	    tracks.addEventListener('removetrack', textTracksChanges);
 
 	    this.on('dispose', function () {
 	      remoteTracks.off('addtrack', handleAddTrack);
 	      remoteTracks.off('removetrack', handleRemoveTrack);
 	      tracks.removeEventListener('change', textTracksChanges);
+	      tracks.removeEventListener('addtrack', textTracksChanges);
+	      tracks.removeEventListener('removetrack', textTracksChanges);
 
 	      for (var i = 0; i < tracks.length; i++) {
 	        var track = tracks[i];
@@ -11772,6 +11785,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      // make sure that `id` is copied over
 	      cue.id = originalCue.id;
+	      cue.originalCue_ = originalCue;
 	    }
 
 	    var tracks = this.tech_.textTracks();
@@ -11797,19 +11811,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	  TextTrack.prototype.removeCue = function removeCue(_removeCue) {
-	    var removed = false;
+	    var i = this.cues_.length;
 
-	    for (var i = 0, l = this.cues_.length; i < l; i++) {
+	    while (i--) {
 	      var cue = this.cues_[i];
 
-	      if (cue === _removeCue) {
+	      if (cue === _removeCue || cue.originalCue_ && cue.originalCue_ === _removeCue) {
 	        this.cues_.splice(i, 1);
-	        removed = true;
+	        this.cues.setCues_(this.cues_);
+	        break;
 	      }
-	    }
-
-	    if (removed) {
-	      this.cues.setCues_(this.cues_);
 	    }
 	  };
 
@@ -13704,18 +13715,22 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var cueShim = vttjs.VTTCue;
 	var regionShim = vttjs.VTTRegion;
-	var oldVTTCue = window.VTTCue;
-	var oldVTTRegion = window.VTTRegion;
+	var nativeVTTCue = window.VTTCue;
+	var nativeVTTRegion = window.VTTRegion;
 
 	vttjs.shim = function() {
-	  vttjs.VTTCue = cueShim;
-	  vttjs.VTTRegion = regionShim;
+	  window.VTTCue = cueShim;
+	  window.VTTRegion = regionShim;
 	};
 
 	vttjs.restore = function() {
-	  vttjs.VTTCue = oldVTTCue;
-	  vttjs.VTTRegion = oldVTTRegion;
+	  window.VTTCue = nativeVTTCue;
+	  window.VTTRegion = nativeVTTRegion;
 	};
+
+	if (!window.VTTCue) {
+	  vttjs.shim();
+	}
 
 
 /***/ },
@@ -14862,16 +14877,51 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	      }
 
-	      // 3.2 WebVTT metadata header syntax
-	      function parseHeader(input) {
-	        parseOptions(input, function (k, v) {
-	          switch (k) {
-	          case "Region":
-	            // 3.3 WebVTT region metadata header syntax
-	            parseRegion(v);
+	      // draft-pantos-http-live-streaming-20
+	      // https://tools.ietf.org/html/draft-pantos-http-live-streaming-20#section-3.5
+	      // 3.5 WebVTT
+	      function parseTimestampMap(input) {
+	        var settings = new Settings();
+
+	        parseOptions(input, function(k, v) {
+	          switch(k) {
+	          case "MPEGT":
+	            settings.integer(k + 'S', v);
+	            break;
+	          case "LOCA":
+	            settings.set(k + 'L', parseTimeStamp(v));
 	            break;
 	          }
-	        }, /:/);
+	        }, /[^\d]:/, /,/);
+
+	        self.ontimestampmap && self.ontimestampmap({
+	          "MPEGTS": settings.get("MPEGTS"),
+	          "LOCAL": settings.get("LOCAL")
+	        });
+	      }
+
+	      // 3.2 WebVTT metadata header syntax
+	      function parseHeader(input) {
+	        if (input.match(/X-TIMESTAMP-MAP/)) {
+	          // This line contains HLS X-TIMESTAMP-MAP metadata
+	          parseOptions(input, function(k, v) {
+	            switch(k) {
+	            case "X-TIMESTAMP-MAP":
+	              parseTimestampMap(v);
+	              break;
+	            }
+	          }, /=/);
+	        } else {
+	          parseOptions(input, function (k, v) {
+	            switch (k) {
+	            case "Region":
+	              // 3.3 WebVTT region metadata header syntax
+	              parseRegion(v);
+	              break;
+	            }
+	          }, /:/);
+	        }
+
 	      }
 
 	      // 5.1 WebVTT file parsing.
@@ -22674,6 +22724,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (tracks) {
 	      var changeHandler = Fn.bind(_this, _this.handleTracksChange);
 
+	      player.on(['loadstart', 'texttrackchange'], changeHandler);
 	      tracks.addEventListener('change', changeHandler);
 	      _this.on('dispose', function () {
 	        tracks.removeEventListener('change', changeHandler);
@@ -23654,6 +23705,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  AudioTrackButton.prototype.createItems = function createItems() {
 	    var items = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 
+	    // if there's only one audio track, there no point in showing it
+	    this.hideThreshold_ = 1;
+
 	    var tracks = this.player_.audioTracks && this.player_.audioTracks();
 
 	    if (!tracks) {
@@ -24412,6 +24466,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	ErrorDisplay.prototype.options_ = (0, _mergeOptions2['default'])(_modalDialog2['default'].prototype.options_, {
+	  pauseOnOpen: false,
 	  fillAlways: true,
 	  temporary: false,
 	  uncloseable: true

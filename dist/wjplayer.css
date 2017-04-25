@@ -690,7 +690,7 @@ body.vjs-full-window {
 .video-js .vjs-progress-holder .vjs-load-progress div {
   position: absolute;
   display: block;
-  height: 0.3em;
+  height: 100%;
   margin: 0;
   padding: 0;
   width: 0;
