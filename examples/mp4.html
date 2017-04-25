@@ -23,6 +23,10 @@
 
     <script>
       window.player = wjplayer({
+        sources: [{
+          src: '//vjs.zencdn.net/v/oceans.mp4',
+          type: 'video/mp4',
+        }],
         containerId: 'player-container',
         pathToSwf: '../dist/video-js.swf',
         skin: 'nmd',
@@ -31,16 +35,31 @@
         loop: getQueryParam('loop'),
         stretch: getQueryParam('stretch'),
         playOnClick: getQueryParam('playOnClick'),
-        sources: [
-          {
-            src: '//vjs.zencdn.net/v/oceans.mp4',
-            type: 'video/mp4'
-          }],
         ads: window.ads
     });
+
+      player.on('error', function(event) {
+        var error = this.error();
+
+        if (error.code === 2 || error.code === 4) {
+          setTimeout(retryOnError.bind(this), 500);
+        }
+
+        function retryOnError() {
+          var time = this.currentTime();
+          this.error(null).pause().load();
+
+          if (this.hasStarted_) {
+            this.currentTime(time).play();
+          }
+        }
+      });
+
+      player.reloadSourceOnError();
       player.ga({
         debug: true,
         eventsToTrack: [
+          'start',
           'percentsPlayed',
           'secondsPlayed',
           'seek',

@@ -29491,7 +29491,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	/*
-	* videojs-ga - v0.5.1 - 2017-04-24
+	* videojs-ga - v0.6.1 - 2017-04-25
 	* Copyright (c) 2017 Michael Bensoussan
 	* Licensed MIT
 	*/
@@ -29614,7 +29614,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    firstplay = function() {
 	      startTimeTracking();
-	      if (__indexOf.call(eventsToTrack, 'start') >= 0 && !isFinite) {
+	      if (__indexOf.call(eventsToTrack, 'start') >= 0) {
 	        return sendbeacon('start', true);
 	      }
 	    };
