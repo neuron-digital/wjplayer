@@ -3,7 +3,7 @@
 
 <head>
   <meta charset=utf-8 />
-  <title>wjplayer HLS demo (videojs-contrib-hls)</title>
+  <title>wjplayer RTMP demo</title>
   <link href="../dist/wjplayer.css" rel="stylesheet">
   <link href="../dist/skins/nmd.css" rel="stylesheet">
   <link rel="stylesheet" href="sample.css">
@@ -61,7 +61,6 @@
   <div class="header-container">
     <header class="wrapper clearfix">
       <h2><a href="https://github.com/neuron-digital/wjplayer">wjplayer</a></h2>
-      <h2><a href="https://github.com/videojs/videojs-contrib-hls">video.js HLS Source Handler</a></h2>
       <h3>demo page</h3>
     </header>
   </div>
@@ -69,7 +68,10 @@
   <div class="main-container">
     <div id="controls">
       <div id="customButtons"></div>
-      <input id="streamURL" class="innerControls" type="text" placeholder="Enter custom URL to HLS playlist" value="" />
+      <input id="streamURL" class="innerControls" type="text" placeholder="Enter custom URL to RTMP stream" value="" />
+
+      Content type:
+      <input id="contentType" type="text" value="rtmp/mp4" />
       <div>
         <select id="videoSize" style="float:left">
          <option value="240">player size: 240</option>
@@ -87,10 +89,17 @@
   </div>
 
   <script>
+    var src = '';
+    var type = '';
 
     $(document).ready(function() {
-      $('#streamURL').change(function(){
-        changeSrc($('#streamURL').val());
+      $('#streamURL').change(function(e) {
+        src = e.target.value;
+        changeSrc();
+      });
+      $('#contentType').change(function(e) {
+        type = e.target.value;
+        changeSrc();
       });
       $('#videoSize').change(function() {
         $('#videoContainer').width($('#videoSize').val());
@@ -100,35 +109,20 @@
     var options = {
       containerId: 'videoContainer',
       pathToSwf: '../dist/video-js.swf',
+      videojs: {
+        techOrder: ['flash', 'html5']
+      },
       skin: 'nmd',
       autoplay: true,
       muted: true,
-      sources: [{
-        src: 'https://embed.life.ru/playlist/185142e5f273e565511ebe3a8494cf95/index.m3u8',
-        type: 'application/x-mpegURL'
-      }],
       ads: window.ads
     };
     window.player = wjplayer(options);
-    player.reloadSourceOnError();
-    player.ga({
-      eventsToTrack: [
-        'loaded', 'secondsPlayed', 'percentsPlayed',
-        'start', 'end', 'seek', 'play', 'pause', 'resize',
-        'volumeChange', 'error', 'fullscreen',
-        'adstart', 'adend'
-      ],
-      secondsPlayedMoments: [5, 15],
-      secondsPlayedInterval: 10,
-      percentsPlayedInterval: 25,
-      autoLabel: false,
-      debug: true
-    });
 
-    function changeSrc(url) {
+    function changeSrc() {
       player.src({
-        src: url,
-        type: 'application/x-mpegURL',
+        src: src,
+        type: type,
       });
     }
   </script>
