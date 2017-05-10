@@ -78,6 +78,7 @@
 
 .vjs-nmd-skin .vjs-resolution-button .vjs-menu .vjs-menu-content {
   width: 80px !important;
+  max-height: none;
   left: -50px;
   background-color: rgba(43, 51, 63, 0.6); }
 

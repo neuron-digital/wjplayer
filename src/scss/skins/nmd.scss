@@ -120,6 +120,7 @@ $colorResolutionText: #ffffff;
   .vjs-resolution-button {
     .vjs-menu .vjs-menu-content {
       width: 80px !important;
+      max-height: none;
       left: -50px;
       background-color: $colorResolutionBg;
     }
