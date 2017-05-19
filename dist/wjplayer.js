@@ -49397,7 +49397,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        src = src.sort(compareResolutions);
 	        groupedSrc = bucketSources(src);
 	        var choosen = chooseSrc(groupedSrc, src);
-	        var menuButton = new ResolutionMenuButton(player, { sources: groupedSrc, initialySelectedLabel: choosen.label , initialySelectedRes: choosen.res , customSourcePicker: settings.customSourcePicker}, settings, label);
+	        var menuButton = new ResolutionMenuButton(player, { sources: groupedSrc, initialySelectedLabel: choosen.label , customSourcePicker: settings.customSourcePicker}, settings, label);
 	        videojs.addClass(menuButton.el(), 'vjs-resolution-button');
 	        player.controlBar.resolutionSwitcher = player.controlBar.el_.insertBefore(menuButton.el_, player.controlBar.getChild('fullscreenToggle').el_);
 	        player.controlBar.resolutionSwitcher.dispose = function(){
@@ -49543,7 +49543,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	          var menuButton = new ResolutionMenuButton(player, {
 	            sources: groupedSrc,
 	            initialySelectedLabel: choosen.label,
-	            initialySelectedRes: choosen.res,
 	            customSourcePicker: _customSourcePicker
 	          }, settings, label);
 
@@ -49554,45 +49553,71 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      function initResolutionForHLS(player){
 	        var hls = player.tech_.hls;
+	        var standardPlaylistSelector = hls.selectPlaylist;
 	        if(!hls) { return; }
+
 	        // Capture events
 	        player.on('mediachange', function(){
 	          player.trigger('resolutionchange');
 	        });
 
 	        player.one('loadedmetadata', function(){
-	          var playlists = hls.playlists.master.playlists;
+	          if (!hls.playlists.master || !hls.playlists.master.playlists) {
+	            return;
+	          }
 
+	          var playlists = hls.playlists.master.playlists;
 	          var _sources = [{ src: 'auto', type: 'application/x-mpegURL', label: 'auto', res: 'auto'}];
 
-	          playlists.map(function(value){
+	          playlists.map(function(value, index){
+	            // ignore master playlist
+	            if (value.uri === hls.options_.url) {
+	              return;
+	            }
+
+	            var label;
+	            var defaultLabel = '' + (index + 1);
+	            var res = value.attributes && value.attributes.RESOLUTION && value.attributes.RESOLUTION.height
+	              ? value.attributes.RESOLUTION.height
+	              : 0;
+
+	            if (!value.attributes || !value.attributes.NAME && !value.attributes.RESOLUTION) {
+	              label = defaultLabel;
+	            } else {
+	              label = value.attributes.NAME
+	                ? value.attributes.NAME
+	                : value.attributes.RESOLUTION && value.attributes.RESOLUTION.height
+	                  ? value.attributes.RESOLUTION.height
+	                  : defaultLabel;
+	            }
+
 	            _sources.push({
 	              src: value.uri,
 	              type: 'application/x-mpegURL',
-	              label: value.attributes.NAME || value.attributes.RESOLUTION.height,
-	              res: value.attributes.RESOLUTION.height
+	              label: label,
+	              res: res,
 	            });
 	          });
+
+	          if (_sources.length < 2) {
+	            return;
+	          }
 
 	          groupedSrc = bucketSources(_sources);
 
 	          var selectPlaylist =  function (selectedResolution){
-	            var _selectPlaylist;
-
 	            if(selectedResolution === 'auto'){
-	              _selectPlaylist = videojs.HlsHandler.prototype.selectPlaylist;
-	              return _selectPlaylist;
+	              return standardPlaylistSelector;
 	            }
 
-	            _selectPlaylist = function (){
+	            return function (){
 	              return hls.playlists.master.playlists.filter(function (playlist) {
 	                return playlist.attributes.RESOLUTION.height === selectedResolution;
 	              })[0];
 	            };
-	            return _selectPlaylist;
 	          };
 
-	          // Overwrite defualt sourcePicer function
+	          // Overwrite default sourcePicker function
 	          var _customSourcePicker = function(_player, _sources, _label){
 	            var selectedRes = _sources[0].res;
 	            hls.selectPlaylist = selectPlaylist(selectedRes);
@@ -49602,14 +49627,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	          var currentPlaylist = hls.playlists.media();
 	          var choosen = {
 	            label: 'auto',
-	            res: currentPlaylist.attributes.RESOLUTION.height,
 	            sources: currentPlaylist
 	          };
 
 	          var menuButton = new ResolutionMenuButton(player, {
 	            sources: groupedSrc,
 	            initialySelectedLabel: choosen.label,
-	            initialySelectedRes: choosen.res,
 	            customSourcePicker: _customSourcePicker
 	          }, settings, label);
 
