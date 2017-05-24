@@ -35,7 +35,7 @@ var config = {
       {
         test: /\.js$/,
         loader: 'babel-loader',
-        exclude: /(node_modules|bower_components)(?!\/(videojs-quality-picker))/
+        exclude: /(node_modules)(?!\/(videojs-quality-picker))/
       }
     ]
   },
