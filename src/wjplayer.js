@@ -175,13 +175,24 @@ const google = window.google;
  *   Defaults to false
  *
  * @param {Object} options.share
- *   Will be passed to videojs-social plugin.
- *   @see https://github.com/neuron-digital/videojs-social for details.
- * @param {String} options.share.url
+ *   Will be passed to videojs-share plugin.
+ *   @see https://github.com/neuron-digital/videojs-share for details.
+ * @param {String} [options.share.url]
  *   This is the URL that points to your custom web page
  *   which has your video and the meta tags for sharing.
- * @param {String} options.share.embedCode
+ *   Defaults to the current page url.
+ * @param {String} [options.share.embedCode]
  *   Iframe embed code for sharing the video.
+ *   Defaults to iframe with the current page url specified as src.
+ * @param {String} [options.share.image]
+ *   Image to share.
+ *   Defaults to options.poster.
+ * @param {Array} [socials]
+ *   List of social networks.
+ * @param {String} [fbAppId]
+ *   Required for share to Facebook.
+ * @param {String} [redirectUri]
+ *   Defaults to `${url}#close_window`.
  *
  * @return {Object} the player object.
  */
@@ -299,14 +310,6 @@ class WJPlayer {
       videojs.options.flash.swf = this.options.pathToSwf;
     }
 
-    if (this.options.share) {
-      videojs.addLanguage('ru', {
-        'Share Video': 'Поделиться',
-        'Direct Link': 'Прямая ссылка',
-        'Embed Code': 'Код для встраивания плеера'
-      });
-    }
-
     // Init player
     this.player = videojs(this.options.playerId, this.options.videojs, () => {
       if (!!this.options.panorama && (this.player.panorama)) {
@@ -332,7 +335,8 @@ class WJPlayer {
 
       // Init share plugin
       if (this.options.share) {
-        this.player.social(this.options.share);
+        this.options.share.image = this.options.share.image || this.options.poster;
+        this.player.share(this.options.share);
       }
 
       if (this.options.loop) {
