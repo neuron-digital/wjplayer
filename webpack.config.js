@@ -34,14 +34,17 @@ var config = {
     loaders: [
       {
         test: /\.js$/,
-        loader: 'babel',
+        loader: 'babel-loader',
         exclude: /(node_modules|bower_components)(?!\/(videojs-quality-picker))/
       }
     ]
   },
   resolve: {
-    root: path.resolve('./src'),
-    extensions: ['', '.js']
+    modules: [
+      path.resolve('./src'),
+      'node_modules'
+    ],
+    extensions: ['.js']
   },
   plugins: plugins
 };
