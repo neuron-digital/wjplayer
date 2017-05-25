@@ -1,18 +1,27 @@
 var webpack = require('webpack');
-var UglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
 var path = require('path');
 var mode = require('yargs').argv.mode;
 
 var libraryName = 'wjplayer';
 
-var plugins = [];
 var outputFileExt = '.js';
 var devtool = '';
 
-if (mode === 'minify') {
-  plugins.push(new UglifyJsPlugin({ minimize: true }));
+var plugins = [
+  new webpack.DefinePlugin({
+    'process.env': {
+      NODE_ENV: JSON.stringify(process.env.NODE_ENV),
+    },
+  })
+];
+
+if (process.env.MINIFY) {
   outputFileExt = '.min.js';
   devtool = 'source-map';
+  plugins.push(new webpack.optimize.UglifyJsPlugin({
+    minimize: true,
+    sourceMap: true
+  }));
 }
 
 var config = {
