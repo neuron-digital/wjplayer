@@ -34,7 +34,6 @@
   "files": [
     "dist"
   ],
-  "dependencies": {},
   "devDependencies": {
     "babel-cli": "6.16.0",
     "babel-core": "6.24.1",
@@ -61,7 +60,7 @@
     "videojs-contrib-hls": "5.5.3",
     "videojs-download-button": "neuron-digital/videojs-download-button",
     "videojs-ga": "neuron-digital/videojs-ga#2ff4015",
-    "videojs-ima": "neuron-digital/videojs-ima",
+    "videojs-ima": "github:neuron-digital/videojs-ima#f86659a",
     "videojs-panorama": "github:neuron-digital/videojs-panorama#9a20b1d0b201ba20a89ab491a7d5f247e133b9ee",
     "videojs-quality-picker": "0.0.3",
     "videojs-resolution-switcher": "neuron-digital/videojs-resolution-switcher#7f9b4bf",
