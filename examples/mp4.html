@@ -35,7 +35,12 @@
         loop: getQueryParam('loop'),
         stretch: getQueryParam('stretch'),
         playOnClick: getQueryParam('playOnClick'),
-        ads: window.ads
+        poster: '//vjs.zencdn.net/v/oceans.png',
+        ads: window.ads,
+        share: {
+          title: 'Awesome video'
+        },
+        locale: 'ru'
     });
 
       player.on('error', function(event) {
