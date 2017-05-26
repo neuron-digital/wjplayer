@@ -10,6 +10,7 @@
     "build:dev": "webpack --progress",
     "dev": "webpack --progress --colors --watch",
     "start": "gulp browse",
+    "prepare": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
