@@ -261,6 +261,11 @@ Creates a new player and places it to container with the specified id.
  - **options.muted**: `Boolean`, Indicates whether the player should be muted by default.
   Defaults to false
 
+ - **options.playsinline**: `Boolean`, Indicated whether the video should be allowed to play inline,
+  and will not automatically enter fullscreen mode when playback begins.
+  @see https://webkit.org/blog/6784/new-video-policies-for-ios/
+  Defaults to false.
+
  - **options.skin**: `String`, Skin name.
   Defaults to "default"
 

@@ -123,6 +123,12 @@ const google = window.google;
  *   Indicates whether the player should be muted by default.
  *   Defaults to false
  *
+ * @param {Boolean} options.playsinline
+ *   Indicated whether the video should be allowed to play inline,
+ *   and will not automatically enter fullscreen mode when playback begins.
+ *   @see https://webkit.org/blog/6784/new-video-policies-for-ios/
+ *   Defaults to false.
+ *
  * @param {String} options.skin
  *   Skin name.
  *   Defaults to "default"
@@ -219,6 +225,7 @@ class WJPlayer {
       controls: true,
       loop: false,
       muted: false,
+      playsinline: false,
       preload: 'metadata',
       volumeStyle: 'vertical',
       stretch: false,
@@ -399,6 +406,10 @@ class WJPlayer {
 
     if (this.options.muted) {
       dumbPlayer.setAttribute('muted', '');
+    }
+
+    if (this.options.playsinline) {
+      dumbPlayer.setAttribute('playsinline', '');
     }
 
     this.options.sources.forEach(function(source) {
