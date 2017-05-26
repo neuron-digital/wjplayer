@@ -181,6 +181,8 @@ const google = window.google;
  *   This is the URL that points to your custom web page
  *   which has your video and the meta tags for sharing.
  *   Defaults to the current page url.
+ * @param {String} [title]
+ * @param {String} [description]
  * @param {String} [options.share.embedCode]
  *   Iframe embed code for sharing the video.
  *   Defaults to iframe with the current page url specified as src.

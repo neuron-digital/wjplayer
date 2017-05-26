@@ -3,7 +3,6 @@
 Video.js bundle that supports HLS, VAST/VMAP, 360-degree videos, and more.
 
 [![Build Status](https://travis-ci.org/neuron-digital/wjplayer.svg?branch=master)](https://travis-ci.org/neuron-digital/wjplayer)
-[![Build status](https://ci.appveyor.com/api/projects/status/dyr733j1b22ulxhe?svg=true)](https://ci.appveyor.com/project/avdeev/wjplayer)
 [![npm](https://img.shields.io/npm/v/wjplayer.svg)](https://www.npmjs.com/package/wjplayer)
 [![npm](https://img.shields.io/npm/dm/wjplayer.svg)](https://www.npmjs.com/package/wjplayer)
 [![David](https://david-dm.org/neuron-digital/wjplayer.svg)](https://david-dm.org/neuron-digital/wjplayer)
@@ -25,11 +24,11 @@ Video.js bundle that supports HLS, VAST/VMAP, 360-degree videos, and more.
 
 #### Other plugins
 * https://github.com/googleads/videojs-ima
-* https://github.com/neuron-digital/videojs-resolution-switcher
-* https://github.com/neuron-digital/videojs-social
-* https://github.com/neuron-digital/videojs-download-button
-* https://github.com/neuron-digital/videojs-ga
 * https://github.com/yanwsh/videojs-panorama
+* https://github.com/neuron-digital/videojs-resolution-switcher
+* https://github.com/neuron-digital/videojs-ga
+* https://github.com/neuron-digital/videojs-share
+* https://github.com/neuron-digital/videojs-download-button
 
 ### Plugins dependencies
 * https://github.com/mrdoob/three.js (required by videojs-panorama)
@@ -301,14 +300,29 @@ Creates a new player and places it to container with the specified id.
 
  - **options.ads.showControlsForJSAds**: `Boolean`, Defaults to false
 
- - **options.share**: `Object`, Will be passed to videojs-social plugin.
+ - **options.share**: `Object`, Will be passed to [videojs-share](https://github.com/neuron-digital/videojs-share) plugin.
+
+ - **options.share.socials**: `Array`, List of social networks. See [vanilla-sharing](https://github.com/avdeev/vanilla-sharing) for details.
 
  - **options.share.url**: `String`, This is the URL that points to your custom web page
   which has your video and the meta tags for sharing.
+  Defaults to the current page url.
 
  - **options.share.embedCode**: `String`, Iframe embed code for sharing the video.
+   Defaults to iframe with the current page url specified as src.
 
-**Returns**: `Object`, the player object.
+ - **options.share.title**: `String`, Title to share.
+
+ - **options.share.description**: `String`, Description to share.
+
+ - **options.share.image**: `String`, Image to share.
+   Defaults to options.poster.
+
+ - **options.share.fbAppId**: `String`, Required for share to Facebook.
+
+ - **options.share.redirectUri**: `String`, Defaults to `${url}#close_window`.
+
+**Returns**: `Object`, the videojs player instance object.
 
 
 * * *
