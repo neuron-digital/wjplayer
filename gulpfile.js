@@ -5,6 +5,7 @@ const eslint = require('gulp-eslint');
 const browserSync = require('browser-sync').create();
 const concat = require('gulp-concat');
 const sass = require('gulp-sass');
+const autoprefixer = require('gulp-autoprefixer');
 const runSequence = require('run-sequence');
 const addSrc = require('gulp-add-src');
 const gutil = require('gulp-util');
@@ -123,12 +124,14 @@ gulp.task('styles', ['skins', 'styles-360'], () => {
     }).on('error', gutil.log))
     .pipe(addSrc.prepend(includesCss))
     .pipe(concat(distName + '.css'))
+    .pipe(autoprefixer())
     .pipe(gulp.dest(paths.DIST));
 });
 
 gulp.task('styles-360', () => {
   return gulp.src(includesCss360)
     .pipe(concat(distName360 + '.css'))
+    .pipe(autoprefixer())
     .pipe(gulp.dest(paths.DIST));
 });
 
@@ -137,6 +140,7 @@ gulp.task('skins', () => {
     .pipe(sass({
       outputStyle: 'nested'
     }).on('error', gutil.log))
+    .pipe(autoprefixer())
     .pipe(gulp.dest(paths.DIST_SKINS));
 });
 
