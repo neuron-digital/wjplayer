@@ -45,7 +45,7 @@ const includes = {
       'node_modules/videojs-resolution-switcher/lib/videojs-resolution-switcher.js'
     ],
     share: [
-      'node_modules/videojs-social/videojs-social.js'
+      'node_modules/videojs-share/dist/videojs-share.js'
     ],
     download: [
       'node_modules/videojs-download-button/dist/videojs-download-button.js'
@@ -69,7 +69,7 @@ const includes = {
       'node_modules/videojs-resolution-switcher/lib/videojs-resolution-switcher.css'
     ],
     share: [
-      'node_modules/videojs-social/videojs-social.css'
+      'node_modules/videojs-share/dist/videojs-share.css'
     ],
     download: [
       'node_modules/videojs-download-button/dist/videojs-download-button.css'

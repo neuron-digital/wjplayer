@@ -4,7 +4,7 @@ html, body {
   display: block;
 }
 #player-container {
-  width: 100%;
-  height: 100%;
+  width: 560px;
+  height: 315px;
   position: relative;
 }
