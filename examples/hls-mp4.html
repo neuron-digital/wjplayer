@@ -4,11 +4,22 @@
 <head>
   <meta charset=utf-8 />
   <title>Video.js HLS and Mp4</title>
+
+  <script src="//imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+
+  <link href="https://unpkg.com/wjplayer/dist/wjplayer.css" rel="stylesheet">
+  <link href="https://unpkg.com/wjplayer/dist/skins/nmd.css" rel="stylesheet">
+  <script src="https://unpkg.com/wjplayer/dist/wjplayer.min.js"></script>
+
+  <link href="../dist/wjplayer.css" rel="stylesheet">
+  <link href="../dist/skins/nmd.css" rel="stylesheet">
+  <script src="../dist/wjplayer.js"></script>
+
+  <link rel="stylesheet" href="sample.css">
+
   <link href="../dist/wjplayer.css" rel="stylesheet">
   <link href="../dist/skins/nmd.css" rel="stylesheet">
   <link rel="stylesheet" href="sample.css">
-  <script src="//imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
-  <script src="../dist/wjplayer.js"></script>
   <script src="sample.js"></script>
 </head>
 
@@ -22,11 +33,11 @@
       skin: 'nmd',
       sources: [
         {
-          src: 'https://embed.life.ru/playlist/3dd8517cb4957deb77f01dbe0b33ec31/index.m3u8',
+          src: 'https://tv.life.ru/index.m3u8',
           type: 'application/x-mpegURL'
         },
         {
-          src: 'https://static.life.ru/posts/2016/06/424964/video/3dd8517cb4957deb77f01dbe0b33ec31.mp4',
+          src: '//vjs.zencdn.net/v/oceans.mp4',
           type: 'video/mp4'
         }],
       ads: window.ads
