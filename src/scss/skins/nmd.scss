@@ -112,9 +112,8 @@ $menuGradient: linear-gradient(to top, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6));
   // Resolution switcher button
   .vjs-resolution-button {
     .vjs-menu .vjs-menu-content {
-      width: 80px !important;
-      max-height: none;
       left: -50px;
+      width: auto !important;
       background: transparent;
       background-image: $menuGradient;
     }
@@ -143,6 +142,8 @@ $menuGradient: linear-gradient(to top, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6));
   .vjs-remaining-time {
     width: auto;
     margin: 0;
+    font-size: 1.2em;
+    line-height: 30px;
   }
 
   .vjs-share-control {
@@ -160,11 +161,11 @@ $menuGradient: linear-gradient(to top, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6));
   }
 
   &.vjs-fullscreen .vjs-fullscreen-control:before {
-    font-size: 24px;
+    font-size: 2.4em;
   }
 
   .vjs-live-display {
-    font-size: 12px;
+    font-size: 1.2em;
     letter-spacing: 1px;
     &:before {
       display: inline-block;
