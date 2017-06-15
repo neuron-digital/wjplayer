@@ -112,8 +112,10 @@ $menuGradient: linear-gradient(to top, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6));
   // Resolution switcher button
   .vjs-resolution-button {
     .vjs-menu .vjs-menu-content {
-      left: -50px;
+      left: -52px;
       width: auto !important;
+      min-width: 80px;
+      max-height: calc(100vh - 4em);
       background: transparent;
       background-image: $menuGradient;
     }
@@ -126,6 +128,11 @@ $menuGradient: linear-gradient(to top, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6));
         background: transparent;
         background-image: $menuGradient;
         color: #fff;
+      }
+
+      &.vjs-selected:after {
+        margin-left: 12px;
+        margin-right: 2px;
       }
     }
 
