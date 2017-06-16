@@ -146,25 +146,35 @@ $menuGradient: linear-gradient(to top, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6));
     }
   }
 
-  .vjs-remaining-time {
+  .vjs-current-time,
+  .vjs-duration {
+    display: block;
     width: auto;
     margin: 0;
     font-size: 1.2em;
     line-height: 30px;
   }
 
-  .vjs-share-control {
+  .vjs-remaining-time {
+    display: none;
+  }
+
+  .vjs-duration {
     order: 2;
+  }
+
+  .vjs-share-control {
+    order: 3;
     cursor: pointer;
   }
 
   .vjs-resolution-button {
-    order: 3;
+    order: 4;
     font-size: 1.1em;
   }
 
   .vjs-fullscreen-control {
-    order: 4;
+    order: 5;
   }
 
   &.vjs-fullscreen .vjs-fullscreen-control:before {
@@ -291,5 +301,22 @@ $menuGradient: linear-gradient(to top, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6));
   .video-js:hover .vjs-big-play-button, .vjs-big-play-button:focus {
     background-color: #000 !important;
     opacity: 0.6;
+  }
+
+  @media (max-width: 350px) {
+    .vjs-current-time,
+    .vjs-duration {
+      padding: 0 2px;
+    }
+  }
+
+  @media (max-width: 320px) {
+    .vjs-duration {
+      display: none;
+    }
+
+    .vjs-current-time {
+      padding-right: 5px;
+    }
   }
 }
