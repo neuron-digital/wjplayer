@@ -146,13 +146,15 @@ $menuGradient: linear-gradient(to top, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6));
     }
   }
 
-  .vjs-current-time,
-  .vjs-duration {
-    display: block;
-    width: auto;
-    margin: 0;
-    font-size: 1.2em;
-    line-height: 30px;
+  &:not(.vjs-live) {
+    .vjs-current-time,
+    .vjs-duration {
+      display: block;
+      width: auto;
+      margin: 0;
+      font-size: 1.2em;
+      line-height: 30px;
+    }
   }
 
   .vjs-remaining-time {
@@ -182,14 +184,18 @@ $menuGradient: linear-gradient(to top, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6));
   }
 
   .vjs-live-display {
+    display: flex;
+    align-items: center;
     font-size: 1.2em;
     letter-spacing: 1px;
+
     &:before {
       display: inline-block;
       content: '';
       width: 7px;
       height: 7px;
       margin-right: 4px;
+      margin-top: -2px;
       border-radius: 50%;
       background: $colorRed;
     }
@@ -317,6 +323,12 @@ $menuGradient: linear-gradient(to top, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6));
 
     .vjs-current-time {
       padding-right: 5px;
+    }
+  }
+
+  @media (max-width: 250px) {
+    .vjs-live-control {
+      display: none;
     }
   }
 }
