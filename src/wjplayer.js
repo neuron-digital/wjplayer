@@ -1,5 +1,3 @@
-const google = window.google;
-
 /**
  * Creates a new player and places it to container with the specified id.
  *
@@ -430,7 +428,12 @@ class WJPlayer {
   }
 
   initAds() {
-    if (!this.options.ads || !this.options.ads.adTagUrl || !this.player.ima) {
+    if (
+      !this.options.ads ||
+      !this.options.ads.adTagUrl ||
+      !this.player.ima ||
+      !window.google
+    ) {
       return;
     }
 
