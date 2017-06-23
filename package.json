@@ -67,7 +67,7 @@
     "videojs-quality-picker": "0.0.3",
     "videojs-replay": "1.1.0",
     "videojs-resolution-switcher": "neuron-digital/videojs-resolution-switcher#7f9b4bf",
-    "videojs-share": "0.4.0",
+    "videojs-share": "1.0.0",
     "videojs5-hlsjs-source-handler": "neuron-digital/videojs5-hlsjs-source-handler#hls6",
     "webpack": "2.6.0"
   }
