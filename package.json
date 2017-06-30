@@ -66,7 +66,7 @@
     "videojs-panorama": "github:neuron-digital/videojs-panorama#9a20b1d0b201ba20a89ab491a7d5f247e133b9ee",
     "videojs-quality-picker": "0.0.3",
     "videojs-replay": "1.1.0",
-    "videojs-resolution-switcher": "neuron-digital/videojs-resolution-switcher#7f9b4bf",
+    "videojs-resolution-switcher": "github:neuron-digital/videojs-resolution-switcher#6586005",
     "videojs-share": "1.0.1",
     "videojs5-hlsjs-source-handler": "neuron-digital/videojs5-hlsjs-source-handler#hls6",
     "webpack": "2.6.0"
