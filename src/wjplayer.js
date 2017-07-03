@@ -424,7 +424,15 @@ class WJPlayer {
 
   play() {
     this.player.play();
-    this.options.autoplay && this.player.autoplay(true);
+
+    if (this.options.autoplay) {
+      this.player.autoplay(true);
+    }
+
+    if (this.options.preload === 'none' && this.options.enableResolutionSwitcher) {
+      // help videojs-resolution-switcher to choose the proper handleSeekEvent
+      this.player.preload('metadata');
+    }
   }
 
   initAds() {
