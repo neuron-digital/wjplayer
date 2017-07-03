@@ -1,6 +1,6 @@
 # wjplayer
 
-Video.js bundle that supports HLS, VAST/VMAP, 360-degree videos, and more.
+Video.js bundle that supports HLS, VAST/VMAP/VPAID ads, 360-degree videos, and more.
 
 [![Build Status](https://travis-ci.org/neuron-digital/wjplayer.svg?branch=master)](https://travis-ci.org/neuron-digital/wjplayer)
 [![npm](https://img.shields.io/npm/v/wjplayer.svg)](https://www.npmjs.com/package/wjplayer)
