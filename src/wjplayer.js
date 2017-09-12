@@ -356,14 +356,12 @@ class WJPlayer {
       if (this.options.autoplay && !this.browser.IS_MOBILE) {
         this.initAds();
         this.play();
-      } else if (this.browser.IS_MOBILE) {
+      } else {
         // init ads and start playback on tap
         this.player.one(this.clickEvent, () => {
           this.initAds();
           this.play();
         });
-      } else {
-        this.initAds();
       }
 
       // allow to start/stop the playback on click even if controls are disabled
