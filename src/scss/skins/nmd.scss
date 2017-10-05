@@ -77,16 +77,22 @@ $menuGradient: linear-gradient(to top, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6));
 
     &:before {
       top: -0.2em;
-      font-size: 1.2em;
+      transform: scale(1.2);
+      transition: transform 0.25s ease-out;
     }
   }
 
   .vjs-progress-holder {
     height: 0.5em;
+    margin: 0 2px !important;
   }
 
   .vjs-progress-control:hover .vjs-progress-holder {
-    font-size: 1.2em;
+    font-size: 1em;
+
+    .vjs-play-progress:before {
+      transform: scale(1.5);
+    }
   }
 
   .vjs-progress-control:hover .vjs-time-tooltip,
