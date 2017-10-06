@@ -356,14 +356,12 @@ class WJPlayer {
       if (this.options.autoplay && !this.browser.IS_MOBILE) {
         this.initAds();
         this.play();
-      } else if (this.browser.IS_MOBILE) {
+      } else {
         // init ads and start playback on tap
         this.player.one(this.clickEvent, () => {
           this.initAds();
           this.play();
         });
-      } else {
-        this.initAds();
       }
 
       // allow to start/stop the playback on click even if controls are disabled
@@ -424,7 +422,15 @@ class WJPlayer {
 
   play() {
     this.player.play();
-    this.options.autoplay && this.player.autoplay(true);
+
+    if (this.options.autoplay) {
+      this.player.autoplay(true);
+    }
+
+    if (this.options.preload === 'none' && this.options.enableResolutionSwitcher) {
+      // help videojs-resolution-switcher to choose the proper handleSeekEvent
+      this.player.preload('metadata');
+    }
   }
 
   initAds() {

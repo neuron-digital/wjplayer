@@ -15,10 +15,6 @@
   <script src="../dist/wjplayer.js"></script>
 
   <link rel="stylesheet" href="sample.css">
-
-  <link href="../dist/wjplayer.css" rel="stylesheet">
-  <link href="../dist/skins/nmd.css" rel="stylesheet">
-  <link rel="stylesheet" href="sample.css">
   <script src="sample.js"></script>
 </head>
 
@@ -30,7 +26,8 @@
     window.player = wjplayer({
       containerId: 'player-container',
       locale: getQueryParam('locale'),
-      muted: getQueryParam('muted'),
+      muted: true,
+      playsinline: true,
       autoplay: getQueryParam('autoplay'),
       loop: getQueryParam('loop'),
       preload: getQueryParam('preload') || 'metadata',
@@ -76,6 +73,9 @@
       }
     });
     player.reloadSourceOnError();
+    player.on(['loadeddata', 'play', 'playing', 'seeked', 'resolutionchange', 'durationchange'], function(e) {
+      console.log(e.type);
+    });
   </script>
 </body>
 

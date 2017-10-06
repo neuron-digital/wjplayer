@@ -1,7 +1,7 @@
 {
   "name": "wjplayer",
   "description": "Video.js HLS bundle that supports VAST/VMAP ads, 360-degree videos, and more",
-  "version": "1.6.4",
+  "version": "1.6.9",
   "main": "dist/wjplayer.js",
   "style": "dist/wjplayer.css",
   "scripts": {
@@ -59,14 +59,14 @@
     "three": "0.82.1",
     "video.js": "5.19.2",
     "videojs-contrib-ads": "3.1.3",
-    "videojs-contrib-hls": "5.5.3",
+    "videojs-contrib-hls": "5.8.2",
     "videojs-download-button": "neuron-digital/videojs-download-button",
     "videojs-ga": "neuron-digital/videojs-ga#2ff4015",
     "videojs-ima": "github:neuron-digital/videojs-ima#f86659a",
     "videojs-panorama": "github:neuron-digital/videojs-panorama#9a20b1d0b201ba20a89ab491a7d5f247e133b9ee",
     "videojs-quality-picker": "0.0.3",
     "videojs-replay": "1.1.0",
-    "videojs-resolution-switcher": "github:neuron-digital/videojs-resolution-switcher#6586005",
+    "videojs-resolution-switcher": "github:neuron-digital/videojs-resolution-switcher#bdc5455",
     "videojs-share": "1.0.1",
     "videojs5-hlsjs-source-handler": "neuron-digital/videojs5-hlsjs-source-handler#hls6",
     "webpack": "2.6.0"
