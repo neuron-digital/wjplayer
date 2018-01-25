@@ -200,6 +200,11 @@
  * @param {String} [redirectUri]
  *   Defaults to `${url}#close_window`.
  *
+ * @param {Boolean} options.enableHlsSupport
+ *   Set to false in order to disable any workarounds etc. that are required to make HLS support a reality.
+ *   (e.g. stops forcing flash on IE11 and brings back videoJsResolutionSwitcher + ads)
+ *   Defaults to true
+ *
  * @return {Object} the player object.
  */
 export default function wjplayer(options) {
@@ -230,7 +235,8 @@ class WJPlayer {
       playOnClick: false,
       skin: 'default',
       classes: [],
-      enableResolutionSwitcher: false
+      enableResolutionSwitcher: false,
+      enableHlsSupport: true
     };
 
     this.browser = {
@@ -277,7 +283,7 @@ class WJPlayer {
     if (this.options.playerType === 'video'
       && videojs.Hls
       && (!this.browser.IS_MOBILE || this.options.sourcesWithRes.length)) {
-      if (this.browser.IS_IE11) {
+      if (this.browser.IS_IE11 && this.options.enableHlsSupport) {
         // https://github.com/videojs/videojs-contrib-hls/blob/ab9a3986411ca15e3b4983dc03de8d32e9c686a2/README.md#ie11
         // on IE11 force using flash
         this.options.videojs.techOrder = ['flash'];
