@@ -42,8 +42,8 @@
     "babel-loader": "7.1.2",
     "babel-plugin-add-module-exports": "0.2.1",
     "babel-preset-es2015": "6.24.1",
-    "browser-sync": "2.13.0",
-    "del": "2.2.1",
+    "browser-sync": "2.23.6",
+    "del": "3.0.0",
     "eslint": "4.16.0",
     "eslint-config-airbnb-es5": "1.2.0",
     "expose-loader": "0.7.4",
@@ -51,12 +51,12 @@
     "gulp-add-src": "0.2.0",
     "gulp-autoprefixer": "4.1.0",
     "gulp-concat": "2.6.1",
-    "gulp-eslint": "3.0.1",
-    "gulp-sass": "2.3.2",
-    "gulp-util": "3.0.7",
+    "gulp-eslint": "4.0.2",
+    "gulp-sass": "3.1.0",
+    "gulp-util": "3.0.8",
     "hls.js": "0.6.21",
-    "run-sequence": "1.2.1",
-    "three": "0.82.1",
+    "run-sequence": "2.2.1",
+    "three": "0.89.0",
     "video.js": "5.19.2",
     "videojs-contrib-ads": "3.1.3",
     "videojs-contrib-hls": "5.8.2",
@@ -69,6 +69,6 @@
     "videojs-resolution-switcher": "github:neuron-digital/videojs-resolution-switcher#bdc5455",
     "videojs-share": "1.0.1",
     "videojs5-hlsjs-source-handler": "neuron-digital/videojs5-hlsjs-source-handler#hls6",
-    "webpack": "2.6.0"
+    "webpack": "3.10.0"
   }
 }
