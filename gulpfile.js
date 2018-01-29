@@ -8,7 +8,7 @@ const sass = require('gulp-sass');
 const autoprefixer = require('gulp-autoprefixer');
 const runSequence = require('run-sequence');
 const addSrc = require('gulp-add-src');
-const gutil = require('gulp-util');
+const log = require('fancy-log');
 const del = require('del');
 
 const paths = {
@@ -121,7 +121,7 @@ gulp.task('styles', ['skins', 'styles-360'], () => {
   return gulp.src(paths.SRC_SCSS)
     .pipe(sass({
       outputStyle: 'nested'
-    }).on('error', gutil.log))
+    }).on('error', log))
     .pipe(addSrc.prepend(includesCss))
     .pipe(concat(distName + '.css'))
     .pipe(autoprefixer())
@@ -139,7 +139,7 @@ gulp.task('skins', () => {
   return gulp.src(paths.SRC_SCSS_SKINS)
     .pipe(sass({
       outputStyle: 'nested'
-    }).on('error', gutil.log))
+    }).on('error', log))
     .pipe(autoprefixer())
     .pipe(gulp.dest(paths.DIST_SKINS));
 });
