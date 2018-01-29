@@ -326,6 +326,10 @@ Creates a new player and places it to container with the specified id.
  - **options.share.fbAppId**: `String`, Required for share to Facebook.
 
  - **options.share.redirectUri**: `String`, Defaults to `${url}#close_window`.
+ 
+ - **options.enableHlsSupport**: `Boolean`, Set to false in order to disable any workarounds etc. that are required to make HLS support a reality.  
+   (e.g. stops forcing flash on IE11 and brings back videoJsResolutionSwitcher + ads)  
+   Defaults to true
 
 **Returns**: `Object`, the videojs player instance object.
 
