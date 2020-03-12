@@ -1,12 +1,12 @@
 language: node_js
 
 node_js:
-  - 7
   - 8
-  - 9
+  - 10
+  - 12
 
 script:
-  - npm rebuild node-sass
+  - npm ci
   - npm run build
 
 cache:
