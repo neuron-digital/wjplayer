@@ -6,9 +6,9 @@
   "style": "dist/wjplayer.css",
   "scripts": {
     "build": "npm run build:dev && npm run build:prod && gulp",
-    "build:prod": "MINIFY=true webpack --progress",
-    "build:dev": "webpack --progress",
-    "dev": "webpack --progress --colors --watch",
+    "build:prod": "MINIFY=true webpack",
+    "build:dev": "webpack",
+    "dev": "webpack --colors --watch",
     "start": "gulp browse",
     "prepublishOnly": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
