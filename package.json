@@ -11,6 +11,7 @@
     "dev": "webpack --colors --watch",
     "start": "gulp browse",
     "prepublishOnly": "npm run build",
+    "lint": "gulp lint",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
