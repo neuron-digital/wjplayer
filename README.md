@@ -2,7 +2,8 @@
 
 Video.js bundle that supports HLS, VAST/VMAP/VPAID ads, 360-degree videos, and more.
 
-[![Build Status](https://travis-ci.org/neuron-digital/wjplayer.svg?branch=master)](https://travis-ci.org/neuron-digital/wjplayer)
+[![Build Status](https://github.com/neuron-digital/wjplayer/workflows/Node.js%20CI/badge.svg)](https://github.com/neuron-digital/wjplayer/actions?query=workflow%3A%22Node.js+CI%22)
+[![bundlephobia](https://badgen.net/bundlephobia/minzip/wjplayer)](https://bundlephobia.com/result?p=wjplayer)
 [![npm](https://img.shields.io/npm/v/wjplayer.svg)](https://www.npmjs.com/package/wjplayer)
 [![npm](https://img.shields.io/npm/dm/wjplayer.svg)](https://www.npmjs.com/package/wjplayer)
 [![David](https://david-dm.org/neuron-digital/wjplayer.svg)](https://david-dm.org/neuron-digital/wjplayer)
@@ -326,9 +327,9 @@ Creates a new player and places it to container with the specified id.
  - **options.share.fbAppId**: `String`, Required for share to Facebook.
 
  - **options.share.redirectUri**: `String`, Defaults to `${url}#close_window`.
- 
- - **options.enableHlsSupport**: `Boolean`, Set to false in order to disable any workarounds etc. that are required to make HLS support a reality.  
-   (e.g. stops forcing flash on IE11 and brings back videoJsResolutionSwitcher + ads)  
+
+ - **options.enableHlsSupport**: `Boolean`, Set to false in order to disable any workarounds etc. that are required to make HLS support a reality.
+   (e.g. stops forcing flash on IE11 and brings back videoJsResolutionSwitcher + ads)
    Defaults to true
 
 **Returns**: `Object`, the videojs player instance object.
