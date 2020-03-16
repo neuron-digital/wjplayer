@@ -53,7 +53,7 @@
     "gulp-add-src": "1.0.0",
     "gulp-autoprefixer": "4.1.0",
     "gulp-concat": "2.6.1",
-    "gulp-eslint": "4.0.2",
+    "gulp-eslint": "6.0.0",
     "gulp-sass": "4.0.2",
     "hls.js": "0.6.21",
     "run-sequence": "2.2.1",
