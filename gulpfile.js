@@ -6,7 +6,6 @@ const browserSync = require('browser-sync').create();
 const concat = require('gulp-concat');
 const sass = require('gulp-sass');
 const autoprefixer = require('gulp-autoprefixer');
-const runSequence = require('run-sequence');
 const addSrc = require('gulp-add-src');
 const log = require('fancy-log');
 const del = require('del');
@@ -94,37 +93,9 @@ deps360.forEach(function(inc) {
   includesCss360 = includesCss360.concat(includes.css[inc]);
 });
 
-gulp.task('default', () => {
-  runSequence('scripts-360', 'styles', 'fonts', 'swf');
-});
-
-// Open in browser for testing
-gulp.task('browse', ['server', 'watch']);
-
-gulp.task('build', ['clean-dist'], () => {
-  gulp.start('scripts', 'styles');
-});
-
-gulp.task('scripts', ['scripts-360', 'lint'], () => {
-  return gulp.src(includesJs)
-    .pipe(concat(distName + '.js'))
-    .pipe(gulp.dest(paths.DIST));
-});
-
 gulp.task('scripts-360', () => {
   return gulp.src(includesJs360)
     .pipe(concat(distName360 + '.js'))
-    .pipe(gulp.dest(paths.DIST));
-});
-
-gulp.task('styles', ['skins', 'styles-360'], () => {
-  return gulp.src(paths.SRC_SCSS)
-    .pipe(sass({
-      outputStyle: 'nested'
-    }).on('error', log))
-    .pipe(addSrc.prepend(includesCss))
-    .pipe(concat(distName + '.css'))
-    .pipe(autoprefixer())
     .pipe(gulp.dest(paths.DIST));
 });
 
@@ -170,7 +141,7 @@ gulp.task('lint', () => {
 });
 
 gulp.task('server', () => {
-  browserSync.init({
+  return browserSync.init({
     server: {
       baseDir: './'
     },
@@ -184,18 +155,41 @@ gulp.task('server', () => {
 
 gulp.task('watch', () => {
   gulp.watch('index.html').on('change', browserSync.reload);
-  gulp.watch(paths.SRC_JS, ['scripts']);
-  gulp.watch(paths.DIST + '/*.js', ['sync-js']);
-  gulp.watch(paths.SRC_SCSS, ['styles']);
-  gulp.watch(paths.DIST + '/*.css', ['sync-css']);
+  gulp.watch(paths.SRC_JS, gulp.series('scripts'));
+  gulp.watch(paths.DIST + '/*.js', gulp.series('sync-js'));
+  gulp.watch(paths.SRC_SCSS, gulp.series('styles'));
+  gulp.watch(paths.DIST + '/*.css', gulp.series('sync-css'));
 });
 
 gulp.task('sync-js', () => {
-  gulp.src(paths.DIST + '/*.js')
+  return gulp.src(paths.DIST + '/*.js')
     .pipe(browserSync.stream());
 });
 
 gulp.task('sync-css', () => {
-  gulp.src(paths.DIST + '/*.css')
+  return gulp.src(paths.DIST + '/*.css')
     .pipe(browserSync.stream());
 });
+
+gulp.task('styles', gulp.series('skins', 'styles-360', () => {
+  return gulp.src(paths.SRC_SCSS)
+    .pipe(sass({
+      outputStyle: 'nested'
+    }).on('error', log))
+    .pipe(addSrc.prepend(includesCss))
+    .pipe(concat(distName + '.css'))
+    .pipe(autoprefixer())
+    .pipe(gulp.dest(paths.DIST));
+}));
+
+gulp.task('scripts', gulp.series('scripts-360', 'lint', () => {
+  return gulp.src(includesJs)
+    .pipe(concat(distName + '.js'))
+    .pipe(gulp.dest(paths.DIST));
+}));
+
+gulp.task('browse', gulp.series('server', 'watch'));
+
+gulp.task('build', gulp.series('clean-dist', gulp.parallel('scripts', 'styles')));
+
+gulp.task('default', gulp.parallel('scripts-360', 'styles', 'fonts', 'swf'));
