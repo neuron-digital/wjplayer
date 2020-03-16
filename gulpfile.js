@@ -1,7 +1,6 @@
 'use strict';
 
 const gulp = require('gulp');
-const eslint = require('gulp-eslint');
 const browserSync = require('browser-sync').create();
 const concat = require('gulp-concat');
 const sass = require('gulp-sass');
@@ -133,13 +132,6 @@ gulp.task('clean-dist', () => {
   return del(paths.DIST + '/**/*.{js,css}');
 });
 
-gulp.task('lint', () => {
-  return gulp.src(paths.SRC_JS)
-    .pipe(eslint())
-    .pipe(eslint.format())
-    .pipe(eslint.failAfterError());
-});
-
 gulp.task('server', () => {
   return browserSync.init({
     server: {
@@ -182,7 +174,7 @@ gulp.task('styles', gulp.series('skins', 'styles-360', () => {
     .pipe(gulp.dest(paths.DIST));
 }));
 
-gulp.task('scripts', gulp.series('scripts-360', 'lint', () => {
+gulp.task('scripts', gulp.series('scripts-360', () => {
   return gulp.src(includesJs)
     .pipe(concat(distName + '.js'))
     .pipe(gulp.dest(paths.DIST));
