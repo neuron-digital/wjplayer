@@ -11,7 +11,7 @@
     "dev": "webpack --colors --watch",
     "start": "gulp browse",
     "prepublishOnly": "npm run build",
-    "lint": "eslint src",
+    "lint": "eslint --ignore-path .gitignore .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

@@ -1,6 +1,5 @@
 var webpack = require('webpack');
 var path = require('path');
-var mode = require('yargs').argv.mode;
 
 var libraryName = 'wjplayer';
 

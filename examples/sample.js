@@ -1,8 +1,8 @@
 (function() {
 
-  window.getQueryParam = function(name, url) {
+  function getQueryParam(name, url) {
     if (!url) url = window.location.href;
-    name = name.replace(/[\[\]]/g, "\\$&");
+    name = name.replace(/[[]]/g, "\\$&");
     var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
     results = regex.exec(url);
     if (!results) return null;
@@ -10,7 +10,7 @@
     return decodeURIComponent(results[2].replace(/\+/g, " "));
   }
 
-  if (!!getQueryParam('ads')) {
+  if (getQueryParam('ads')) {
     var adTagUrl = getQueryParam('adTagUrl');
     window.ads = {
       debug: true,
