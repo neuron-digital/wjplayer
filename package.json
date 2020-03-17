@@ -60,7 +60,7 @@
     "videojs-contrib-hls": "5.8.2",
     "videojs-download-button": "neuron-digital/videojs-download-button",
     "videojs-ga": "neuron-digital/videojs-ga#2ff4015",
-    "videojs-ima": "github:neuron-digital/videojs-ima#f86659a",
+    "videojs-ima": "github:neuron-digital/videojs-ima#73f2fa0",
     "videojs-panorama": "github:neuron-digital/videojs-panorama#9a20b1d0b201ba20a89ab491a7d5f247e133b9ee",
     "videojs-quality-picker": "0.0.3",
     "videojs-replay": "1.1.0",
