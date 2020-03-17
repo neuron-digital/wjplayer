@@ -6,9 +6,9 @@
   "style": "dist/wjplayer.css",
   "scripts": {
     "build": "npm run build:dev && npm run build:prod && gulp",
-    "build:prod": "MINIFY=true webpack",
-    "build:dev": "webpack",
-    "dev": "webpack --colors --watch",
+    "build:prod": "webpack --mode production",
+    "build:dev": "webpack --mode development",
+    "dev": "webpack --mode development --colors --watch",
     "start": "gulp browse",
     "prepublishOnly": "npm run build",
     "lint": "eslint --ignore-path .gitignore .",
@@ -67,6 +67,7 @@
     "videojs-resolution-switcher": "github:neuron-digital/videojs-resolution-switcher#bdc5455",
     "videojs-share": "1.1.0",
     "videojs5-hlsjs-source-handler": "neuron-digital/videojs5-hlsjs-source-handler#hls6",
-    "webpack": "4.42.0"
+    "webpack": "4.42.0",
+    "webpack-cli": "3.3.11"
   }
 }

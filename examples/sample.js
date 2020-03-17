@@ -10,6 +10,8 @@
     return decodeURIComponent(results[2].replace(/\+/g, " "));
   }
 
+  window.getQueryParam = getQueryParam;
+
   if (getQueryParam('ads')) {
     var adTagUrl = getQueryParam('adTagUrl');
     window.ads = {
