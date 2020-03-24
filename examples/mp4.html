@@ -6,13 +6,13 @@
   <title>Video.js MP4</title>
   <script src="//imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
 
-  <link href="https://unpkg.com/wjplayer/dist/wjplayer.css" rel="stylesheet">
-  <link href="https://unpkg.com/wjplayer/dist/skins/nmd.css" rel="stylesheet">
-  <script src="https://unpkg.com/wjplayer/dist/wjplayer.min.js"></script>
-
   <link href="../dist/wjplayer.css" rel="stylesheet">
   <link href="../dist/skins/nmd.css" rel="stylesheet">
   <script src="../dist/wjplayer.js"></script>
+
+<!--  <link href="../dist/wjplayer.css" rel="stylesheet">-->
+<!--  <link href="../dist/skins/nmd.css" rel="stylesheet">-->
+<!--  <script src="../dist/wjplayer.js"></script>-->
 
   <link rel="stylesheet" href="sample.css">
   <script src="sample.js"></script>
@@ -28,64 +28,65 @@
     <div id="player-container"></div>
 
     <script>
-      window.player = wjplayer({
-        sources: [{
-          src: '//vjs.zencdn.net/v/oceans.mp4',
-          type: 'video/mp4'
-        }],
-        containerId: 'player-container',
-        pathToSwf: '../dist/video-js.swf',
-        skin: 'nmd',
-        controls: getQueryParam('controls') === 'false' ? false : true,
-        autoplay: getQueryParam('autoplay'),
-        loop: getQueryParam('loop'),
-        stretch: getQueryParam('stretch'),
-        playOnClick: getQueryParam('playOnClick'),
-        playsinline: getQueryParam('playsinline'),
-        poster: '//vjs.zencdn.net/v/oceans.png',
-        ads: window.ads,
-        share: {
-          title: 'Awesome video'
-        },
-        locale: 'ru'
-    });
-
-      player.on('error', function(event) {
-        var error = this.error();
-
-        if (error.code === 2 || error.code === 4) {
-          setTimeout(retryOnError.bind(this), 500);
-        }
-
-        function retryOnError() {
-          var time = this.currentTime();
-          this.error(null).pause().load();
-
-          if (this.hasStarted_) {
-            this.currentTime(time).play();
-          }
-        }
-      });
-
-      player.reloadSourceOnError();
-      player.ga({
-        debug: true,
-        eventsToTrack: [
-          'start',
-          'play',
-          'pause',
-          'adstart',
-          'percentsPlayed',
-          'secondsPlayed',
-          'seek',
-        ],
-        percentsPlayedMoments: [5, 10, 20, 50, 75, 100],
-        percentsPlayedInterval: 30,
-        secondsPlayedInterval: 10,
-        secondsPlayedMoments: [5, 15],
-        trackReplaySeconds: true,
-        debug: true
-      });
+      console.log(wjplayer);
+    //   window.player = wjplayer({
+    //     sources: [{
+    //       src: '//vjs.zencdn.net/v/oceans.mp4',
+    //       type: 'video/mp4'
+    //     }],
+    //     containerId: 'player-container',
+    //     pathToSwf: '../dist/video-js.swf',
+    //     skin: 'nmd',
+    //     controls: getQueryParam('controls') === 'false' ? false : true,
+    //     autoplay: getQueryParam('autoplay'),
+    //     loop: getQueryParam('loop'),
+    //     stretch: getQueryParam('stretch'),
+    //     playOnClick: getQueryParam('playOnClick'),
+    //     playsinline: getQueryParam('playsinline'),
+    //     poster: '//vjs.zencdn.net/v/oceans.png',
+    //     ads: window.ads,
+    //     share: {
+    //       title: 'Awesome video'
+    //     },
+    //     locale: 'ru'
+    // });
+    //
+    //   player.on('error', function(event) {
+    //     var error = this.error();
+    //
+    //     if (error.code === 2 || error.code === 4) {
+    //       setTimeout(retryOnError.bind(this), 500);
+    //     }
+    //
+    //     function retryOnError() {
+    //       var time = this.currentTime();
+    //       this.error(null).pause().load();
+    //
+    //       if (this.hasStarted_) {
+    //         this.currentTime(time).play();
+    //       }
+    //     }
+    //   });
+    //
+    //   player.reloadSourceOnError();
+    //   player.ga({
+    //     debug: true,
+    //     eventsToTrack: [
+    //       'start',
+    //       'play',
+    //       'pause',
+    //       'adstart',
+    //       'percentsPlayed',
+    //       'secondsPlayed',
+    //       'seek',
+    //     ],
+    //     percentsPlayedMoments: [5, 10, 20, 50, 75, 100],
+    //     percentsPlayedInterval: 30,
+    //     secondsPlayedInterval: 10,
+    //     secondsPlayedMoments: [5, 15],
+    //     trackReplaySeconds: true,
+    //     debug: true
+    //   });
     </script>
 </body>
 

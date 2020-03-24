@@ -1,4 +1,4 @@
-import 'expose-loader?videojs!video.js';
+import 'video.js';
 import 'videojs-contrib-ads/src/videojs.ads';
 import 'videojs-ima';
 import 'videojs-ga/dist/videojs.ga.js';
