@@ -52,7 +52,7 @@
     "gulp-add-src": "1.0.0",
     "gulp-autoprefixer": "7.0.1",
     "gulp-concat": "2.6.1",
-    "gulp-sass": "4.0.2",
+    "gulp-sass": "4.1.0",
     "hls.js": "0.6.21",
     "three": "0.89.0",
     "video.js": "5.19.2",
