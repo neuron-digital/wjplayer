@@ -1,3 +1,6 @@
+> ## This package has been deprecated
+> Package no longer supported. Use at your own risk.
+
 # wjplayer
 
 Video.js bundle that supports HLS, VAST/VMAP/VPAID ads, 360-degree videos, and more.
