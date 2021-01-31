@@ -1,5 +1,5 @@
 > ## This package has been deprecated
-> Package no longer supported. Use at your own risk.
+> Package no longer supported. Use at your own risk. Use pure video.js instead.
 
 # wjplayer
 
