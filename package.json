@@ -57,7 +57,7 @@
     "three": "0.89.0",
     "video.js": "5.19.2",
     "videojs-contrib-ads": "3.1.3",
-    "videojs-contrib-hls": "5.8.2",
+    "videojs-contrib-hls": "5.15.0",
     "videojs-download-button": "neuron-digital/videojs-download-button",
     "videojs-ga": "neuron-digital/videojs-ga#2ff4015",
     "videojs-ima": "github:neuron-digital/videojs-ima#f86659a",
