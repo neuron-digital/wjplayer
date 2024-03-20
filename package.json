@@ -67,7 +67,7 @@
     "videojs-resolution-switcher": "github:neuron-digital/videojs-resolution-switcher#bdc5455",
     "videojs-share": "1.1.0",
     "videojs5-hlsjs-source-handler": "neuron-digital/videojs5-hlsjs-source-handler#hls6",
-    "webpack": "4.43.0",
+    "webpack": "5.91.0",
     "webpack-cli": "3.3.11"
   }
 }
